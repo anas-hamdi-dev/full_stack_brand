@@ -21,7 +21,7 @@ const productSchema = new mongoose.Schema({
     default: null
   },
   images: {
-    type: [String], 
+    type: [String],
     required: true,
     validate: {
       validator: function(v) {
