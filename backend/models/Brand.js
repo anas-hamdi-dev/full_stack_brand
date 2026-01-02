@@ -6,6 +6,12 @@ const brandSchema = new mongoose.Schema({
     required: true,
     trim: true
   },
+  ownerId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true,
+    unique: true // One brand per owner
+  },
   category_id: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Category',
@@ -20,9 +26,10 @@ const brandSchema = new mongoose.Schema({
     trim: true,
     validate: {
       validator: function(v) {
-        return !v || /^https?:\/\/.+/.test(v);
+        // Allow data URLs (base64) or HTTP/HTTPS URLs
+        return !v || /^https?:\/\/.+/.test(v) || /^data:image\/.+;base64,.+/.test(v);
       },
-      message: 'Logo URL must be a valid URL'
+      message: 'Logo URL must be a valid HTTP/HTTPS URL or data URL'
     }
   },
   location: {
@@ -79,6 +86,7 @@ const brandSchema = new mongoose.Schema({
 
 // Indexes
 brandSchema.index({ name: 1 }, { unique: true });
+brandSchema.index({ ownerId: 1 }); // For finding brands by owner
 brandSchema.index({ category_id: 1 });
 brandSchema.index({ is_featured: 1 });
 brandSchema.index({ createdAt: -1 }); // For sorting by newest

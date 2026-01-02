@@ -52,18 +52,11 @@ const Contact = () => {
       <main className="pt-32 pb-16">
         <div className="container mx-auto px-4">
           {/* Header */}
-          <div className="mb-12">
-            <Link to="/" className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground mb-6 transition-colors">
-              <ArrowLeft className="w-4 h-4" />
-              Back to Home
-            </Link>
+
             <h1 className="font-display text-4xl md:text-5xl font-bold text-foreground mb-4">
               Get in <span className="text-gradient-primary">Touch</span>
             </h1>
-            <p className="text-muted-foreground max-w-2xl">
-              Have questions? We'd love to hear from you. Send us a message and we'll respond as soon as possible.
-            </p>
-          </div>
+
 
           <div className="grid lg:grid-cols-2 gap-12">
             {/* Contact Form */}
@@ -74,7 +67,6 @@ const Contact = () => {
                   <div>
                     <label className="text-sm font-medium text-foreground mb-2 block">Name</label>
                     <Input
-                      placeholder="Your name"
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                       required
@@ -84,7 +76,6 @@ const Contact = () => {
                     <label className="text-sm font-medium text-foreground mb-2 block">Email</label>
                     <Input
                       type="email"
-                      placeholder="your@email.com"
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                       required
@@ -94,7 +85,6 @@ const Contact = () => {
                 <div>
                   <label className="text-sm font-medium text-foreground mb-2 block">Subject</label>
                   <Input
-                    placeholder="How can we help?"
                     value={formData.subject}
                     onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
                     required
@@ -103,7 +93,6 @@ const Contact = () => {
                 <div>
                   <label className="text-sm font-medium text-foreground mb-2 block">Message</label>
                   <Textarea
-                    placeholder="Tell us more..."
                     rows={5}
                     value={formData.message}
                     onChange={(e) => setFormData({ ...formData, message: e.target.value })}
@@ -132,38 +121,33 @@ const Contact = () => {
                     </div>
                     <div>
                       <h3 className="font-semibold text-foreground">Email</h3>
-                      <p className="text-muted-foreground">hello@elmall.tn</p>
+                      <p className="text-muted-foreground">contact@elmall.tn</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-4">
                     <div className="w-12 h-12 rounded-xl bg-gradient-secondary flex items-center justify-center flex-shrink-0">
-                      <Phone className="w-6 h-6 text-secondary-foreground" />
+                      <Phone className="w-6 h-6 text-primary-foreground" />
                     </div>
                     <div>
                       <h3 className="font-semibold text-foreground">Phone</h3>
-                      <p className="text-muted-foreground">+216 71 XXX XXX</p>
+                      <p className="text-muted-foreground">+216 99 797 459</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 rounded-xl bg-muted flex items-center justify-center flex-shrink-0">
-                      <MapPin className="w-6 h-6 text-foreground" />
+                    {/* <div className="w-12 h-12 rounded-xl bg-muted flex items-center justify-center flex-shrink-0">
+                    </div> */}
+                    <div className="w-12 h-12 rounded-xl bg-gradient-secondary flex items-center justify-center flex-shrink-0">
+                    <MapPin className="w-6 h-6 text-primary-foreground" />
                     </div>
                     <div>
                       <h3 className="font-semibold text-foreground">Location</h3>
-                      <p className="text-muted-foreground">Tunis, Tunisia</p>
+                      <p className="text-muted-foreground">Tunis,Bizerte</p>
                     </div>
                   </div>
                 </div>
               </div>
 
-              <div className="glass rounded-3xl p-8">
-                <h2 className="font-display text-xl font-bold text-foreground mb-4">Business Hours</h2>
-                <div className="space-y-2 text-muted-foreground">
-                  <p>Monday - Friday: 9:00 AM - 6:00 PM</p>
-                  <p>Saturday: 9:00 AM - 1:00 PM</p>
-                  <p>Sunday: Closed</p>
-                </div>
-              </div>
+            
             </div>
           </div>
         </div>

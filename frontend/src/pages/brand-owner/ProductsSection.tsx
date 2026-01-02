@@ -1,11 +1,10 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useQueryClient } from "@tanstack/react-query";
 import { productsApi } from "@/lib/api";
 import type { Product } from "@/hooks/useProducts";
-import type { Category } from "@/hooks/useCategories";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,13 +17,6 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   Dialog,
   DialogContent,
@@ -50,7 +42,7 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
-import { Package, Plus, Edit, Trash2, Loader2, X } from "lucide-react";
+import { Package, Plus, Edit, Trash2, Loader2, X, Upload } from "lucide-react";
 import { toast } from "sonner";
 
 const productSchema = z.object({
@@ -61,9 +53,7 @@ const productSchema = z.object({
     const num = parseFloat(val);
     return !isNaN(num) && num >= 0;
   }, "Price must be a valid number"),
-  category_id: z.string().min(1, "Please select a category"),
-  images: z.array(z.string().url("Please enter a valid URL")).min(1, "At least one image is required"),
-  external_url: z.string().url("Please enter a valid URL").optional().or(z.literal("")),
+  images: z.array(z.string()).min(1, "At least one image is required"),
 });
 
 type ProductFormData = z.infer<typeof productSchema>;
@@ -71,16 +61,16 @@ type ProductFormData = z.infer<typeof productSchema>;
 interface ProductsSectionProps {
   products: Product[];
   brandId: string | null;
-  categories: Category[];
   onProductChange?: () => void;
 }
 
-export default function ProductsSection({ products, brandId, categories, onProductChange }: ProductsSectionProps) {
+export default function ProductsSection({ products, brandId, onProductChange }: ProductsSectionProps) {
   const queryClient = useQueryClient();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [deletingProduct, setDeletingProduct] = useState<Product | null>(null);
-  const [imageInputs, setImageInputs] = useState<string[]>([""]);
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const form = useForm<ProductFormData>({
     resolver: zodResolver(productSchema),
@@ -88,23 +78,48 @@ export default function ProductsSection({ products, brandId, categories, onProdu
       name: "",
       description: "",
       price: "",
-      category_id: "",
       images: [],
-      external_url: "",
     },
   });
+
+  const handleFileUpload = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        reject(new Error('Please upload an image file'));
+        return;
+      }
+      
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        reject(new Error('File size must be less than 5MB'));
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const result = e.target?.result as string;
+        resolve(result);
+      };
+      reader.onerror = () => {
+        reject(new Error('Failed to read file'));
+      };
+      reader.readAsDataURL(file);
+    });
+  };
 
   const resetForm = () => {
     form.reset({
       name: "",
       description: "",
       price: "",
-      category_id: "",
       images: [],
-      external_url: "",
     });
-    setImageInputs([""]);
+    setImagePreviews([]);
     setEditingProduct(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
   };
 
   const openCreateDialog = () => {
@@ -115,31 +130,46 @@ export default function ProductsSection({ products, brandId, categories, onProdu
   const openEditDialog = (product: Product) => {
     setEditingProduct(product);
     const imageUrls = product.images || [];
-    setImageInputs(imageUrls.length > 0 ? imageUrls : [""]);
+    setImagePreviews(imageUrls);
     form.reset({
       name: product.name,
       description: product.description || "",
       price: product.price?.toString() || "",
-      category_id: "", // Category is not part of product in backend
       images: imageUrls,
-      external_url: product.external_url || "",
     });
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
     setIsDialogOpen(true);
   };
 
-  const addImageInput = () => {
-    setImageInputs([...imageInputs, ""]);
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+
+    try {
+      const uploadPromises = files.map(file => handleFileUpload(file));
+      const dataUrls = await Promise.all(uploadPromises);
+      
+      const currentImages = form.getValues("images") || [];
+      const newImages = [...currentImages, ...dataUrls];
+      form.setValue("images", newImages);
+      setImagePreviews(newImages);
+      toast.success(`${files.length} image(s) uploaded successfully`);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Failed to upload images";
+      toast.error(errorMessage);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
   };
 
-  const removeImageInput = (index: number) => {
-    const newInputs = imageInputs.filter((_, i) => i !== index);
-    setImageInputs(newInputs.length > 0 ? newInputs : [""]);
-  };
-
-  const updateImageInput = (index: number, value: string) => {
-    const newInputs = [...imageInputs];
-    newInputs[index] = value;
-    setImageInputs(newInputs);
+  const handleRemoveImage = (index: number) => {
+    const currentImages = form.getValues("images") || [];
+    const newImages = currentImages.filter((_, i) => i !== index);
+    form.setValue("images", newImages);
+    setImagePreviews(newImages);
   };
 
   const onSubmit = async (data: ProductFormData) => {
@@ -148,22 +178,18 @@ export default function ProductsSection({ products, brandId, categories, onProdu
       return;
     }
 
-    const validImages = imageInputs.filter(url => url.trim() !== "");
-    if (validImages.length === 0) {
-      toast.error("At least one image is required");
+    // Validate that at least one image is provided
+    if (data.images.length === 0) {
+      toast.error("Please upload at least one image");
       return;
     }
-
-    // Update form with valid images before validation
-    form.setValue("images", validImages);
 
     try {
       const productData = {
         name: data.name,
         description: data.description || null,
         price: data.price ? parseFloat(data.price) : null,
-        images: validImages,
-        external_url: data.external_url || null,
+        images: data.images,
       };
 
       if (editingProduct) {
@@ -225,7 +251,10 @@ export default function ProductsSection({ products, brandId, categories, onProdu
             Manage your products ({products.length} total)
           </p>
         </div>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <Dialog open={isDialogOpen} onOpenChange={(open) => {
+          setIsDialogOpen(open);
+          if (!open) resetForm();
+        }}>
           <DialogTrigger asChild>
             <Button variant="hero" onClick={openCreateDialog}>
               <Plus className="h-4 w-4 mr-2" />
@@ -290,78 +319,65 @@ export default function ProductsSection({ products, brandId, categories, onProdu
                       </FormItem>
                     )}
                   />
-                  <FormField
-                    control={form.control}
-                    name="category_id"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Category *</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select category" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {categories.map((category) => (
-                              <SelectItem key={category.id} value={category.id}>
-                                {category.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
                 </div>
 
                 <div className="space-y-2">
                   <FormLabel>Product Images *</FormLabel>
-                  {imageInputs.map((url, index) => (
-                    <div key={index} className="flex gap-2">
+                  <div className="space-y-3">
+                    {imagePreviews.length > 0 && (
+                      <div className="grid grid-cols-3 gap-3">
+                        {imagePreviews.map((preview, index) => (
+                          <div key={index} className="relative group">
+                            <div className="h-24 w-full rounded-lg border border-border overflow-hidden bg-muted">
+                              <img 
+                                src={preview} 
+                                alt={`Product image ${index + 1}`} 
+                                className="h-full w-full object-cover"
+                              />
+                            </div>
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="destructive"
+                              className="absolute top-1 right-1 h-6 w-6 rounded-full p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                              onClick={() => handleRemoveImage(index)}
+                            >
+                              <X className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    <div className="flex items-center gap-2">
                       <Input
-                        placeholder="https://example.com/image.jpg"
-                        value={url}
-                        onChange={(e) => updateImageInput(index, e.target.value)}
+                        ref={fileInputRef}
+                        id="images"
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        onChange={handleFileChange}
+                        className="hidden"
                       />
-                      {imageInputs.length > 1 && (
                         <Button
                           type="button"
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => removeImageInput(index)}
+                        variant="outline"
+                        onClick={() => fileInputRef.current?.click()}
                         >
-                          <X className="h-4 w-4" />
+                        <Upload className="h-4 w-4 mr-2" />
+                        {imagePreviews.length > 0 ? "Add More Images" : "Upload Images"}
                         </Button>
-                      )}
                     </div>
-                  ))}
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={addImageInput}
-                    className="w-full"
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Another Image
-                  </Button>
+                    <p className="text-xs text-muted-foreground">
+                      Supported formats: JPG, PNG, GIF, WebP. Max size: 5MB per image. At least one image is required.
+                    </p>
+                  </div>
+                  {form.formState.errors.images && (
+                    <p className="text-sm font-medium text-destructive">
+                      {form.formState.errors.images.message}
+                    </p>
+                  )}
                 </div>
 
-                <FormField
-                  control={form.control}
-                  name="external_url"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>External URL</FormLabel>
-                      <FormControl>
-                        <Input placeholder="https://example.com/product" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
 
                 <div className="flex justify-end gap-4 pt-4">
                   <Button

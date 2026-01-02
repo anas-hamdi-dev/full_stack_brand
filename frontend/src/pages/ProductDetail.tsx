@@ -22,6 +22,12 @@ const ProductDetail = () => {
 
   const { data: product, isLoading } = useProduct(productId);
 
+  // Helper function to remove "'s Brand" suffix from brand name
+  const cleanBrandName = (name: string | undefined): string => {
+    if (!name) return "";
+    return name.replace(/'s\s+Brand$/i, "").trim();
+  };
+
   // Update current index when carousel changes
   useEffect(() => {
     if (!api) return;
@@ -173,12 +179,12 @@ const ProductDetail = () => {
                   {product.brand.logo_url && (
                     <img
                       src={product.brand.logo_url}
-                      alt={product.brand.name}
+                      alt={cleanBrandName(product.brand.name)}
                       className="w-9 h-9 md:w-10 md:h-10 rounded-lg object-cover"
                     />
                   )}
                   <span className="text-sm md:text-base text-muted-foreground group-hover:text-primary transition-colors font-medium">
-                    {product.brand.name}
+                    {cleanBrandName(product.brand.name)}
                   </span>
                 </Link>
               )}
@@ -227,17 +233,7 @@ const ProductDetail = () => {
                 )}
               </div>
 
-              {/* Additional Info */}
-              <div className="w-full mt-6 md:mt-8 pt-6 md:pt-8 border-t border-border/50">
-                <h3 className="font-semibold text-base md:text-lg text-foreground mb-2 text-center md:text-left">
-                  About this product
-                </h3>
-                <p className="text-sm md:text-base text-muted-foreground leading-relaxed text-center md:text-left">
-                  This product is sold by {product.brands?.name || "the brand"}.
-                  Click the button above to visit their official website and
-                  complete your purchase.
-                </p>
-              </div>
+              
             </div>
           </div>
         </div>

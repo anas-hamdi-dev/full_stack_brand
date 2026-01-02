@@ -20,7 +20,12 @@ router.post('/signin', async (req, res) => {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
-    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
+    // Generate JWT token with 7-day expiration
+    const token = jwt.sign(
+      { userId: user._id, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: '7d' }
+    );
     
     // Remove password from user object
     const userObj = user.toObject();
@@ -35,10 +40,22 @@ router.post('/signin', async (req, res) => {
 // POST /api/auth/signup
 router.post('/signup', async (req, res) => {
   try {
-    const { email, password, firstName, lastName, phone, role, brandData } = req.body;
+    const { email, password, full_name, phone, role } = req.body;
 
-    if (!email || !password || !firstName || !lastName || !role) {
-      return res.status(400).json({ error: 'Email, password, firstName, lastName, and role are required' });
+    // Debug logging in development
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Signup request body:', { email, password: password ? '***' : undefined, full_name, phone, role });
+    }
+
+    if (!email || !password || !role) {
+      return res.status(400).json({ 
+        error: 'Email, password, and role are required',
+        received: { 
+          email: !!email, 
+          password: !!password, 
+          role: !!role 
+        }
+      });
     }
 
     if (!['client', 'brand_owner'].includes(role)) {
@@ -51,37 +68,25 @@ router.post('/signup', async (req, res) => {
       return res.status(409).json({ error: 'User with this email already exists' });
     }
 
-    let brandId = null;
-    if (role === 'brand_owner') {
-      // Create brand for brand owner
-      const brand = await Brand.create({
-        name: brandData?.name || `${firstName} ${lastName}'s Brand`,
-        category_id: brandData?.category_id || null,
-        description: brandData?.description || '',
-        logo_url: brandData?.logo_url || null,
-        location: brandData?.location || null,
-        website: brandData?.website || null,
-        instagram: brandData?.instagram || null,
-        facebook: brandData?.facebook || null,
-        phone: brandData?.phone || phone || null,
-        email: brandData?.email || email,
-        is_featured: false
-      });
-      brandId = brand._id;
-    }
-
+    // Create user - brand will be created later for brand_owner via CompleteBrandDetailsModal
+    // Use email prefix as default full_name if not provided
+    const defaultFullName = full_name || email.split('@')[0].charAt(0).toUpperCase() + email.split('@')[0].slice(1);
+    
     const user = await User.create({
       email,
       password, // Will be hashed by pre-save hook
-      full_name: `${firstName} ${lastName}`,
-      first_name: firstName,
-      last_name: lastName,
-      phone,
+      full_name: defaultFullName,
+      phone: phone || undefined,
       role,
-      brand_id: brandId
+      status: role === 'brand_owner' ? 'pending' : undefined
     });
 
-    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
+    // Generate JWT token with 7-day expiration
+    const token = jwt.sign(
+      { userId: user._id, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: '7d' }
+    );
 
     res.status(201).json({ user, token });
   } catch (error) {

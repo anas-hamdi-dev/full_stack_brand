@@ -25,19 +25,12 @@ const productSchema = new mongoose.Schema({
     required: true,
     validate: {
       validator: function(v) {
-        return v.length > 0 && v.every(url => /^https?:\/\/.+/.test(url));
+        // Allow data URLs (base64) or HTTP/HTTPS URLs
+        return v.length > 0 && v.every(url => {
+          return /^https?:\/\/.+/.test(url) || /^data:image\/.+;base64,.+/.test(url);
+        });
       },
-      message: 'At least one valid image URL is required'
-    }
-  },
-  external_url: {
-    type: String,
-    trim: true,
-    validate: {
-      validator: function(v) {
-        return !v || /^https?:\/\/.+/.test(v);
-      },
-      message: 'External URL must be a valid URL'
+      message: 'At least one valid image URL (HTTP/HTTPS or data URL) is required'
     }
   }
 }, {

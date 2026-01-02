@@ -66,6 +66,13 @@ const Gallery = () => {
       <main className="pt-32 pb-20">
         <div className="container mx-auto px-4">
           {/* Search Bar */}
+          <div className="mb-12">
+            
+            <h1 className="font-display text-4xl md:text-5xl font-bold text-foreground mb-4">
+               <span className="text-gradient-primary">Gallery</span>
+            </h1>
+            
+          </div>
           <div className="mb-8">
             <div className="relative max-w-md mx-auto">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />

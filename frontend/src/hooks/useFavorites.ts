@@ -30,10 +30,67 @@ export interface FavoriteProduct {
 
 // Normalize product data from backend
 const normalizeProduct = (product: any): FavoriteProduct => {
+  if (!product) {
+    throw new Error('Product is null or undefined');
+  }
+
+  // Handle brand_id being populated as an object (from backend)
+  let brand = null;
+  let brandId: string | null = null;
+
+  if (product.brand_id) {
+    if (typeof product.brand_id === 'object' && product.brand_id !== null) {
+      // Brand is populated
+      brand = {
+        _id: product.brand_id._id?.toString() || product.brand_id.id?.toString() || product.brand_id.toString(),
+        id: product.brand_id._id?.toString() || product.brand_id.id?.toString() || product.brand_id.toString(),
+        name: product.brand_id.name || '',
+        logo_url: product.brand_id.logo_url || null,
+        website: product.brand_id.website || null,
+        description: product.brand_id.description || null,
+        category_id: product.brand_id.category_id?._id?.toString() || product.brand_id.category_id?.id?.toString() || product.brand_id.category_id || null,
+        category: product.brand_id.category_id && typeof product.brand_id.category_id === 'object'
+          ? {
+              _id: product.brand_id.category_id._id?.toString() || product.brand_id.category_id.id?.toString(),
+              name: product.brand_id.category_id.name || '',
+              icon: product.brand_id.category_id.icon || '',
+            }
+          : null,
+      };
+      brandId = brand._id;
+    } else {
+      // Brand is just an ID string
+      brandId = product.brand_id.toString();
+    }
+  }
+
+  // If brand is not set but product.brand exists, use that
+  if (!brand && product.brand) {
+    brand = {
+      _id: product.brand._id?.toString() || product.brand.id?.toString() || '',
+      id: product.brand._id?.toString() || product.brand.id?.toString() || '',
+      name: product.brand.name || '',
+      logo_url: product.brand.logo_url || null,
+      website: product.brand.website || null,
+      description: product.brand.description || null,
+      category_id: product.brand.category_id?.toString() || null,
+      category: product.brand.category || null,
+    };
+    brandId = brand._id;
+  }
+
   return {
     ...product,
-    id: product._id || product.id,
+    id: product._id?.toString() || product.id?.toString() || '',
+    _id: product._id?.toString() || product.id?.toString() || '',
     created_at: product.createdAt || product.created_at,
+    brand,
+    brand_id: brandId,
+    images: Array.isArray(product.images) ? product.images : [],
+    name: product.name || '',
+    description: product.description || null,
+    price: product.price || null,
+    external_url: product.external_url || null,
   };
 };
 
@@ -42,7 +99,7 @@ export function useFavorites() {
   const queryClient = useQueryClient();
 
   // Fetch favorites from backend
-  const { data: favorites = [], isLoading } = useQuery({
+  const { data: favorites = [], isLoading, error } = useQuery({
     queryKey: ["favorites", user?.id],
     queryFn: async () => {
       if (!isClient || !user) {
@@ -53,9 +110,21 @@ export function useFavorites() {
         throw new Error(response.error.message);
       }
       const products = (response.data?.data || response.data || []) as any[];
-      return products.map(normalizeProduct);
+      // Filter out null/undefined products and normalize
+      return products
+        .filter((product: any) => product !== null && product !== undefined)
+        .map((product: any) => {
+          try {
+            return normalizeProduct(product);
+          } catch (error) {
+            console.error('Error normalizing product:', error, product);
+            return null;
+          }
+        })
+        .filter((product: FavoriteProduct | null) => product !== null) as FavoriteProduct[];
     },
     enabled: isClient && !!user,
+    retry: 1,
   });
 
   // Add favorite mutation
@@ -141,6 +210,7 @@ export function useFavorites() {
   return {
     favorites,
     isLoading,
+    error,
     addFavorite,
     removeFavorite,
     toggleFavorite,

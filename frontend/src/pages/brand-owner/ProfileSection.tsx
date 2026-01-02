@@ -106,10 +106,8 @@ export default function ProfileSection({ brand, user }: ProfileSectionProps) {
 
       // Update user profile
       if (user?.id || user?._id) {
-        const userId = user.id || user._id;
-        const userResponse = await usersApi.update(userId, {
+        const userResponse = await usersApi.update({
           full_name: data.full_name,
-          email: data.email,
           phone: data.phone || null,
         });
 

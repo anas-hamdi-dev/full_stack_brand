@@ -6,11 +6,9 @@ interface User {
   id?: string; // For backward compatibility
   email: string;
   full_name: string;
-  first_name?: string;
-  last_name?: string;
   phone?: string | null;
-  role: "client" | "brand_owner";
-  avatar_url?: string | null;
+  role: "client" | "brand_owner" | "admin";
+  status?: "pending" | "approved" | "banned"; // Only for brand_owner
   brand_id?: string | null;
 }
 
@@ -20,12 +18,13 @@ interface AuthContextType {
   isLoading: boolean;
   isClient: boolean;
   isBrandOwner: boolean;
+  isAdmin: boolean;
+  isBrandOwnerApproved: boolean;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signUp: (data: {
     email: string;
     password: string;
-    firstName: string;
-    lastName: string;
+    full_name: string;
     phone?: string;
     role: "client" | "brand_owner";
     brandData?: {
@@ -108,8 +107,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signUp = async (data: {
     email: string;
     password: string;
-    firstName: string;
-    lastName: string;
+    full_name: string;
     phone?: string;
     role: "client" | "brand_owner";
     brandData?: {
@@ -126,8 +124,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const response = await authApi.signUp({
         email: data.email,
         password: data.password,
-        firstName: data.firstName,
-        lastName: data.lastName,
+        full_name: data.full_name,
         phone: data.phone,
         role: data.role,
         brandData: data.brandData,
@@ -176,6 +173,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const isClient = user?.role === "client";
   const isBrandOwner = user?.role === "brand_owner";
+  const isAdmin = user?.role === "admin";
+  const isBrandOwnerApproved = isBrandOwner && user?.status === "approved";
 
   return (
     <AuthContext.Provider
@@ -185,6 +184,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isLoading,
         isClient,
         isBrandOwner,
+        isAdmin,
+        isBrandOwnerApproved,
         signIn,
         signUp,
         signOut,

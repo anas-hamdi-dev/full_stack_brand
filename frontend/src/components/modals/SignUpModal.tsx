@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useAuthModal } from "@/contexts/AuthModalContext";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,9 +17,6 @@ import { Loader2, User, Store } from "lucide-react";
 import { z } from "zod";
 
 const signUpSchema = z.object({
-  firstName: z.string().min(1, "First name is required"),
-  lastName: z.string().min(1, "Last name is required"),
-  phone: z.string().optional(),
   email: z.string().email("Please enter a valid email"),
   password: z.string().min(8, "Password must be at least 8 characters"),
   role: z.enum(["client", "brand_owner"]),
@@ -34,9 +33,6 @@ interface SignUpModalProps {
 
 export default function SignUpModal({ open, onOpenChange, onSwitchToLogin }: SignUpModalProps) {
   const [formData, setFormData] = useState<SignUpFormData>({
-    firstName: "",
-    lastName: "",
-    phone: "",
     email: "",
     password: "",
     role: "client",
@@ -44,6 +40,8 @@ export default function SignUpModal({ open, onOpenChange, onSwitchToLogin }: Sig
   });
   const [isLoading, setIsLoading] = useState(false);
   const { signUp } = useAuth();
+  const { openCompleteBrandDetails } = useAuthModal();
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,32 +55,15 @@ export default function SignUpModal({ open, onOpenChange, onSwitchToLogin }: Sig
 
     setIsLoading(true);
     
-    // Format phone number: if provided, format as "+216 XX XXX XXX"
-    let formattedPhone: string | undefined = undefined;
-    if (formData.phone && formData.phone.trim()) {
-      // Remove any spaces and non-digit characters except +
-      const cleaned = formData.phone.replace(/\s/g, '').replace(/[^\d]/g, '');
-      if (cleaned.length >= 8 && cleaned.length <= 10) {
-        // Format: +216 XX XXX XXX (8 digits) or +216 XXX XXX XXX (9-10 digits)
-        if (cleaned.length === 8) {
-          formattedPhone = `+216 ${cleaned.slice(0, 2)} ${cleaned.slice(2, 5)} ${cleaned.slice(5, 8)}`;
-        } else {
-          // For 9-10 digits, use different format
-          formattedPhone = `+216 ${cleaned.slice(0, 2)} ${cleaned.slice(2, 5)} ${cleaned.slice(5)}`;
-        }
-      } else {
-        toast.error("Le numéro de téléphone doit contenir entre 8 et 10 chiffres");
-        setIsLoading(false);
-        return;
-      }
-    }
+    // Extract name from email for basic user creation (can be updated later)
+    const emailName = formData.email.split('@')[0];
+    const defaultFullName = emailName.charAt(0).toUpperCase() + emailName.slice(1);
     
-    const { error } = await signUp({
+    const { error, user: newUser } = await signUp({
       email: formData.email,
       password: formData.password,
-      firstName: formData.firstName,
-      lastName: formData.lastName,
-      phone: formattedPhone,
+      full_name: defaultFullName, // Use email prefix as default, can be updated later
+      phone: undefined,
       role: formData.role,
     });
     
@@ -92,14 +73,26 @@ export default function SignUpModal({ open, onOpenChange, onSwitchToLogin }: Sig
       return;
     }
 
-    toast.success("Compte créé avec succès!");
     setIsLoading(false);
-    onOpenChange(false);
+    
+    // Handle redirect based on role
+    if (formData.role === "brand_owner") {
+      // Close signup modal and open CompleteBrandDetailsModal
+      onOpenChange(false);
+      toast.success("Compte créé avec succès! Veuillez compléter les détails de votre marque.");
+      // Small delay to ensure modal transition is smooth
+      setTimeout(() => {
+        openCompleteBrandDetails();
+      }, 300);
+    } else {
+      // For clients, redirect to dashboard
+      onOpenChange(false);
+      toast.success("Compte créé avec succès!");
+      navigate("/client/dashboard");
+    }
+    
     // Reset form
     setFormData({
-      firstName: "",
-      lastName: "",
-      phone: "",
       email: "",
       password: "",
       role: "client",
@@ -123,32 +116,6 @@ export default function SignUpModal({ open, onOpenChange, onSwitchToLogin }: Sig
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Name Fields */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="lastName">Nom</Label>
-                <Input
-                  id="lastName"
-                  placeholder="Nom"
-                  value={formData.lastName}
-                  onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-                  required
-                  className="bg-background"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="firstName">Prénom</Label>
-                <Input
-                  id="firstName"
-                  placeholder="Prénom"
-                  value={formData.firstName}
-                  onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-                  required
-                  className="bg-background"
-                />
-              </div>
-            </div>
-
             {/* Role Selection */}
             <div className="space-y-3">
               <Label>Je suis un(e) :</Label>
@@ -195,25 +162,6 @@ export default function SignUpModal({ open, onOpenChange, onSwitchToLogin }: Sig
                     </div>
                   )}
                 </button>
-              </div>
-            </div>
-
-            {/* Phone Number */}
-            <div className="space-y-2">
-              <Label htmlFor="phone">Numéro de téléphone</Label>
-              <div className="flex gap-2">
-                <div className="flex items-center gap-2 px-3 py-2 border border-border rounded-lg bg-background">
-                  <span className="text-lg">🇹🇳</span>
-                  <span className="text-sm font-medium">+216</span>
-                </div>
-                <Input
-                  id="phone"
-                  type="tel"
-                  placeholder="XX XXX XXX"
-                  value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  className="bg-background flex-1"
-                />
               </div>
             </div>
 

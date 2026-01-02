@@ -22,19 +22,12 @@ const contactMessageSchema = new mongoose.Schema({
     type: String,
     required: true,
     trim: true
-  },
-  status: {
-    type: String,
-    required: true,
-    enum: ['new', 'read', 'replied'],
-    default: 'new'
   }
 }, {
   timestamps: true
 });
 
 // Indexes
-contactMessageSchema.index({ status: 1 });
 contactMessageSchema.index({ createdAt: -1 });
 
 module.exports = mongoose.model('ContactMessage', contactMessageSchema);

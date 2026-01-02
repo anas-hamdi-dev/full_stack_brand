@@ -28,12 +28,24 @@ Backend API for Brands App using MongoDB and Node.js.
      NODE_ENV=development
      PORT=5000
      ```
+   - **Note**: The server is configured to handle request bodies up to 50MB to support base64-encoded images
+   - **⚠️ IMPORTANT**: Change `JWT_SECRET` to a strong, random string in production!
 
 3. **Start MongoDB**
    - Make sure MongoDB is running on your system
    - Default connection: `mongodb://localhost:27017/brands_app`
 
-4. **Run the Server**
+4. **Create Admin User** (Required for admin panel access)
+   ```bash
+   # Create your first admin user
+   node scripts/seedAdmin.js admin@example.com YourSecurePassword "Admin Name"
+   
+   # Or use environment variables (see .env.example)
+   node scripts/seedAdmin.js
+   ```
+   See [Admin System Documentation](./README_ADMIN.md) for more details.
+
+5. **Run the Server**
    ```bash
    # Development mode (with nodemon)
    npm run dev
@@ -77,9 +89,6 @@ Backend API for Brands App using MongoDB and Node.js.
 - `POST /api/favorites` - Add to favorites (client only)
 - `DELETE /api/favorites/:productId` - Remove from favorites (client only)
 - `GET /api/favorites/check/:productId` - Check if product is favorited (client only)
-
-### Brand Submissions
-- `POST /api/brand-submissions` - Submit a new brand
 
 ### Contact Messages
 - `POST /api/contact-messages` - Submit a contact message

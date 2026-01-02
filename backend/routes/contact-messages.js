@@ -15,8 +15,7 @@ router.post('/', async (req, res) => {
       name,
       email,
       subject,
-      message,
-      status: 'new'
+      message
     });
 
     res.status(201).json({ data: contactMessage });

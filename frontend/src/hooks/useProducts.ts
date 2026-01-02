@@ -33,6 +33,7 @@ const normalizeProduct = (product: any): Product => {
     ...product,
     id: product._id || product.id,
     created_at: product.createdAt || product.created_at,
+    external_url: product.external_url || null,
     brand: product.brand_id ? {
       ...product.brand_id,
       id: product.brand_id._id || product.brand_id.id,
@@ -44,7 +45,6 @@ export const useProducts = (params?: {
   brand_id?: string;
   category_id?: string;
   search?: string;
-  page?: number;
   limit?: number;
 }) => {
   return useQuery({
@@ -57,7 +57,6 @@ export const useProducts = (params?: {
       const products = (response.data?.data || response.data || []) as any[];
       return {
         products: products.map(normalizeProduct),
-        pagination: response.data?.pagination,
       };
     },
   });

@@ -45,18 +45,6 @@ export interface Product {
   } | null;
 }
 
-export interface BrandSubmission {
-  id: string;
-  brand_name: string;
-  category: string;
-  description?: string | null;
-  contact_email: string;
-  contact_phone?: string | null;
-  website?: string | null;
-  instagram?: string | null;
-  status: string;
-  created_at: string;
-}
 
 export interface ContactMessage {
   id: string;
@@ -1979,30 +1967,6 @@ export const staticProducts: Product[] = [
   },
 ];  
 
-// Static Brand Submissions
-export const staticSubmissions: BrandSubmission[] = [
-  {
-    id: "1",
-    brand_name: "New Fashion Brand",
-    category: "Fashion",
-    description: "A new fashion brand looking to join the directory",
-    contact_email: "contact@newfashion.tn",
-    contact_phone: "+216 12 345 678",
-    website: "https://example.com",
-    instagram: "@newfashion",
-    status: "pending",
-    created_at: "2024-03-15T10:00:00Z",
-  },
-  {
-    id: "2",
-    brand_name: "Eco Fashion",
-    category: "Fashion",
-    description: "Sustainable fashion brand",
-    contact_email: "info@ecofashion.tn",
-    status: "approved",
-    created_at: "2024-03-10T10:00:00Z",
-  },
-];
 
 // Static Contact Messages
 export const staticMessages: ContactMessage[] = [

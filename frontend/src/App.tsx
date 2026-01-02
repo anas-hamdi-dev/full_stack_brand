@@ -15,11 +15,12 @@ import ProductDetail from "./pages/ProductDetail";
 import Gallery from "./pages/Gallery";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
-import Submit from "./pages/Submit";
 import Category from "./pages/Category";
 import NotFound from "./pages/NotFound";
 import ClientFavorites from "./pages/client/Favorites";
 import BrandOwnerDashboard from "./pages/brand-owner/BrandOwnerDashboard";
+import PendingApproval from "./pages/brand-owner/PendingApproval";
+import DeclinedAccount from "./pages/brand-owner/DeclinedAccount";
 
 const queryClient = new QueryClient();
 
@@ -41,7 +42,6 @@ const App = () => (
             <Route path="/gallery" element={<Gallery />} />
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />
-            <Route path="/submit" element={<Submit />} />
             <Route path="/category/:categoryName" element={<Category />} />
             
             {/* Client Routes */}
@@ -50,6 +50,8 @@ const App = () => (
             
             {/* Brand Owner Routes */}
             <Route path="/brand-owner/dashboard" element={<ProtectedRoute requireBrandOwner><BrandOwnerDashboard /></ProtectedRoute>} />
+            <Route path="/brand-owner/pending" element={<PendingApproval />} />
+            <Route path="/brand-owner/declined" element={<DeclinedAccount />} />
             
             <Route path="*" element={<NotFound />} />
             </Routes>

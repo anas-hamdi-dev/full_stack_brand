@@ -19,8 +19,8 @@ export default function AuthModals() {
     openCompleteBrandDetails,
   } = useAuthModal();
   const { user, isBrandOwner } = useAuth();
-  const brandId = user?.brand_id || user?.brand_id;
-  const { data: brand } = useBrand(brandId);
+  const brandId = user?.brand_id;
+  const { data: brand } = useBrand(brandId || undefined);
   
   // Track if user has dismissed the modal to prevent auto-reopening
   const hasDismissedRef = useRef(false);
@@ -28,12 +28,15 @@ export default function AuthModals() {
 
   // Check if brand details are incomplete
   const isBrandDetailsIncomplete = () => {
-    if (!user || !isBrandOwner || !brandId) return false;
+    if (!user || !isBrandOwner) return false;
+    
+    // If user doesn't have a brand_id yet, brand details are incomplete
+    if (!brandId) return true;
     
     // If brand is still loading, wait
     if (brand === undefined) return false;
     
-    // If brand doesn't exist yet (just created), it's incomplete
+    // If brand doesn't exist yet, it's incomplete
     if (!brand) return true;
     
     // Check if brand has minimal info (temporary name indicates incomplete)

@@ -15,8 +15,9 @@ const app = express();
 
 // Middleware
 app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// Increase body size limit to handle large base64-encoded images (50MB limit)
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 // Routes
 app.use('/api/auth', require('./routes/auth'));
@@ -25,8 +26,8 @@ app.use('/api/categories', require('./routes/categories'));
 app.use('/api/brands', require('./routes/brands'));
 app.use('/api/products', require('./routes/products'));
 app.use('/api/favorites', require('./routes/favorites'));
-app.use('/api/brand-submissions', require('./routes/brand-submissions'));
 app.use('/api/contact-messages', require('./routes/contact-messages'));
+app.use('/api/admin', require('./routes/admin'));
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

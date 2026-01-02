@@ -9,7 +9,14 @@ const categorySchema = new mongoose.Schema({
   icon: {
     type: String,
     required: true,
-    trim: true
+    trim: true,
+    validate: {
+      validator: function(v) {
+        // Icon can be a URL (for uploaded images) or icon name (for legacy support)
+        return !v || /^https?:\/\/.+/.test(v) || /^data:image\/.+;base64,.+/.test(v) || v.length > 0;
+      },
+      message: 'Icon must be a valid URL, data URL, or icon identifier'
+    }
   },
   description: {
     type: String,

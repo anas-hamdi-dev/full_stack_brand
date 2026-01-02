@@ -16,7 +16,11 @@ router.get('/', authenticate, isClient, async (req, res) => {
         }
       });
 
-    const products = favorites.map(fav => fav.product_id);
+    // Filter out null products (deleted products) and ensure product exists
+    const products = favorites
+      .map(fav => fav.product_id)
+      .filter(product => product !== null && product !== undefined);
+
     res.json({ data: products });
   } catch (error) {
     res.status(500).json({ error: error.message });

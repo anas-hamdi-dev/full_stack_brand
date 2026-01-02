@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -29,13 +30,27 @@ export default function LoginModal({ open, onOpenChange, onSwitchToSignUp }: Log
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { signIn, user } = useAuth();
+  const navigate = useNavigate();
 
-  // Close modal when user logs in
+  // Handle redirect after login based on user status
   useEffect(() => {
     if (user && open) {
       onOpenChange(false);
+      
+      // Redirect based on role and status
+      if (user.role === "brand_owner") {
+        if (user.status === "pending") {
+          navigate("/brand-owner/pending");
+        } else if (user.status === "banned") {
+          navigate("/brand-owner/declined");
+        } else if (user.status === "approved") {
+          navigate("/brand-owner/dashboard");
+        }
+      } else if (user.role === "client") {
+        navigate("/client/dashboard");
+      }
     }
-  }, [user, open, onOpenChange]);
+  }, [user, open, onOpenChange, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,7 +72,15 @@ export default function LoginModal({ open, onOpenChange, onSwitchToSignUp }: Log
     }
 
     setIsLoading(false);
-    toast.success("Connexion réussie");
+    
+    // The redirect will be handled by the useEffect hook when user state updates
+    if (user?.role === "brand_owner" && user.status === "pending") {
+      toast.info("Votre compte est en attente d'approbation");
+    } else if (user?.role === "brand_owner" && user.status === "banned") {
+      toast.error("Votre compte a été banni");
+    } else {
+      toast.success("Connexion réussie");
+    }
   };
 
   return (

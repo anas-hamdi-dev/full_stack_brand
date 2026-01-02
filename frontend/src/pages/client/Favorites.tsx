@@ -11,20 +11,55 @@ import { toast } from "sonner";
 
 export default function Favorites() {
   const { user } = useAuth();
-  const { favorites, isLoading, removeFavorite } = useFavorites();
+  const { favorites, isLoading, removeFavorite, error } = useFavorites();
 
   // Group favorites by brand
   const productsByBrand = favorites.reduce((acc, product) => {
-    const brandId = product.brand?._id || product.brand?.id || product.brand_id || "unknown";
+    // Brand should already be normalized by useFavorites hook
+    const brand = product.brand;
+    // Handle both _id and id properties for brand
+    const brandId = (brand as any)?._id || (brand as any)?.id || product.brand_id || "unknown";
+    
+    if (!brand && !product.brand_id) {
+      // Create a fallback entry for products without brand
+      const unknownId = "unknown";
+      if (!acc[unknownId]) {
+        acc[unknownId] = {
+          brand: {
+            _id: "unknown",
+            id: "unknown",
+            name: "Unknown Brand",
+            logo_url: null,
+            website: null,
+            description: null,
+          },
+          products: [],
+        };
+      }
+      acc[unknownId].products.push(product);
+      return acc;
+    }
+
     if (!acc[brandId]) {
       acc[brandId] = {
-        brand: product.brand,
+        brand: brand ? {
+          ...brand,
+          _id: (brand as any)._id || (brand as any).id || brandId,
+          id: (brand as any)._id || (brand as any).id || brandId,
+        } : {
+          _id: brandId,
+          id: brandId,
+          name: "Unknown Brand",
+          logo_url: null,
+          website: null,
+          description: null,
+        },
         products: [],
       };
     }
     acc[brandId].products.push(product);
     return acc;
-  }, {} as Record<string, { brand: any; products: typeof favorites }>);
+  }, {} as Record<string, { brand: { _id: string; id: string; name: string; logo_url?: string | null; website?: string | null; description?: string | null; [key: string]: unknown }; products: typeof favorites }>);
 
   const handleRemoveFavorite = (productId: string) => {
     removeFavorite(productId);
@@ -59,6 +94,21 @@ export default function Favorites() {
                 </Card>
               ))}
             </div>
+          ) : error ? (
+            <Card className="glass">
+              <CardContent className="py-16 text-center">
+                <Heart className="h-20 w-20 text-destructive mx-auto mb-6 opacity-50" />
+                <CardTitle className="text-2xl font-display font-bold text-foreground mb-2">
+                  Erreur lors du chargement
+                </CardTitle>
+                <CardDescription className="text-base mb-6">
+                  {error instanceof Error ? error.message : "Une erreur est survenue lors du chargement de vos favoris."}
+                </CardDescription>
+                <Button variant="hero" onClick={() => window.location.reload()}>
+                  Réessayer
+                </Button>
+              </CardContent>
+            </Card>
           ) : favorites.length > 0 ? (
             <div className="space-y-8">
               {Object.entries(productsByBrand).map(([brandId, { brand, products }]) => {
@@ -80,7 +130,7 @@ export default function Favorites() {
                               />
                             ) : (
                               <div className="text-background font-display font-bold text-sm">
-                                {brand.name.split(' ').map(word => word.charAt(0)).join('').toUpperCase().slice(0, 2)}
+                                {brand.name?.split(' ').map(word => word.charAt(0)).join('').toUpperCase().slice(0, 2) || 'BR'}
                               </div>
                             )}
                           </div>

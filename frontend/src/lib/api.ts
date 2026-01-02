@@ -131,8 +131,7 @@ export const authApi = {
   signUp: async (data: {
     email: string;
     password: string;
-    firstName: string;
-    lastName: string;
+    full_name: string;
     phone?: string;
     role: 'client' | 'brand_owner';
     brandData?: {
@@ -170,21 +169,24 @@ export const categoriesApi = {
 
 // Brands API
 export const brandsApi = {
-  getAll: (params?: { category_id?: string; featured?: boolean; search?: string; page?: number; limit?: number }) =>
-    apiClient.get<{ data: unknown[]; pagination?: unknown }>('/brands', params),
-  getFeatured: () => apiClient.get<unknown[]>('/brands/featured'),
-  getById: (id: string) => apiClient.get<unknown>(`/brands/${id}`),
-  getProducts: (brandId: string) => apiClient.get<unknown[]>(`/brands/${brandId}/products`),
-  update: (id: string, data: unknown) => apiClient.patch<unknown>(`/brands/${id}`, data),
+  getAll: (params?: { category_id?: string; featured?: boolean; search?: string; limit?: number }) =>
+    apiClient.get<{ data: unknown[] }>('/brands', params),
+  getFeatured: () => apiClient.get<{ data: unknown[] }>('/brands/featured'),
+  getById: (id: string) => apiClient.get<{ data: unknown }>(`/brands/${id}`),
+  getProducts: (brandId: string) => apiClient.get<{ data: unknown[] }>(`/brands/${brandId}/products`),
+  create: (data: unknown) => apiClient.post<{ data: unknown }>('/brands', data),
+  update: (id: string, data: unknown) => apiClient.patch<{ data: unknown }>(`/brands/${id}`, data),
 };
 
 // Products API
 export const productsApi = {
-  getAll: (params?: { brand_id?: string; category_id?: string; search?: string; page?: number; limit?: number }) =>
-    apiClient.get<{ data: unknown[]; pagination?: unknown }>('/products', params),
-  getById: (id: string) => apiClient.get<unknown>(`/products/${id}`),
-  create: (data: unknown) => apiClient.post<unknown>('/products', data),
-  update: (id: string, data: unknown) => apiClient.patch<unknown>(`/products/${id}`, data),
+  getAll: (params?: { brand_id?: string; category_id?: string; search?: string; limit?: number }) =>
+    apiClient.get<{ data: unknown[] }>('/products', params),
+  getById: (id: string) => apiClient.get<{ data: unknown }>(`/products/${id}`),
+  create: (data: { name: string; description?: string; price?: number; images: string[] }) => 
+    apiClient.post<{ data: unknown }>('/products', data),
+  update: (id: string, data: { name?: string; description?: string; price?: number; images?: string[] }) => 
+    apiClient.patch<{ data: unknown }>(`/products/${id}`, data),
   delete: (id: string) => apiClient.delete(`/products/${id}`),
 };
 
@@ -196,10 +198,6 @@ export const favoritesApi = {
   check: (productId: string) => apiClient.get<{ isFavorite: boolean }>(`/favorites/check/${productId}`),
 };
 
-// Brand Submissions API
-export const brandSubmissionsApi = {
-  create: (data: unknown) => apiClient.post<unknown>('/brand-submissions', data),
-};
 
 // Contact Messages API
 export const contactMessagesApi = {
@@ -208,6 +206,14 @@ export const contactMessagesApi = {
 
 // Users API
 export const usersApi = {
-  getById: (id: string) => apiClient.get<unknown>(`/users/${id}`),
-  update: (id: string, data: unknown) => apiClient.patch<unknown>(`/users/${id}`, data),
+  update: (data: { full_name?: string; phone?: string }) => 
+    apiClient.patch<{ user: unknown }>('/users/me', data),
+};
+
+// Admin API (Legacy - maintained for backward compatibility)
+export const adminApi = {
+  getBrandOwners: () => apiClient.get<{ data: unknown[] }>('/admin/brand-owners'),
+  approveBrandOwner: (id: string) => apiClient.patch<{ data: unknown; message: string }>(`/admin/brand-owners/${id}/approve`),
+  updateBrandOwnerStatus: (id: string, status: 'pending' | 'approved' | 'banned') => 
+    apiClient.patch<{ data: unknown; message: string }>(`/admin/brand-owners/${id}/status`, { status }),
 };

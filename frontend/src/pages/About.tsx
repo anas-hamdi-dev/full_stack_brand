@@ -89,13 +89,8 @@ const About = () => {
               authentic Tunisian style, we'd love to have you as part of our community.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Link to="/submit">
-                <button className="bg-gradient-primary text-primary-foreground px-8 py-3 rounded-xl font-semibold hover:shadow-lg hover:shadow-primary/25 transition-all">
-                  Submit Your Brand
-                </button>
-              </Link>
               <Link to="/contact">
-                <button className="glass px-8 py-3 rounded-xl font-semibold text-foreground hover:bg-muted transition-all">
+                <button className="bg-gradient-primary text-primary-foreground px-8 py-3 rounded-xl font-semibold hover:shadow-lg hover:shadow-primary/25 transition-all">
                   Contact Us
                 </button>
               </Link>

@@ -9,6 +9,40 @@ const isBrandOwner = async (req, res, next) => {
   next();
 };
 
+// Middleware to check if brand owner is approved
+const isBrandOwnerApproved = async (req, res, next) => {
+  if (req.user.role !== 'brand_owner') {
+    return res.status(403).json({ error: 'Access denied. Brand owner role required.' });
+  }
+  if (req.user.status === 'pending') {
+    return res.status(403).json({ 
+      error: 'Account awaiting admin approval',
+      status: 'pending',
+      message: 'Your account is pending admin approval. You will be notified once approved.'
+    });
+  }
+  if (req.user.status === 'banned') {
+    return res.status(403).json({ 
+      error: 'Account banned',
+      status: 'banned',
+      message: req.user.banReason || 'Your account has been banned. Please contact support for more information.',
+      bannedAt: req.user.bannedAt
+    });
+  }
+  if (req.user.status !== 'approved') {
+    return res.status(403).json({ error: 'Access denied. Account not approved.' });
+  }
+  next();
+};
+
+// Middleware to check if user is admin
+const isAdmin = async (req, res, next) => {
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({ error: 'Access denied. Admin role required.' });
+  }
+  next();
+};
+
 // Middleware to check brand ownership
 const checkBrandOwnership = async (req, res, next) => {
   try {
@@ -16,7 +50,12 @@ const checkBrandOwnership = async (req, res, next) => {
     if (!brand) {
       return res.status(404).json({ error: 'Brand not found' });
     }
-    if (req.user.brand_id.toString() !== brand._id.toString()) {
+    // Check ownership via ownerId (brands now use ownerId instead of user.brand_id)
+    if (req.user.brand_id && req.user.brand_id.toString() !== brand._id.toString()) {
+      return res.status(403).json({ error: 'Access denied. You do not own this brand.' });
+    }
+    // Also check via ownerId for consistency
+    if (brand.ownerId && brand.ownerId.toString() !== req.user._id.toString()) {
       return res.status(403).json({ error: 'Access denied. You do not own this brand.' });
     }
     next();
@@ -51,7 +90,9 @@ const isClient = async (req, res, next) => {
 
 module.exports = {
   isBrandOwner,
+  isBrandOwnerApproved,
   checkBrandOwnership,
   checkProductOwnership,
-  isClient
+  isClient,
+  isAdmin
 };

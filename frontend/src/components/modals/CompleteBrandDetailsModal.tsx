@@ -51,8 +51,8 @@ export default function CompleteBrandDetailsModal({
   const { user, refreshUser } = useAuth();
   const { data: categories, isLoading: categoriesLoading } = useCategories();
   const queryClient = useQueryClient();
-  const brandId = user?.brand_id || user?.brand_id;
-  const { data: existingBrand, isLoading: brandLoading } = useBrand(brandId);
+  const brandId = user?.brand_id;
+  const { data: existingBrand, isLoading: brandLoading } = useBrand(brandId || undefined);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState<BrandDetailsFormData>({
     name: "",
@@ -74,10 +74,9 @@ export default function CompleteBrandDetailsModal({
 
   // Load existing brand data or initialize with defaults
   useEffect(() => {
-    if (open && user && brandId) {
-      // Wait for brand data to load, but don't block if it's taking too long
-      if (existingBrand) {
-        // Brand exists - load its data
+    if (open && user) {
+      if (brandId && existingBrand) {
+        // Brand exists - load its data for editing
         const existingLogo = existingBrand.logo_url || null;
         setFormData({
           name: existingBrand.name || "",
@@ -95,8 +94,8 @@ export default function CompleteBrandDetailsModal({
         setLogoPreview(existingLogo);
         setIsInitialized(true);
       } else if (!brandLoading) {
-        // Brand doesn't exist yet or just created - initialize with user data and defaults
-        const defaultName = existingBrand?.name || `${user.first_name || ''} ${user.last_name || ''}'s Brand`.trim() || "Ma Marque";
+        // Brand doesn't exist yet - initialize with user data and defaults for creation
+        const defaultName = `${user.full_name || ''}'s Brand`.trim() || "Ma Marque";
         setFormData({
           name: defaultName,
           category_id: "",
@@ -203,8 +202,8 @@ export default function CompleteBrandDetailsModal({
       return;
     }
 
-    if (!brandId) {
-      toast.error("Aucune marque trouvée pour ce compte");
+    if (!user || user.role !== 'brand_owner') {
+      toast.error("Seuls les propriétaires de marque peuvent créer ou modifier une marque");
       return;
     }
 
@@ -242,8 +241,8 @@ export default function CompleteBrandDetailsModal({
         return `https://${trimmed}`;
       };
 
-      // Prepare update data
-      const updateData = {
+      // Prepare brand data
+      const brandData = {
         name: formData.name.trim(),
         category_id: formData.category_id || null,
         description: formData.description?.trim() || null,
@@ -256,22 +255,30 @@ export default function CompleteBrandDetailsModal({
         email: formData.email?.trim() || null,
       };
 
-      // Update brand with all data via backend API
-      const response = await brandsApi.update(brandId, updateData);
+      let response;
+      if (brandId && existingBrand) {
+        // Brand exists - update it
+        response = await brandsApi.update(brandId, brandData);
+      } else {
+        // Brand doesn't exist - create it
+        response = await brandsApi.create(brandData);
+      }
       
       if (response.error) {
         throw new Error(response.error.message);
       }
 
       // Invalidate queries to refresh data
+      if (brandId) {
       queryClient.invalidateQueries({ queryKey: ["brand", brandId] });
+      }
       queryClient.invalidateQueries({ queryKey: ["brands"] });
       queryClient.invalidateQueries({ queryKey: ["featured-brands"] });
       
       // Refresh user data to get updated brand info
       await refreshUser();
 
-      toast.success("Informations de la marque mises à jour avec succès!");
+      toast.success(brandId ? "Informations de la marque mises à jour avec succès!" : "Marque créée avec succès!");
       setIsLoading(false);
       setIsSubmitted(true);
       
@@ -281,7 +288,7 @@ export default function CompleteBrandDetailsModal({
         onComplete();
       }, 500);
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Échec de la mise à jour des détails de la marque";
+      const errorMessage = error instanceof Error ? error.message : (brandId ? "Échec de la mise à jour des détails de la marque" : "Échec de la création de la marque");
       toast.error(errorMessage);
       setIsLoading(false);
     }
@@ -311,7 +318,8 @@ export default function CompleteBrandDetailsModal({
     }
   };
 
-  const isLoadingData = brandLoading || categoriesLoading || !isInitialized;
+  // Only wait for brand loading if brandId exists (editing existing brand)
+  const isLoadingData = (brandId ? brandLoading : false) || categoriesLoading || !isInitialized;
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -502,11 +510,11 @@ export default function CompleteBrandDetailsModal({
 
             {/* Website */}
             <div className="space-y-2">
-              <Label htmlFor="brandWebsite">Site web</Label>
+              <Label htmlFor="brandWebsite">Site web (optionnel)</Label>
               <Input
                 id="brandWebsite"
-                type="url"
-                placeholder="https://www.example.com"
+                type="text"
+                placeholder="https://www.example.com (optionnel)"
                 value={formData.website}
                 onChange={(e) =>
                   setFormData({ ...formData, website: e.target.value })

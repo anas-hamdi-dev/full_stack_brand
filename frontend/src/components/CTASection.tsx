@@ -1,6 +1,5 @@
 import { Button } from "@/components/ui/button";
 import { Shirt } from "lucide-react";
-import BrandSubmissionDialog from "./BrandSubmissionDialog";
 
 const CTASection = () => {
   return (
@@ -28,7 +27,6 @@ const CTASection = () => {
             </p>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <BrandSubmissionDialog />
               <Button variant="glass" size="xl">
                 Learn More
               </Button>

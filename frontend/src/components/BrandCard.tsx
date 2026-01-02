@@ -11,13 +11,19 @@ interface BrandCardProps {
   website?: string;
 }
 
+// Helper function to remove "'s Brand" suffix from brand name
+const cleanBrandName = (name: string | undefined): string => {
+  if (!name) return "";
+  return name.replace(/'s\s+Brand$/i, "").trim();
+};
+
 const BrandCard = ({
   id,
   name,
-  description,
   logoUrl,
   featured = false,
 }: BrandCardProps) => {
+  const cleanedName = cleanBrandName(name);
   return (
     <Link
       to={`/brand/${id}`}
@@ -28,16 +34,16 @@ const BrandCard = ({
         
         {/* Avatar */}
         <div className="relative mb-4">
-          <div className="w-16 h-16 md:w-20 md:h-20 rounded-full overflow-hidden  flex items-center justify-center">
+          <div className="w-16 h-16 md:w-20 md:h-20 rounded-full overflow-hidden flex items-center justify-center">
             {logoUrl ? (
               <img
                 src={logoUrl}
-                alt={`${name} logo`}
+                alt={`${cleanedName} logo`}
                 className="w-full h-full object-cover"
               />
             ) : (
               <div className="text-background font-display font-bold text-sm md:text-base">
-                {name
+                {cleanedName
                   .split(" ")
                   .map(word => word.charAt(0))
                   .join("")
@@ -49,16 +55,9 @@ const BrandCard = ({
         </div>
 
         {/* Brand Name */}
-        <h3 className="font-display font-bold text-base md:text-lg text-foreground mb-1.5 group-hover:text-primary transition-colors line-clamp-1">
-          {name}
+        <h3 className="font-display font-bold text-base md:text-lg text-foreground group-hover:text-primary transition-colors line-clamp-1">
+          {cleanedName}
         </h3>
-
-        {/* Description */}
-        {description && (
-          <p className="text-xs md:text-sm text-muted-foreground line-clamp-2">
-            {description}
-          </p>
-        )}
       </div>
     </Link>
   );

@@ -2,7 +2,6 @@ import { Link } from "react-router-dom";
 import { Facebook, Instagram, Twitter, Linkedin, Mail } from "lucide-react";
 import { useState } from "react";
 import { toast } from "@/hooks/use-toast";
-import BrandSubmissionDialog from "./BrandSubmissionDialog";
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -33,8 +32,7 @@ const Footer = () => {
       { name: "Careers", href: "/contact" },
     ],
     resources: [
-      { name: "Submit Brand", href: "/submit" },
-      { name: "Brand Guidelines", href: "/submit" },
+      { name: "Brand Guidelines", href: "/about" },
       { name: "Partnerships", href: "/contact" },
       { name: "Help Center", href: "/contact" },
     ],
@@ -112,19 +110,9 @@ const Footer = () => {
             <ul className="space-y-3">
               {footerLinks.resources.map((link) => (
                 <li key={link.name}>
-                  {link.name === "Submit Brand" ? (
-                    <BrandSubmissionDialog 
-                      trigger={
-                        <button className="text-muted-foreground hover:text-foreground transition-colors text-sm">
-                          {link.name}
-                        </button>
-                      }
-                    />
-                  ) : (
-                    <Link to={link.href} className="text-muted-foreground hover:text-foreground transition-colors text-sm">
-                      {link.name}
-                    </Link>
-                  )}
+                  <Link to={link.href} className="text-muted-foreground hover:text-foreground transition-colors text-sm">
+                    {link.name}
+                  </Link>
                 </li>
               ))}
             </ul>

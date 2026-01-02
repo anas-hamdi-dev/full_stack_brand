@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useBrand, useBrandProducts } from "@/hooks/useBrands";
-import { useCategories } from "@/hooks/useCategories";
 import {
   Sidebar,
   SidebarContent,
@@ -33,7 +32,6 @@ export default function BrandOwnerDashboard() {
   const brandId = user?.brand_id || user?.brand_id;
   const { data: brand } = useBrand(brandId);
   const { data: brandProducts = [] } = useBrandProducts(brandId);
-  const { data: categories = [] } = useCategories();
 
   const handleSignOut = async () => {
     await signOut();
@@ -133,7 +131,6 @@ export default function BrandOwnerDashboard() {
                   key={refreshKey}
                   products={brandProducts} 
                   brandId={brandId || null}
-                  categories={categories}
                   onProductChange={() => setRefreshKey(prev => prev + 1)}
                 />
               )}
