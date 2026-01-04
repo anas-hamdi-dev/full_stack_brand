@@ -39,7 +39,7 @@ export default function AdminBrands() {
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingBrand, setEditingBrand] = useState<StaticBrand & { categories?: { id: string; name: string } | null; owner?: { id: string; full_name: string; email: string; status: string } | null } | null>(null);
+  const [editingBrand, setEditingBrand] = useState<StaticBrand & { categories?: { id: string; name: string } | null; owner?: { id: string; full_name: string; email: string } | null } | null>(null);
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -132,18 +132,6 @@ export default function AdminBrands() {
   });
 
 
-  const getStatusBadge = (status: "pending" | "approved" | "banned") => {
-    switch (status) {
-      case "pending":
-        return "bg-yellow-500/20 text-yellow-500";
-      case "approved":
-        return "bg-green-500/20 text-green-500";
-      case "banned":
-        return "bg-red-500/20 text-red-500";
-      default:
-        return "bg-muted text-muted-foreground";
-    }
-  };
 
   const resetForm = () => {
     setFormData({
@@ -168,7 +156,7 @@ export default function AdminBrands() {
     }
   };
 
-  const handleEdit = (brand: StaticBrand & { categories?: { id: string; name: string } | null; owner?: { id: string; full_name: string; email: string; status: string } | null }) => {
+  const handleEdit = (brand: StaticBrand & { categories?: { id: string; name: string } | null; owner?: { id: string; full_name: string; email: string } | null }) => {
     setEditingBrand(brand);
     setFormData({
       name: brand.name || "",
@@ -509,7 +497,6 @@ export default function AdminBrands() {
                       <div>
                         <p className="font-medium text-foreground">{(brand as any).owner.full_name}</p>
                         <p className="text-xs text-muted-foreground">{(brand as any).owner.email}</p>
-                        {getStatusBadge((brand as any).owner.status)}
                       </div>
                     ) : (
                       "-"

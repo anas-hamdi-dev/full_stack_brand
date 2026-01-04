@@ -3,7 +3,7 @@ import { statsService } from "@/services/apiService";
 import { adminDashboardApi } from "@/lib/api";
 import AdminLayout from "@/components/admin/AdminLayout";
 import StatsCard from "@/components/admin/StatsCard";
-import { Store, Package, FolderOpen, Mail, Users, Ban } from "lucide-react";
+import { Store, Package, FolderOpen, Mail } from "lucide-react";
 import { Link } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
 
@@ -55,24 +55,13 @@ export default function AdminDashboard() {
             value={stats?.messages || 0}
             icon={Mail}
           />
-          {stats?.pendingBrandOwners !== undefined && (
-            <StatsCard
-              title="Pending Brand Owners"
-              value={stats.pendingBrandOwners || 0}
-              icon={Users}
-              change={stats.pendingBrandOwners ? "Awaiting approval" : undefined}
-              changeType={stats.pendingBrandOwners ? "negative" : "neutral"}
-        />
-          )}
-          {stats?.bannedBrandOwners !== undefined && (
-        <StatsCard
-              title="Banned Brand Owners"
-              value={stats.bannedBrandOwners || 0}
-              icon={Ban}
-              change={stats.bannedBrandOwners ? "Banned" : undefined}
-              changeType={stats.bannedBrandOwners ? "negative" : "neutral"}
-        />
-          )}
+        {stats?.brandOwners !== undefined && (
+          <StatsCard
+            title="Brand Owners"
+            value={stats.brandOwners || 0}
+            icon={Store}
+          />
+        )}
       </div>
 
       {/* Recent Activity */}
