@@ -68,7 +68,7 @@ router.post('/signup', async (req, res) => {
       return res.status(409).json({ error: 'User with this email already exists' });
     }
 
-    // Create user - brand will be created later for brand_owner via CompleteBrandDetailsModal
+    // Create user - brand will be created later by brand_owner through their profile
     // Use email prefix as default full_name if not provided
     const defaultFullName = full_name || email.split('@')[0].charAt(0).toUpperCase() + email.split('@')[0].slice(1);
     
@@ -77,8 +77,7 @@ router.post('/signup', async (req, res) => {
       password, // Will be hashed by pre-save hook
       full_name: defaultFullName,
       phone: phone || undefined,
-      role,
-      status: role === 'brand_owner' ? 'pending' : undefined
+      role
     });
 
     // Generate JWT token with 7-day expiration

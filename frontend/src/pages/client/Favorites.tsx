@@ -1,6 +1,6 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { useFavorites } from "@/hooks/useFavorites";
-import Navbar from "@/components/Navbar";
+import PageLayout from "@/components/PageLayout";
 import Footer from "@/components/Footer";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -67,9 +67,8 @@ export default function Favorites() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navbar />
-      
-      <main className="pt-32 pb-16">
+      <PageLayout>
+      <main className="pb-16">
         <div className="container mx-auto px-4">
           {/* Header */}
           <div className="mb-8">
@@ -246,8 +245,8 @@ export default function Favorites() {
           )}
         </div>
       </main>
-
       <Footer />
+      </PageLayout>
     </div>
   );
 }

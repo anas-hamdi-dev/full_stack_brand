@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Helmet } from "react-helmet";
-import Navbar from "@/components/Navbar";
+import PageLayout from "@/components/PageLayout";
 import Footer from "@/components/Footer";
 import { useProduct } from "@/hooks/useProducts";
 import { ArrowLeft, ExternalLink } from "lucide-react";
@@ -47,8 +47,8 @@ const ProductDetail = () => {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background">
-        <Navbar />
-        <div className="pt-24 pb-16 md:pt-32 md:pb-20 container mx-auto px-4 max-w-7xl">
+        <PageLayout>
+        <div className="pb-16 md:pb-20 container mx-auto px-4 max-w-7xl">
           <div className="animate-pulse grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 items-start">
             <div className="w-full max-w-full md:max-w-[50%] mx-auto md:mx-0">
               <div className="aspect-square md:aspect-[4/5] bg-muted rounded-2xl md:rounded-3xl" />
@@ -64,6 +64,7 @@ const ProductDetail = () => {
           </div>
         </div>
         <Footer />
+        </PageLayout>
       </div>
     );
   }
@@ -71,8 +72,8 @@ const ProductDetail = () => {
   if (!product) {
     return (
       <div className="min-h-screen bg-background">
-        <Navbar />
-        <div className="pt-32 pb-20 container mx-auto px-4 text-center">
+        <PageLayout>
+        <div className="pb-20 container mx-auto px-4 text-center">
           <h1 className="text-3xl font-display font-bold text-foreground mb-4">
             Product Not Found
           </h1>
@@ -81,6 +82,7 @@ const ProductDetail = () => {
           </Link>
         </div>
         <Footer />
+        </PageLayout>
       </div>
     );
   }
@@ -102,9 +104,8 @@ const ProductDetail = () => {
         />
       </Helmet>
 
-      <Navbar />
-
-      <main className="pt-24 pb-16 md:pt-32 md:pb-20">
+      <PageLayout>
+      <main className="pb-16 md:pb-20">
         <div className="container mx-auto px-4 max-w-7xl">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 items-center">
             {/* Product Image Carousel - Centered, Max 50% width on desktop */}
@@ -237,9 +238,9 @@ const ProductDetail = () => {
             </div>
           </div>
         </div>
-      </main>
-
+        </main>
       <Footer />
+      </PageLayout>
     </div>
   );
 };

@@ -1,6 +1,6 @@
 import { useParams, Link } from "react-router-dom";
 import { Helmet } from "react-helmet";
-import Navbar from "@/components/Navbar";
+import PageLayout from "@/components/PageLayout";
 import Footer from "@/components/Footer";
 import { useBrand, useBrandProducts } from "@/hooks/useBrands";
 import { MapPin, Globe, Mail, Phone, Instagram, Facebook, ArrowLeft, CheckCircle2, Crown } from "lucide-react";
@@ -16,8 +16,8 @@ const BrandDetail = () => {
   if (brandLoading) {
     return (
       <div className="min-h-screen bg-background">
-        <Navbar />
-        <div className="pt-32 pb-20 container mx-auto px-4">
+        <PageLayout>
+        <div className="pb-20 container mx-auto px-4">
           <div className="animate-pulse space-y-8">
             <div className="h-64 bg-muted rounded-3xl" />
             <div className="h-8 bg-muted rounded w-1/3" />
@@ -25,6 +25,7 @@ const BrandDetail = () => {
           </div>
         </div>
         <Footer />
+        </PageLayout>
       </div>
     );
   }
@@ -32,14 +33,15 @@ const BrandDetail = () => {
   if (!brand) {
     return (
       <div className="min-h-screen bg-background">
-        <Navbar />
-        <div className="pt-32 pb-20 container mx-auto px-4 text-center">
+        <PageLayout>
+        <div className="pb-20 container mx-auto px-4 text-center">
           <h1 className="text-3xl font-display font-bold text-foreground mb-4">Brand Not Found</h1>
           <Link to="/brands">
             <Button variant="hero">Back to Brands</Button>
           </Link>
         </div>
         <Footer />
+        </PageLayout>
       </div>
     );
   }
@@ -51,9 +53,8 @@ const BrandDetail = () => {
         <meta name="description" content={brand.description || `Discover ${brand.name} on el mall`} />
       </Helmet>
       
-      <Navbar />
-      
-      <main className="pt-32 pb-20">
+      <PageLayout>
+      <main className="pb-20">
         <div className="container mx-auto px-4">
           {/* Back Button */}
           <Link to="/brands" className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground mb-8 transition-colors">
@@ -218,8 +219,8 @@ const BrandDetail = () => {
           </section>
         </div>
       </main>
-      
       <Footer />
+      </PageLayout>
     </div>
   );
 };

@@ -20,6 +20,7 @@ export interface Brand {
   phone?: string | null;
   email?: string | null;
   is_featured?: boolean | null;
+  status?: "pending" | "approved" | "rejected" | null;
   createdAt?: string;
   created_at?: string; // For backward compatibility
   updatedAt?: string;
@@ -96,5 +97,38 @@ export const useBrandProducts = (brandId: string | undefined) => {
       }));
     },
     enabled: !!brandId,
+  });
+};
+
+// Hook for brand owners to get their own brand
+export const useMyBrand = () => {
+  return useQuery({
+    queryKey: ["my-brand"],
+    queryFn: async () => {
+      const response = await brandsApi.getMyBrand();
+      if (response.error) {
+        throw new Error(response.error.message);
+      }
+      return normalizeBrand(response.data);
+    },
+  });
+};
+
+// Hook for brand owners to get their own products
+export const useMyProducts = () => {
+  return useQuery({
+    queryKey: ["my-products"],
+    queryFn: async () => {
+      const response = await brandsApi.getMyProducts();
+      if (response.error) {
+        throw new Error(response.error.message);
+      }
+      const products = (response.data?.data || response.data || []) as any[];
+      return products.map((p: any) => ({
+        ...p,
+        id: p._id || p.id,
+        created_at: p.createdAt || p.created_at,
+      }));
+    },
   });
 };

@@ -8,17 +8,9 @@ const { isBrandOwner, isBrandOwnerApproved, checkBrandOwnership } = require('../
 router.get('/', async (req, res) => {
   try {
     const { category_id, featured, search, limit } = req.query;
-    const User = require('../models/User');
     
-    // Get all approved brand owners
-    const approvedOwners = await User.find({ 
-      role: 'brand_owner', 
-      status: 'approved' 
-    }).select('_id');
-    const approvedOwnerIds = approvedOwners.map(o => o._id);
-    
-    // Build query - only show brands owned by approved users
-    const query = { ownerId: { $in: approvedOwnerIds } };
+    // Build query - only show approved brands
+    const query = { status: 'approved' };
 
     if (category_id) {
       query.category_id = category_id;
@@ -33,7 +25,7 @@ router.get('/', async (req, res) => {
     const limitNum = parseInt(limit) || 50; // MVP: simple limit, no pagination
 
     const brands = await Brand.find(query)
-      .populate('category_id', 'name icon')
+      .populate('category_id')
       .sort({ createdAt: -1 })
       .limit(limitNum);
 
@@ -46,18 +38,9 @@ router.get('/', async (req, res) => {
 // GET /api/brands/featured
 router.get('/featured', async (req, res) => {
   try {
-    const User = require('../models/User');
-    
-    // Get all approved brand owners
-    const approvedOwners = await User.find({ 
-      role: 'brand_owner', 
-      status: 'approved' 
-    }).select('_id');
-    const approvedOwnerIds = approvedOwners.map(o => o._id);
-    
     const brands = await Brand.find({ 
       is_featured: true,
-      ownerId: { $in: approvedOwnerIds } // Only show brands owned by approved users
+      status: 'approved' // Only show approved brands
     })
       .populate('category_id')
       .sort({ createdAt: -1 });
@@ -67,19 +50,59 @@ router.get('/featured', async (req, res) => {
   }
 });
 
+// GET /api/brands/me - Get brand owner's own brand (must be before /:id)
+router.get('/me', authenticate, isBrandOwner, async (req, res) => {
+  try {
+    const User = require('../models/User');
+    const user = await User.findById(req.userId);
+    
+    if (!user || !user.brand_id) {
+      return res.status(404).json({ error: 'Brand not found' });
+    }
+
+    const brand = await Brand.findById(user.brand_id)
+      .populate('category_id');
+    
+    if (!brand) {
+      return res.status(404).json({ error: 'Brand not found' });
+    }
+    
+    res.json({ data: brand });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// GET /api/brands/me/products - Get brand owner's own products (must be before /:brandId/products)
+router.get('/me/products', authenticate, isBrandOwner, async (req, res) => {
+  try {
+    const Product = require('../models/Product');
+    const User = require('../models/User');
+    const user = await User.findById(req.userId);
+    
+    if (!user || !user.brand_id) {
+      return res.json({ data: [] });
+    }
+    
+    const products = await Product.find({ brand_id: user.brand_id })
+      .sort({ createdAt: -1 });
+    res.json({ data: products });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // GET /api/brands/:id
 router.get('/:id', async (req, res) => {
   try {
-    const User = require('../models/User');
     const brand = await Brand.findById(req.params.id)
       .populate('category_id');
     if (!brand) {
       return res.status(404).json({ error: 'Brand not found' });
     }
     
-    // Only show brands owned by approved users publicly
-    const owner = await User.findById(brand.ownerId);
-    if (!owner || owner.role !== 'brand_owner' || owner.status !== 'approved') {
+    // Only show approved brands publicly
+    if (brand.status !== 'approved') {
       return res.status(404).json({ error: 'Brand not found' });
     }
     
@@ -93,16 +116,14 @@ router.get('/:id', async (req, res) => {
 router.get('/:brandId/products', async (req, res) => {
   try {
     const Product = require('../models/Product');
-    const User = require('../models/User');
     
-    // Check if brand exists and owner is approved (for public access)
+    // Check if brand exists and is approved (for public access)
     const brand = await Brand.findById(req.params.brandId);
     if (!brand) {
       return res.status(404).json({ error: 'Brand not found' });
     }
     
-    const owner = await User.findById(brand.ownerId);
-    if (!owner || owner.role !== 'brand_owner' || owner.status !== 'approved') {
+    if (brand.status !== 'approved') {
       return res.status(404).json({ error: 'Brand not found' });
     }
     
@@ -159,7 +180,8 @@ router.post('/', authenticate, isBrandOwner, async (req, res) => {
       facebook: facebook?.trim() || null,
       phone: phone?.trim() || null,
       email: email?.trim() || user.email || null,
-      is_featured: false
+      is_featured: false,
+      status: 'pending' // Default status for new brands
     });
 
     // Update user with brand_id
@@ -178,7 +200,7 @@ router.post('/', authenticate, isBrandOwner, async (req, res) => {
 });
 
 // PATCH /api/brands/:id
-router.patch('/:id', authenticate, isBrandOwnerApproved, checkBrandOwnership, async (req, res) => {
+router.patch('/:id', authenticate, isBrandOwner, checkBrandOwnership, async (req, res) => {
   try {
     const {
       name,
@@ -190,7 +212,8 @@ router.patch('/:id', authenticate, isBrandOwnerApproved, checkBrandOwnership, as
       instagram,
       facebook,
       phone,
-      email
+      email,
+      status
     } = req.body;
 
     const updateData = {};
@@ -204,6 +227,11 @@ router.patch('/:id', authenticate, isBrandOwnerApproved, checkBrandOwnership, as
     if (facebook !== undefined) updateData.facebook = facebook;
     if (phone !== undefined) updateData.phone = phone;
     if (email !== undefined) updateData.email = email;
+    // Brand owners can update status to 'pending' when submitting/updating details
+    // Admins will handle approval/rejection (out of scope for MVP)
+    if (status !== undefined && status === 'pending') {
+      updateData.status = status;
+    }
 
     const brand = await Brand.findByIdAndUpdate(
       req.params.id,

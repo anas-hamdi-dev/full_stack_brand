@@ -1,5 +1,5 @@
 import { useParams, Link } from "react-router-dom";
-import Navbar from "@/components/Navbar";
+import PageLayout from "@/components/PageLayout";
 import Footer from "@/components/Footer";
 import BrandCard from "@/components/BrandCard";
 import { useBrands } from "@/hooks/useBrands";
@@ -19,9 +19,8 @@ const Category = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navbar />
-      
-      <main className="pt-32 pb-16">
+      <PageLayout>
+      <main className="pb-16">
         <div className="container mx-auto px-4">
           {/* Header */}
           <div className="mb-12">
@@ -72,8 +71,8 @@ const Category = () => {
           </div>
         </div>
       </main>
-
       <Footer />
+      </PageLayout>
     </div>
   );
 };

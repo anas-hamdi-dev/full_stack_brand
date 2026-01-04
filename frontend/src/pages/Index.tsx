@@ -1,5 +1,5 @@
 import { Helmet } from "react-helmet";
-import Navbar from "@/components/Navbar";
+import PageLayout from "@/components/PageLayout";
 import HeroSection from "@/components/HeroSection";
 import CategoriesSection from "@/components/CategoriesSection";
 import FeaturedSection from "@/components/FeaturedSection";
@@ -20,7 +20,7 @@ const Index = () => {
       </Helmet>
 
       <div className="min-h-screen bg-background noise">
-        <Navbar />
+        <PageLayout>
         <main>
           <HeroSection />
           <CategoriesSection />
@@ -29,6 +29,7 @@ const Index = () => {
           <CTASection />
         </main>
         <Footer />
+        </PageLayout>
       </div>
     </>
   );

@@ -24,8 +24,7 @@ router.get('/dashboard/stats', async (req, res) => {
       products: await Product.countDocuments(),
       categories: await Category.countDocuments(),
       messages: await ContactMessage.countDocuments(),
-      pendingBrandOwners: await User.countDocuments({ role: 'brand_owner', status: 'pending' }),
-      bannedBrandOwners: await User.countDocuments({ role: 'brand_owner', status: 'banned' })
+      brandOwners: await User.countDocuments({ role: 'brand_owner' })
     };
     res.json({ data: stats });
   } catch (error) {
@@ -39,7 +38,7 @@ router.get('/dashboard/recent-brands', async (req, res) => {
     const limit = parseInt(req.query.limit) || 5;
     const brands = await Brand.find()
       .populate('category_id', 'name icon')
-      .populate('ownerId', 'full_name email status')
+      .populate('ownerId', 'full_name email')
       .sort({ createdAt: -1 })
       .limit(limit);
     res.json({ data: brands });
@@ -74,7 +73,7 @@ router.get('/brands', async (req, res) => {
     const [brands, total] = await Promise.all([
       Brand.find(query)
         .populate('category_id', 'name icon')
-        .populate('ownerId', 'full_name email status')
+        .populate('ownerId', 'full_name email')
         .sort(sortOptions)
         .limit(limitNum)
         .skip(skip),
@@ -100,7 +99,7 @@ router.get('/brands/:id', async (req, res) => {
   try {
     const brand = await Brand.findById(req.params.id)
       .populate('category_id', 'name icon')
-      .populate('ownerId', 'full_name email status');
+      .populate('ownerId', 'full_name email');
     
     if (!brand) {
       return res.status(404).json({ error: 'Brand not found' });
@@ -126,7 +125,7 @@ router.patch('/brands/:id', validateImages({ fields: ['logo_url'], maxSizeMB: 10
       { $set: updateData },
       { new: true, runValidators: true }
     ).populate('category_id', 'name icon')
-     .populate('ownerId', 'full_name email status');
+     .populate('ownerId', 'full_name email');
 
     if (!brand) {
       return res.status(404).json({ error: 'Brand not found' });
@@ -496,15 +495,11 @@ router.delete('/messages/:id', async (req, res) => {
 // GET /api/admin/users
 router.get('/users', async (req, res) => {
   try {
-    const { role, status, search, page, limit } = req.query;
+    const { role, search, page, limit } = req.query;
     const query = {};
 
     if (role && role !== 'all') {
       query.role = role;
-    }
-
-    if (status && status !== 'all') {
-      query.status = status;
     }
 
     if (search) {
@@ -686,12 +681,8 @@ router.patch('/profile/password', async (req, res) => {
 // GET /api/admin/brand-owners
 router.get('/brand-owners', async (req, res) => {
   try {
-    const { search, status, page, limit } = req.query;
+    const { search, page, limit } = req.query;
     const query = { role: 'brand_owner' };
-
-    if (status && status !== 'all') {
-      query.status = status;
-    }
 
     if (search) {
       query.$or = [
@@ -728,161 +719,8 @@ router.get('/brand-owners', async (req, res) => {
   }
 });
 
-// PATCH /api/admin/users/:id/approve
-router.patch('/users/:id/approve', async (req, res) => {
-  try {
-    const user = await User.findById(req.params.id);
-    if (!user || user.role !== 'brand_owner') {
-      return res.status(404).json({ error: 'Brand owner not found' });
-    }
-
-    // Validate status transition
-    if (user.status === 'approved') {
-      return res.status(400).json({ error: 'Brand owner is already approved' });
-    }
-
-    // Update user status and approvedAt (handled by pre-save hook)
-    user.status = 'approved';
-    await user.save();
-
-    await user.populate('brand_id', 'name logo_url category_id');
-    res.json({ 
-      data: user, 
-      message: 'Brand owner approved successfully' 
-    });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// PATCH /api/admin/users/:id/ban
-router.patch('/users/:id/ban', async (req, res) => {
-  try {
-    const { banReason } = req.body;
-    const user = await User.findById(req.params.id);
-    if (!user || user.role !== 'brand_owner') {
-      return res.status(404).json({ error: 'Brand owner not found' });
-    }
-
-    // Validate status transition
-    if (user.status === 'banned') {
-      return res.status(400).json({ error: 'Brand owner is already banned' });
-    }
-
-    // Update user status and bannedAt (handled by pre-save hook)
-    user.status = 'banned';
-    user.banReason = banReason || null;
-    await user.save();
-
-    await user.populate('brand_id', 'name logo_url category_id');
-    res.json({ 
-      data: user, 
-      message: 'Brand owner banned successfully' 
-    });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// PATCH /api/admin/users/:id/unban
-router.patch('/users/:id/unban', async (req, res) => {
-  try {
-    const user = await User.findById(req.params.id);
-    if (!user || user.role !== 'brand_owner') {
-      return res.status(404).json({ error: 'Brand owner not found' });
-    }
-
-    // Validate status transition
-    if (user.status !== 'banned') {
-      return res.status(400).json({ error: 'Brand owner is not banned' });
-    }
-
-    // Update user status (handled by pre-save hook)
-    user.status = 'approved';
-    user.banReason = null;
-    await user.save();
-
-    await user.populate('brand_id', 'name logo_url category_id');
-    res.json({ 
-      data: user, 
-      message: 'Brand owner unbanned successfully' 
-    });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// PATCH /api/admin/users/:id/set-pending
-router.patch('/users/:id/set-pending', async (req, res) => {
-  try {
-    const user = await User.findById(req.params.id);
-    if (!user || user.role !== 'brand_owner') {
-      return res.status(404).json({ error: 'Brand owner not found' });
-    }
-
-    // Update user status to pending
-    user.status = 'pending';
-    user.approvedAt = null;
-    user.bannedAt = null;
-    user.banReason = null;
-    await user.save();
-
-    await user.populate('brand_id', 'name logo_url category_id');
-    res.json({ 
-      data: user, 
-      message: 'Brand owner status set to pending successfully' 
-    });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// PATCH /api/admin/brand-owners/:id/approve (Legacy - maintained for backward compatibility)
-router.patch('/brand-owners/:id/approve', async (req, res) => {
-  try {
-    const user = await User.findById(req.params.id);
-    if (!user || user.role !== 'brand_owner') {
-      return res.status(404).json({ error: 'Brand owner not found' });
-    }
-    if (user.status === 'approved') {
-      return res.status(400).json({ error: 'Brand owner is already approved' });
-    }
-    user.status = 'approved';
-    await user.save();
-    await user.populate('brand_id', 'name logo_url category_id');
-    res.json({ data: user, message: 'Brand owner approved successfully' });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// PATCH /api/admin/brand-owners/:id/status (Legacy - maintained for backward compatibility)
-router.patch('/brand-owners/:id/status', async (req, res) => {
-  try {
-    const { status } = req.body;
-    if (!['pending', 'approved', 'banned'].includes(status)) {
-      return res.status(400).json({ error: 'Invalid status. Must be pending, approved, or banned' });
-    }
-    const user = await User.findById(req.params.id);
-    if (!user || user.role !== 'brand_owner') {
-      return res.status(404).json({ error: 'Brand owner not found' });
-    }
-    const now = new Date();
-    if (status === 'approved') {
-      user.approvedAt = now;
-      user.bannedAt = null;
-      user.banReason = null;
-    } else if (status === 'banned') {
-      user.bannedAt = now;
-      user.approvedAt = null;
-    }
-    user.status = status;
-    await user.save();
-    await user.populate('brand_id', 'name logo_url category_id');
-    res.json({ data: user, message: `Brand owner status updated to ${status}` });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
+// Note: Status-based approval/ban endpoints removed.
+// Brand owners are now managed through their brand data only.
+// To disable a brand owner, delete or modify their brand.
 
 module.exports = router;

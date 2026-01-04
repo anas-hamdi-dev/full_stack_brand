@@ -173,7 +173,9 @@ export const brandsApi = {
     apiClient.get<{ data: unknown[] }>('/brands', params),
   getFeatured: () => apiClient.get<{ data: unknown[] }>('/brands/featured'),
   getById: (id: string) => apiClient.get<{ data: unknown }>(`/brands/${id}`),
+  getMyBrand: () => apiClient.get<{ data: unknown }>('/brands/me'),
   getProducts: (brandId: string) => apiClient.get<{ data: unknown[] }>(`/brands/${brandId}/products`),
+  getMyProducts: () => apiClient.get<{ data: unknown[] }>('/brands/me/products'),
   create: (data: unknown) => apiClient.post<{ data: unknown }>('/brands', data),
   update: (id: string, data: unknown) => apiClient.patch<{ data: unknown }>(`/brands/${id}`, data),
 };
@@ -210,10 +212,7 @@ export const usersApi = {
     apiClient.patch<{ user: unknown }>('/users/me', data),
 };
 
-// Admin API (Legacy - maintained for backward compatibility)
+// Admin API (Note: Status-based endpoints removed. Brand owners are managed through brand data.)
 export const adminApi = {
   getBrandOwners: () => apiClient.get<{ data: unknown[] }>('/admin/brand-owners'),
-  approveBrandOwner: (id: string) => apiClient.patch<{ data: unknown; message: string }>(`/admin/brand-owners/${id}/approve`),
-  updateBrandOwnerStatus: (id: string, status: 'pending' | 'approved' | 'banned') => 
-    apiClient.patch<{ data: unknown; message: string }>(`/admin/brand-owners/${id}/status`, { status }),
 };

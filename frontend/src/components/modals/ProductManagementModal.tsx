@@ -11,15 +11,25 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Loader2, Upload, X } from "lucide-react";
-import { Product } from "@/data/staticData";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious, type CarouselApi } from "@/components/ui/carousel";
 import { toast } from "sonner";
+
+interface ProductData {
+  name: string;
+  description?: string | null;
+  price?: number | null;
+  images: string[];
+  external_url?: string | null;
+  brand_id?: string | null;
+  id?: string;
+  created_at?: string;
+}
 
 interface ProductManagementModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSubmit: (productData: Omit<Product, "id" | "created_at" | "brands">) => void;
-  editingProduct?: Product | null;
+  onSubmit: (productData: Omit<ProductData, "id" | "created_at" | "brand_id">) => void;
+  editingProduct?: ProductData | null;
   isLoading?: boolean;
 }
 

@@ -9,28 +9,18 @@ const isBrandOwner = async (req, res, next) => {
   next();
 };
 
-// Middleware to check if brand owner is approved
+// Middleware to check if brand owner is approved (now just checks role, no status)
+// Brand owners are managed through their brand data, not user status
 const isBrandOwnerApproved = async (req, res, next) => {
   if (req.user.role !== 'brand_owner') {
     return res.status(403).json({ error: 'Access denied. Brand owner role required.' });
   }
-  if (req.user.status === 'pending') {
+  // Check if brand owner has a brand (brand_id must be set)
+  if (!req.user.brand_id) {
     return res.status(403).json({ 
-      error: 'Account awaiting admin approval',
-      status: 'pending',
-      message: 'Your account is pending admin approval. You will be notified once approved.'
+      error: 'Brand not created',
+      message: 'Please complete your brand details to access the dashboard.'
     });
-  }
-  if (req.user.status === 'banned') {
-    return res.status(403).json({ 
-      error: 'Account banned',
-      status: 'banned',
-      message: req.user.banReason || 'Your account has been banned. Please contact support for more information.',
-      bannedAt: req.user.bannedAt
-    });
-  }
-  if (req.user.status !== 'approved') {
-    return res.status(403).json({ error: 'Access denied. Account not approved.' });
   }
   next();
 };

@@ -23,11 +23,12 @@ const brandSchema = new mongoose.Schema({
   },
   logo_url: {
     type: String,
+    required: [true, 'Logo URL is required'],
     trim: true,
     validate: {
       validator: function(v) {
         // Allow data URLs (base64) or HTTP/HTTPS URLs
-        return !v || /^https?:\/\/.+/.test(v) || /^data:image\/.+;base64,.+/.test(v);
+        return /^https?:\/\/.+/.test(v) || /^data:image\/.+;base64,.+/.test(v);
       },
       message: 'Logo URL must be a valid HTTP/HTTPS URL or data URL'
     }
@@ -79,6 +80,11 @@ const brandSchema = new mongoose.Schema({
   is_featured: {
     type: Boolean,
     default: false
+  },
+  status: {
+    type: String,
+    enum: ['pending', 'approved', 'rejected'],
+    default: 'pending'
   }
 }, {
   timestamps: true

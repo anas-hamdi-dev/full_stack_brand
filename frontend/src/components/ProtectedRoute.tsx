@@ -4,8 +4,6 @@ import { useAuthModal } from "@/contexts/AuthModalContext";
 import { Loader2 } from "lucide-react";
 import { useEffect } from "react";
 import { toast } from "sonner";
-import PendingApproval from "@/pages/brand-owner/PendingApproval";
-import DeclinedAccount from "@/pages/brand-owner/DeclinedAccount";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -66,25 +64,8 @@ export default function ProtectedRoute({
     );
   }
 
-  // Check brand owner status for brand owner routes
-  if (requireBrandOwner && isBrandOwner && user) {
-    if (user.status === "pending") {
-      return <PendingApproval />;
-    }
-    if (user.status === "banned") {
-      return <DeclinedAccount />;
-    }
-    if (user.status !== "approved") {
-      return (
-        <div className="min-h-screen flex items-center justify-center bg-background">
-          <div className="text-center glass rounded-3xl p-8 max-w-md">
-            <h1 className="text-2xl font-display font-bold text-foreground mb-2">Accès refusé</h1>
-            <p className="text-muted-foreground">Votre compte doit être approuvé pour accéder à cette zone.</p>
-          </div>
-        </div>
-      );
-    }
-  }
+  // Note: CompleteBrandDetails page blocks access if user already has a brand
+  // This check is handled in the CompleteBrandDetails component itself
 
   return <>{children}</>;
 }

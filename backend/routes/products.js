@@ -9,39 +9,31 @@ const { isBrandOwner, isBrandOwnerApproved, checkProductOwnership } = require('.
 router.get('/', async (req, res) => {
   try {
     const { brand_id, category_id, search, limit } = req.query;
-    const User = require('../models/User');
     
-    // Get all approved brand owners
-    const approvedOwners = await User.find({ 
-      role: 'brand_owner', 
-      status: 'approved' 
-    }).select('_id');
-    const approvedOwnerIds = approvedOwners.map(o => o._id);
-    
-    // Get brands owned by approved users
+    // Get approved brands
     let approvedBrandIds = [];
     if (brand_id) {
-      // Check if the specified brand is owned by an approved user
+      // Check if the specified brand is approved
       const brand = await Brand.findById(brand_id);
-      if (brand && approvedOwnerIds.some(id => id.toString() === brand.ownerId.toString())) {
+      if (brand && brand.status === 'approved') {
         approvedBrandIds = [brand_id];
       } else {
-        // Brand not found or owner not approved, return empty result
+        // Brand not found or not approved, return empty result
         return res.json({ data: [] });
       }
     } else if (category_id) {
-      // Only include brands in this category owned by approved users
+      // Only include approved brands in this category
       const brands = await Brand.find({ 
         category_id, 
-        ownerId: { $in: approvedOwnerIds } 
-      });
+        status: 'approved' 
+      }).select('_id');
       approvedBrandIds = brands.map(b => b._id);
       if (approvedBrandIds.length === 0) {
         return res.json({ data: [] });
       }
     } else {
-      // If no brand or category filter, get all brands owned by approved users
-      const brands = await Brand.find({ ownerId: { $in: approvedOwnerIds } }).select('_id');
+      // If no brand or category filter, get all approved brands
+      const brands = await Brand.find({ status: 'approved' }).select('_id');
       approvedBrandIds = brands.map(b => b._id);
       if (approvedBrandIds.length === 0) {
         return res.json({ data: [] });
@@ -77,7 +69,6 @@ router.get('/', async (req, res) => {
 // GET /api/products/:id
 router.get('/:id', async (req, res) => {
   try {
-    const User = require('../models/User');
     const product = await Product.findById(req.params.id)
       .populate({
         path: 'brand_id',
@@ -87,15 +78,11 @@ router.get('/:id', async (req, res) => {
       return res.status(404).json({ error: 'Product not found' });
     }
     
-    // Only show products from brands owned by approved users publicly
+    // Only show products from approved brands publicly
     const brandId = product.brand_id?._id || product.brand_id;
     if (brandId) {
       const brand = await Brand.findById(brandId);
-      if (!brand) {
-        return res.status(404).json({ error: 'Product not found' });
-      }
-      const owner = await User.findById(brand.ownerId);
-      if (!owner || owner.role !== 'brand_owner' || owner.status !== 'approved') {
+      if (!brand || brand.status !== 'approved') {
         return res.status(404).json({ error: 'Product not found' });
       }
     }

@@ -37,17 +37,12 @@ export default function LoginModal({ open, onOpenChange, onSwitchToSignUp }: Log
     if (user && open) {
       onOpenChange(false);
       
-      // Redirect based on role and status
-      if (user.role === "brand_owner") {
-        if (user.status === "pending") {
-          navigate("/brand-owner/pending");
-        } else if (user.status === "banned") {
-          navigate("/brand-owner/declined");
-        } else if (user.status === "approved") {
-          navigate("/brand-owner/dashboard");
-        }
-      } else if (user.role === "client") {
+      // Redirect based on role
+      if (user.role === "client") {
         navigate("/client/dashboard");
+      } else {
+        // For other roles, stay on current page or go to home
+        navigate("/");
       }
     }
   }, [user, open, onOpenChange, navigate]);
@@ -74,13 +69,7 @@ export default function LoginModal({ open, onOpenChange, onSwitchToSignUp }: Log
     setIsLoading(false);
     
     // The redirect will be handled by the useEffect hook when user state updates
-    if (user?.role === "brand_owner" && user.status === "pending") {
-      toast.info("Votre compte est en attente d'approbation");
-    } else if (user?.role === "brand_owner" && user.status === "banned") {
-      toast.error("Votre compte a été banni");
-    } else {
-      toast.success("Connexion réussie");
-    }
+    toast.success("Connexion réussie");
   };
 
   return (

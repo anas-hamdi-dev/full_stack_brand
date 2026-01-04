@@ -19,6 +19,8 @@ import { z } from "zod";
 const signUpSchema = z.object({
   email: z.string().email("Please enter a valid email"),
   password: z.string().min(8, "Password must be at least 8 characters"),
+  full_name: z.string().min(2, "Name must be at least 2 characters"),
+  phone: z.string().optional(),
   role: z.enum(["client", "brand_owner"]),
   acceptTerms: z.boolean().refine(val => val === true, "You must accept the terms and conditions"),
 });
@@ -35,12 +37,13 @@ export default function SignUpModal({ open, onOpenChange, onSwitchToLogin }: Sig
   const [formData, setFormData] = useState<SignUpFormData>({
     email: "",
     password: "",
+    full_name: "",
+    phone: "",
     role: "client",
     acceptTerms: false,
   });
   const [isLoading, setIsLoading] = useState(false);
   const { signUp } = useAuth();
-  const { openCompleteBrandDetails } = useAuthModal();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -55,15 +58,11 @@ export default function SignUpModal({ open, onOpenChange, onSwitchToLogin }: Sig
 
     setIsLoading(true);
     
-    // Extract name from email for basic user creation (can be updated later)
-    const emailName = formData.email.split('@')[0];
-    const defaultFullName = emailName.charAt(0).toUpperCase() + emailName.slice(1);
-    
     const { error, user: newUser } = await signUp({
       email: formData.email,
       password: formData.password,
-      full_name: defaultFullName, // Use email prefix as default, can be updated later
-      phone: undefined,
+      full_name: formData.full_name,
+      phone: formData.phone || undefined,
       role: formData.role,
     });
     
@@ -75,18 +74,16 @@ export default function SignUpModal({ open, onOpenChange, onSwitchToLogin }: Sig
 
     setIsLoading(false);
     
-    // Handle redirect based on role
+    // Close signup modal
+    onOpenChange(false);
+    
+    // Handle post-signup flow based on role
     if (formData.role === "brand_owner") {
-      // Close signup modal and open CompleteBrandDetailsModal
-      onOpenChange(false);
-      toast.success("Compte créé avec succès! Veuillez compléter les détails de votre marque.");
-      // Small delay to ensure modal transition is smooth
-      setTimeout(() => {
-        openCompleteBrandDetails();
-      }, 300);
+      toast.success("Compte créé avec succès! Vous pouvez maintenant créer votre marque depuis votre profil.");
+      // Brand owners can create their brand later from their profile
+      navigate("/");
     } else {
       // For clients, redirect to dashboard
-      onOpenChange(false);
       toast.success("Compte créé avec succès!");
       navigate("/client/dashboard");
     }
@@ -95,6 +92,8 @@ export default function SignUpModal({ open, onOpenChange, onSwitchToLogin }: Sig
     setFormData({
       email: "",
       password: "",
+      full_name: "",
+      phone: "",
       role: "client",
       acceptTerms: false,
     });
@@ -105,7 +104,7 @@ export default function SignUpModal({ open, onOpenChange, onSwitchToLogin }: Sig
       <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-3xl font-display font-bold text-foreground text-center">
-            Crée un nouveau compte
+            Créer un nouveau compte
           </DialogTitle>
         </DialogHeader>
 
@@ -165,6 +164,20 @@ export default function SignUpModal({ open, onOpenChange, onSwitchToLogin }: Sig
               </div>
             </div>
 
+            {/* Full Name */}
+            <div className="space-y-2">
+              <Label htmlFor="full_name">Nom complet</Label>
+              <Input
+                id="full_name"
+                type="text"
+                placeholder="Votre nom complet"
+                value={formData.full_name}
+                onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
+                required
+                className="bg-background"
+              />
+            </div>
+
             {/* Email */}
             <div className="space-y-2">
               <Label htmlFor="email">Adresse email</Label>
@@ -179,9 +192,22 @@ export default function SignUpModal({ open, onOpenChange, onSwitchToLogin }: Sig
               />
             </div>
 
+            {/* Phone */}
+            <div className="space-y-2">
+              <Label htmlFor="phone">Téléphone (optionnel)</Label>
+              <Input
+                id="phone"
+                type="tel"
+                placeholder="+216 12 345 678"
+                value={formData.phone}
+                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                className="bg-background"
+              />
+            </div>
+
             {/* Password */}
             <div className="space-y-2">
-              <Label htmlFor="password">Mot de passe requis (minimum 8 caractères)</Label>
+              <Label htmlFor="password">Mot de passe (minimum 8 caractères)</Label>
               <Input
                 id="password"
                 type="password"
@@ -210,7 +236,7 @@ export default function SignUpModal({ open, onOpenChange, onSwitchToLogin }: Sig
             </div>
 
             {/* Submit Button */}
-            <Button type="submit" className="w-full bg-muted text-foreground hover:bg-muted/80 h-12" disabled={isLoading}>
+            <Button type="submit" className="w-full bg-primary text-primary-foreground hover:bg-primary/90 h-12" disabled={isLoading}>
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -243,3 +269,4 @@ export default function SignUpModal({ open, onOpenChange, onSwitchToLogin }: Sig
     </Dialog>
   );
 }
+

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, X, User, LogOut, Store, Heart } from "lucide-react";
+import { Menu, X, User, LogOut, Store, Heart, Package } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   DropdownMenu,
@@ -52,7 +52,7 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 px-4 py-4">
+    <nav className="w-full px-4 py-4">
       <div className="container mx-auto">
         <div className="glass rounded-2xl px-6 py-4 flex items-center justify-between">
           {/* Logo */}
@@ -100,10 +100,16 @@ const Navbar = () => {
                   <DropdownMenuLabel>Mon compte</DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   {isBrandOwner && (
-                    <DropdownMenuItem onClick={() => navigate("/brand-owner/dashboard")}>
-                      <Store className="h-4 w-4 mr-2" />
-                      Tableau de bord
-                    </DropdownMenuItem>
+                    <>
+                      <DropdownMenuItem onClick={() => navigate("/brand-owner/profile")}>
+                        <Store className="h-4 w-4 mr-2" />
+                        Mon profil
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => navigate("/brand-owner/products")}>
+                        <Package className="h-4 w-4 mr-2" />
+                        Mes produits
+                      </DropdownMenuItem>
+                    </>
                   )}
                   {isClient && (
                     <DropdownMenuItem onClick={() => navigate("/client/favorites")}>
@@ -179,17 +185,30 @@ const Navbar = () => {
                 {user ? (
                   <>
                     {isBrandOwner && (
-                      <Button 
-                        variant="ghost" 
-                        className="w-full justify-center"
-                        onClick={() => {
-                          setIsOpen(false);
-                          navigate("/brand-owner/dashboard");
-                        }}
-                      >
-                        <Store className="h-4 w-4 mr-2" />
-                        Tableau de bord
-                      </Button>
+                      <>
+                        <Button 
+                          variant="ghost" 
+                          className="w-full justify-center"
+                          onClick={() => {
+                            setIsOpen(false);
+                            navigate("/brand-owner/profile");
+                          }}
+                        >
+                          <Store className="h-4 w-4 mr-2" />
+                          Mon profil
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          className="w-full justify-center"
+                          onClick={() => {
+                            setIsOpen(false);
+                            navigate("/brand-owner/products");
+                          }}
+                        >
+                          <Package className="h-4 w-4 mr-2" />
+                          Mes produits
+                        </Button>
+                      </>
                     )}
                     {isClient && (
                       <Button 

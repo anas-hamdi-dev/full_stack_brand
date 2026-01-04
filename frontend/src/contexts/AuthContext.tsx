@@ -8,7 +8,6 @@ interface User {
   full_name: string;
   phone?: string | null;
   role: "client" | "brand_owner" | "admin";
-  status?: "pending" | "approved" | "banned"; // Only for brand_owner
   brand_id?: string | null;
 }
 
@@ -174,7 +173,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const isClient = user?.role === "client";
   const isBrandOwner = user?.role === "brand_owner";
   const isAdmin = user?.role === "admin";
-  const isBrandOwnerApproved = isBrandOwner && user?.status === "approved";
+  // Brand owners are approved if they have a brand_id (brand created)
+  const isBrandOwnerApproved = isBrandOwner && !!user?.brand_id;
 
   return (
     <AuthContext.Provider

@@ -18,9 +18,10 @@ import Contact from "./pages/Contact";
 import Category from "./pages/Category";
 import NotFound from "./pages/NotFound";
 import ClientFavorites from "./pages/client/Favorites";
-import BrandOwnerDashboard from "./pages/brand-owner/BrandOwnerDashboard";
-import PendingApproval from "./pages/brand-owner/PendingApproval";
-import DeclinedAccount from "./pages/brand-owner/DeclinedAccount";
+import CompleteBrandDetails from "./pages/brand-owner/CompleteBrandDetails";
+import BrandProfile from "./pages/brand-owner/BrandProfile";
+import ProductsManagement from "./pages/brand-owner/ProductsManagement";
+import { BRAND_DETAILS_ROUTE } from "./components/BrandOwnerWarningBanner";
 
 const queryClient = new QueryClient();
 
@@ -49,9 +50,9 @@ const App = () => (
             <Route path="/client/favorites" element={<ProtectedRoute requireClient><ClientFavorites /></ProtectedRoute>} />
             
             {/* Brand Owner Routes */}
-            <Route path="/brand-owner/dashboard" element={<ProtectedRoute requireBrandOwner><BrandOwnerDashboard /></ProtectedRoute>} />
-            <Route path="/brand-owner/pending" element={<PendingApproval />} />
-            <Route path="/brand-owner/declined" element={<DeclinedAccount />} />
+            <Route path={BRAND_DETAILS_ROUTE} element={<ProtectedRoute requireBrandOwner><CompleteBrandDetails /></ProtectedRoute>} />
+            <Route path="/brand-owner/profile" element={<ProtectedRoute requireBrandOwner><BrandProfile /></ProtectedRoute>} />
+            <Route path="/brand-owner/products" element={<ProtectedRoute requireBrandOwner><ProductsManagement /></ProtectedRoute>} />
             
             <Route path="*" element={<NotFound />} />
             </Routes>
