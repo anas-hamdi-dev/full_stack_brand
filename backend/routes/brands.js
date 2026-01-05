@@ -216,6 +216,18 @@ router.patch('/:id', authenticate, isBrandOwner, checkBrandOwnership, async (req
       status
     } = req.body;
 
+    // Brand owners cannot change status - only admins can do that
+    // Status is preserved from existing brand
+    if (status !== undefined) {
+      return res.status(403).json({ error: 'You do not have permission to change brand status' });
+    }
+
+    // Get existing brand to preserve status
+    const existingBrand = await Brand.findById(req.params.id);
+    if (!existingBrand) {
+      return res.status(404).json({ error: 'Brand not found' });
+    }
+
     const updateData = {};
     if (name !== undefined) updateData.name = name;
     if (category_id !== undefined) updateData.category_id = category_id;
@@ -227,11 +239,7 @@ router.patch('/:id', authenticate, isBrandOwner, checkBrandOwnership, async (req
     if (facebook !== undefined) updateData.facebook = facebook;
     if (phone !== undefined) updateData.phone = phone;
     if (email !== undefined) updateData.email = email;
-    // Brand owners can update status to 'pending' when submitting/updating details
-    // Admins will handle approval/rejection (out of scope for MVP)
-    if (status !== undefined && status === 'pending') {
-      updateData.status = status;
-    }
+    // Status is preserved - brand owners cannot change it
 
     const brand = await Brand.findByIdAndUpdate(
       req.params.id,

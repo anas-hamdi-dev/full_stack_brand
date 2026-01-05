@@ -40,7 +40,7 @@ const TOTAL_STEPS = 5;
 
 export default function CompleteBrandDetails() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   // Ensure brandId is always a string - handle both string and object (MongoDB ObjectId) cases
   const getBrandId = (): string | null => {
     if (!user?.brand_id) return null;
@@ -134,25 +134,27 @@ export default function CompleteBrandDetails() {
 
   const createOrUpdateBrand = useMutation({
     mutationFn: async (data: BrandFormData) => {
-      const brandData = {
-        ...data,
-        status: "pending" as const,
-      };
-
       // If brand exists, update it; otherwise create new one
       if (brandId && existingBrand) {
         // Ensure brandId is a valid string before making the API call
         if (typeof brandId !== 'string') {
           throw new Error("Erreur: ID de marque invalide. Veuillez vous reconnecter.");
         }
-        // Update existing brand
+        // Update existing brand - preserve existing status, don't send status field
+        const brandData = {
+          ...data,
+        };
         const response = await brandsApi.update(brandId, brandData);
         if (response.error) {
           throw new Error(response.error.message || "Échec de la mise à jour de la marque");
         }
         return response.data;
       } else {
-        // Create new brand
+        // Create new brand - set status to pending for new brands
+        const brandData = {
+          ...data,
+          status: "pending" as const,
+        };
         const response = await brandsApi.create(brandData);
         if (response.error) {
           throw new Error(response.error.message || "Échec de la création de la marque");
@@ -163,15 +165,14 @@ export default function CompleteBrandDetails() {
     onSuccess: async () => {
       // Invalidate queries to reflect updated state
       queryClient.invalidateQueries({ queryKey: ["brand", brandId] });
+      queryClient.invalidateQueries({ queryKey: ["my-brand"] });
       queryClient.invalidateQueries({ queryKey: ["brands"] });
       queryClient.invalidateQueries({ queryKey: ["featured-brands"] });
       
       // Refresh user data to get updated brand_id if brand was just created
+      // This will update the AuthContext and cause BrandOwnerWarningBanner in PageLayout to hide
       try {
-        const userResponse = await authApi.getCurrentUser();
-        if (userResponse.data?.user) {
-          // User data refreshed, queries will refetch automatically
-        }
+        await refreshUser();
       } catch (error) {
         console.error("Error refreshing user:", error);
       }

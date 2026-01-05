@@ -21,7 +21,6 @@ import { Store, Upload, X, MapPin, Save, Loader2 } from "lucide-react";
 import PageLayout from "@/components/PageLayout";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import BrandApprovalBanner from "@/components/BrandApprovalBanner";
 
 interface BrandFormData {
   category_id: string;
@@ -152,10 +151,9 @@ export default function BrandDetails() {
         throw new Error("La catégorie est requise");
       }
       
-      // Prepare update payload - set status to pending when updating
+      // Prepare update payload - don't change status, preserve existing status
       const updateData = {
         ...data,
-        status: "pending" as const, // Brand owners can set status to pending when updating
       };
 
       try {
@@ -275,17 +273,13 @@ export default function BrandDetails() {
     );
   }
 
-  // Check if brand is approved (defense in depth - should be handled by ProtectedRoute)
-  const isApproved = brand?.status === "approved";
-  const isFormDisabled = !isApproved;
+  // Brand owners can always edit their brand details - no approval required
+  const isFormDisabled = false;
 
   return (
     <PageLayout>
       <div className="container mx-auto px-4 py-12 max-w-4xl">
         <div className="glass rounded-3xl p-8 md:p-12">
-          {/* Approval Status Banner */}
-          {!isApproved && <BrandApprovalBanner />}
-          
           <div className="mb-8">
             <div className="flex items-center justify-between mb-4">
               <div>
@@ -315,13 +309,6 @@ export default function BrandDetails() {
                 </Badge>
               )}
             </div>
-            {brand.status === "pending" && (
-              <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-4 mt-4">
-                <p className="text-sm text-foreground">
-                  <strong>Votre marque est en cours d'examen.</strong> Les modifications seront soumises pour révision.
-                </p>
-              </div>
-            )}
           </div>
 
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
