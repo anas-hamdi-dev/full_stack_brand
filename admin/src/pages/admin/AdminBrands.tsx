@@ -30,7 +30,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Pencil, Search, Store, ExternalLink, Upload, X } from "lucide-react";
+import { Pencil, Search, Store, ExternalLink, Upload, X, CheckCircle2, XCircle } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 
@@ -38,6 +38,7 @@ export default function AdminBrands() {
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingBrand, setEditingBrand] = useState<StaticBrand & { categories?: { id: string; name: string } | null; owner?: { id: string; full_name: string; email: string } | null } | null>(null);
   const [logoFile, setLogoFile] = useState<File | null>(null);
@@ -56,12 +57,17 @@ export default function AdminBrands() {
     email: "",
     logo_url: "",
     is_featured: false,
+    status: "pending" as "pending" | "approved" | "rejected",
   });
 
   const { data: brands, isLoading } = useQuery({
-    queryKey: ["admin-brands", search, categoryFilter],
+    queryKey: ["admin-brands", search, categoryFilter, statusFilter],
     queryFn: async () => {
       const brandsData = await brandsService.getAll(search, categoryFilter !== "all" ? categoryFilter : undefined);
+      // Filter by status on the frontend since backend doesn't support status filter yet
+      if (statusFilter !== "all") {
+        return brandsData.filter((brand: any) => brand.status === statusFilter);
+      }
       return brandsData;
     },
   });
@@ -102,7 +108,7 @@ export default function AdminBrands() {
 
 
   const updateMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: typeof formData }) => {
+    mutationFn: async ({ id, data }: { id: string; data: typeof formData & { status?: string } }) => {
       // Don't allow changing ownerId - admin can only edit brand details, not ownership
       return await brandsService.update(id, {
         name: data.name,
@@ -116,6 +122,7 @@ export default function AdminBrands() {
         email: data.email || null,
         logo_url: data.logo_url || null,
         is_featured: data.is_featured,
+        status: data.status,
       });
     },
     onSuccess: () => {
@@ -130,6 +137,30 @@ export default function AdminBrands() {
       toast.error(error.message || "Failed to update brand");
     },
   });
+
+  // Mutation for status updates (approve/reject)
+  const statusUpdateMutation = useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: "approved" | "rejected" }) => {
+      return await brandsService.update(id, { status });
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["admin-brands"] });
+      queryClient.invalidateQueries({ queryKey: ["recent-brands"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-stats"] });
+      toast.success(`Brand ${variables.status === "approved" ? "approved" : "rejected"} successfully`);
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || "Failed to update brand status");
+    },
+  });
+
+  const handleApprove = (brandId: string) => {
+    statusUpdateMutation.mutate({ id: brandId, status: "approved" });
+  };
+
+  const handleReject = (brandId: string) => {
+    statusUpdateMutation.mutate({ id: brandId, status: "rejected" });
+  };
 
 
 
@@ -147,6 +178,7 @@ export default function AdminBrands() {
       email: "",
       logo_url: "",
       is_featured: false,
+      status: "pending" as "pending" | "approved" | "rejected",
     });
     setEditingBrand(null);
     setLogoFile(null);
@@ -156,7 +188,7 @@ export default function AdminBrands() {
     }
   };
 
-  const handleEdit = (brand: StaticBrand & { categories?: { id: string; name: string } | null; owner?: { id: string; full_name: string; email: string } | null }) => {
+  const handleEdit = (brand: StaticBrand & { categories?: { id: string; name: string } | null; owner?: { id: string; full_name: string; email: string } | null; status?: "pending" | "approved" | "rejected" }) => {
     setEditingBrand(brand);
     setFormData({
       name: brand.name || "",
@@ -171,6 +203,7 @@ export default function AdminBrands() {
       email: brand.email || "",
       logo_url: brand.logo_url || "",
       is_featured: brand.is_featured || false,
+      status: (brand.status as "pending" | "approved" | "rejected") || "pending",
     });
     setLogoFile(null);
     setLogoPreview(brand.logo_url || null);
@@ -247,6 +280,17 @@ export default function AdminBrands() {
               {categories?.map((cat) => (
                 <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
               ))}
+            </SelectContent>
+          </Select>
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="w-40">
+              <SelectValue placeholder="Filter by status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Status</SelectItem>
+              <SelectItem value="pending">Pending</SelectItem>
+              <SelectItem value="approved">Approved</SelectItem>
+              <SelectItem value="rejected">Rejected</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -416,16 +460,34 @@ export default function AdminBrands() {
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={formData.is_featured}
-                    onChange={(e) => setFormData({ ...formData, is_featured: e.target.checked })}
-                    className="rounded border-border"
-                  />
-                  <span className="text-sm">Featured</span>
-                </label>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={formData.is_featured}
+                      onChange={(e) => setFormData({ ...formData, is_featured: e.target.checked })}
+                      className="rounded border-border"
+                    />
+                    <span className="text-sm">Featured</span>
+                  </label>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="status">Status</Label>
+                  <Select
+                    value={formData.status}
+                    onValueChange={(value) => setFormData({ ...formData, status: value as "pending" | "approved" | "rejected" })}
+                  >
+                    <SelectTrigger id="status">
+                      <SelectValue placeholder="Select status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="pending">Pending</SelectItem>
+                      <SelectItem value="approved">Approved</SelectItem>
+                      <SelectItem value="rejected">Rejected</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
 
               <div className="flex justify-end gap-2 pt-4">
@@ -449,6 +511,7 @@ export default function AdminBrands() {
               <TableHead>Brand</TableHead>
               <TableHead>Owner</TableHead>
               <TableHead>Category</TableHead>
+              <TableHead>Status</TableHead>
               <TableHead>Location</TableHead>
               <TableHead>Featured</TableHead>
               <TableHead>Created</TableHead>
@@ -458,13 +521,13 @@ export default function AdminBrands() {
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center py-8">
+                <TableCell colSpan={8} className="text-center py-8">
                   Loading...
                 </TableCell>
               </TableRow>
             ) : brands?.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
                   No brands found
                 </TableCell>
               </TableRow>
@@ -503,6 +566,32 @@ export default function AdminBrands() {
                     )}
                   </TableCell>
                   <TableCell>{brand.categories?.name || "-"}</TableCell>
+                  <TableCell>
+                    {brand.status && (
+                      <Badge
+                        variant={
+                          brand.status === "approved"
+                            ? "default"
+                            : brand.status === "pending"
+                            ? "secondary"
+                            : "destructive"
+                        }
+                        className={
+                          brand.status === "approved"
+                            ? "bg-green-500/10 text-green-600 border-green-500/20"
+                            : brand.status === "pending"
+                            ? "bg-yellow-500/10 text-yellow-600 border-yellow-500/20"
+                            : "bg-red-500/10 text-red-600 border-red-500/20"
+                        }
+                      >
+                        {brand.status === "approved"
+                          ? "Approved"
+                          : brand.status === "pending"
+                          ? "Pending"
+                          : "Rejected"}
+                      </Badge>
+                    )}
+                  </TableCell>
                   <TableCell>{brand.location || "-"}</TableCell>
                   <TableCell>
                       {brand.is_featured && (
@@ -516,6 +605,28 @@ export default function AdminBrands() {
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
+                      {brand.status === "pending" && (
+                        <>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="text-green-600 hover:text-green-700 hover:bg-green-50"
+                            onClick={() => handleApprove(brand.id)}
+                            disabled={statusUpdateMutation.isPending}
+                          >
+                            <CheckCircle2 className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                            onClick={() => handleReject(brand.id)}
+                            disabled={statusUpdateMutation.isPending}
+                          >
+                            <XCircle className="h-4 w-4" />
+                          </Button>
+                        </>
+                      )}
                       <Button size="sm" variant="ghost" onClick={() => handleEdit(brand)}>
                         <Pencil className="h-4 w-4" />
                       </Button>

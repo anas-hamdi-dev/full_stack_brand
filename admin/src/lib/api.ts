@@ -330,57 +330,6 @@ export const adminBrandSubmissionsApi = {
   },
 };
 
-// Admin Users API (for brand owner management)
-export const adminUsersApi = {
-  getAll: async (params?: { role?: string; status?: string; search?: string; page?: number; limit?: number }) => {
-    const queryParams = new URLSearchParams();
-    if (params?.role && params.role !== 'all') queryParams.append('role', params.role);
-    if (params?.status && params.status !== 'all') queryParams.append('status', params.status);
-    if (params?.search) queryParams.append('search', params.search);
-    if (params?.page) queryParams.append('page', params.page.toString());
-    if (params?.limit) queryParams.append('limit', params.limit.toString());
-    
-    const queryString = queryParams.toString();
-    const endpoint = `/admin/users${queryString ? `?${queryString}` : ''}`;
-    const response = await apiFetch<{ data: any[]; pagination?: any }>(endpoint);
-    return response;
-  },
-
-  getById: async (id: string) => {
-    const response = await apiFetch<{ data: any }>(`/admin/users/${id}`);
-    return response.data;
-  },
-
-  approve: async (id: string) => {
-    const response = await apiFetch<{ data: any; brand?: any; message: string }>(`/admin/users/${id}/approve`, {
-      method: 'PATCH',
-    });
-    return response;
-  },
-
-  ban: async (id: string, banReason?: string) => {
-    const response = await apiFetch<{ data: any; brand?: any; message: string }>(`/admin/users/${id}/ban`, {
-      method: 'PATCH',
-      body: JSON.stringify({ banReason }),
-    });
-    return response;
-  },
-
-  unban: async (id: string) => {
-    const response = await apiFetch<{ data: any; message: string }>(`/admin/users/${id}/unban`, {
-      method: 'PATCH',
-    });
-    return response;
-  },
-
-  setPending: async (id: string) => {
-    const response = await apiFetch<{ data: any; message: string }>(`/admin/users/${id}/set-pending`, {
-      method: 'PATCH',
-    });
-    return response;
-  },
-};
-
 // Public Categories API (for dropdowns, etc.)
 export const categoriesApi = {
   getAll: async () => {

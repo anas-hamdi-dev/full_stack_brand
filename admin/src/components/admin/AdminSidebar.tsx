@@ -5,7 +5,6 @@ import {
   Package, 
   FolderOpen, 
   Mail,
-  Users,
   LogOut,
   ChevronLeft,
   ChevronRight
@@ -21,7 +20,6 @@ const navItems = [
   { icon: Package, label: "Products", href: "/admin/products" },
   { icon: FolderOpen, label: "Categories", href: "/admin/categories" },
   { icon: Mail, label: "Messages", href: "/admin/messages" },
-  { icon: Users, label: "Brand Owners", href: "/admin/users" },
 ];
   
 export default function AdminSidebar() {

@@ -101,7 +101,7 @@ export const useBrandProducts = (brandId: string | undefined) => {
 };
 
 // Hook for brand owners to get their own brand
-export const useMyBrand = () => {
+export const useMyBrand = (options?: { enabled?: boolean }) => {
   return useQuery({
     queryKey: ["my-brand"],
     queryFn: async () => {
@@ -111,6 +111,7 @@ export const useMyBrand = () => {
       }
       return normalizeBrand(response.data);
     },
+    enabled: options?.enabled !== false, // Default to true, but allow disabling
   });
 };
 

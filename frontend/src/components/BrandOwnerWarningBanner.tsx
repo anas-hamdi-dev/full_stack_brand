@@ -9,17 +9,17 @@ export const BRAND_DETAILS_ROUTE = "/brand-owner/complete-details";
 
 export default function BrandOwnerWarningBanner() {
   const { user, isBrandOwner } = useAuth();
-  const brandId = user?.brand_id;
   const navigate = useNavigate();
   const [isDismissed, setIsDismissed] = useState(false);
 
-  // Only show for brand owners
+  // Strict check: Only show for brand owners
   if (!isBrandOwner || !user) {
     return null;
   }
 
-  // Don't show banner if user already has a brand
-  if (brandId) {
+  // Strict check based on backend data: Never show banner if user has a brand_id
+  // This check is based solely on backend data (user.brand_id from the API)
+  if (user.brand_id) {
     return null;
   }
 

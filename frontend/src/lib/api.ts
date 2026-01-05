@@ -57,14 +57,39 @@ class ApiClient {
         headers,
       });
 
-      const data = await response.json();
+      // Check if response has content and is JSON
+      const contentType = response.headers.get('content-type');
+      let data: any = {};
+      
+      if (contentType && contentType.includes('application/json')) {
+        try {
+          data = await response.json();
+        } catch (jsonError) {
+          // If JSON parsing fails, return a generic error
+          return {
+            error: {
+              message: `Invalid response from server (Status: ${response.status})`,
+              code: 'INVALID_JSON',
+            },
+          };
+        }
+      } else {
+        // Non-JSON response
+        const text = await response.text();
+        return {
+          error: {
+            message: text || `Server error (Status: ${response.status})`,
+            code: `HTTP_${response.status}`,
+          },
+        };
+      }
 
       if (!response.ok) {
         return {
           error: {
-            message: data.error?.message || data.error || 'An error occurred',
-            code: data.error?.code,
-            details: data.error?.details,
+            message: data.error?.message || data.error || data.message || `Server error (Status: ${response.status})`,
+            code: data.error?.code || `HTTP_${response.status}`,
+            details: data.error?.details || data.details,
           },
         };
       }
@@ -72,9 +97,19 @@ class ApiClient {
       // Handle both { data: {...} } and direct response formats
       return { data: data.data || data };
     } catch (error) {
+      // Handle network errors, CORS errors, etc.
+      if (error instanceof TypeError && error.message.includes('fetch')) {
+        return {
+          error: {
+            message: 'Network error: Unable to connect to server. Please check your internet connection.',
+            code: 'NETWORK_ERROR',
+          },
+        };
+      }
       return {
         error: {
-          message: error instanceof Error ? error.message : 'Network error',
+          message: error instanceof Error ? error.message : 'An unexpected error occurred',
+          code: 'UNKNOWN_ERROR',
         },
       };
     }

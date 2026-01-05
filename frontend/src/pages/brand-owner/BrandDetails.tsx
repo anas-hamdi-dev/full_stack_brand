@@ -17,9 +17,11 @@ import { brandsApi } from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
 import { useMyBrand } from "@/hooks/useBrands";
 import { toast } from "sonner";
-import { Store, Upload, X, MapPin, Save } from "lucide-react";
+import { Store, Upload, X, MapPin, Save, Loader2 } from "lucide-react";
 import PageLayout from "@/components/PageLayout";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import BrandApprovalBanner from "@/components/BrandApprovalBanner";
 
 interface BrandFormData {
   category_id: string;
@@ -34,9 +36,19 @@ interface BrandFormData {
   email?: string;
 }
 
-export default function BrandProfile() {
+export default function BrandDetails() {
   const { user } = useAuth();
-  const brandId = user?.brand_id;
+  // Ensure brandId is always a string - handle both string and object (MongoDB ObjectId) cases
+  const getBrandId = (): string | null => {
+    if (!user?.brand_id) return null;
+    if (typeof user.brand_id === 'string') return user.brand_id;
+    // Handle MongoDB ObjectId or populated object
+    const brandIdObj = user.brand_id as { _id?: string; toString?: () => string };
+    if (brandIdObj._id) return brandIdObj._id;
+    if (brandIdObj.toString) return brandIdObj.toString();
+    return String(user.brand_id);
+  };
+  const brandId = getBrandId();
   const { data: brand, isLoading: brandLoading } = useMyBrand();
   const { data: categories } = useCategories();
   const queryClient = useQueryClient();
@@ -57,13 +69,26 @@ export default function BrandProfile() {
       email: "",
     },
     mode: "onChange",
+    criteriaMode: "all",
   });
 
   // Pre-fill form with existing brand data
   useEffect(() => {
     if (brand) {
+      // Handle category_id - check populated category first, then category_id
+      let categoryId = "";
+      if (brand.category && brand.category._id) {
+        categoryId = brand.category._id;
+      } else if (brand.category_id) {
+        if (typeof brand.category_id === 'string') {
+          categoryId = brand.category_id;
+        } else if (typeof brand.category_id === 'object' && brand.category_id !== null && '_id' in brand.category_id) {
+          categoryId = (brand.category_id as { _id: string })._id;
+        }
+      }
+
       form.reset({
-        category_id: brand.category_id || "",
+        category_id: categoryId,
         name: brand.name || "",
         description: brand.description || "",
         logo_url: brand.logo_url || "",
@@ -114,27 +139,107 @@ export default function BrandProfile() {
 
   const updateBrand = useMutation({
     mutationFn: async (data: BrandFormData) => {
-      if (!brandId) {
-        throw new Error("Aucune marque trouvée");
+      // Ensure brandId is a valid string
+      if (!brandId || typeof brandId !== 'string') {
+        throw new Error("Aucune marque trouvée. Veuillez vous reconnecter.");
       }
-      const response = await brandsApi.update(brandId, data);
-      if (response.error) {
-        throw new Error(response.error.message || "Échec de la mise à jour");
+      
+      // Validate required fields
+      if (!data.name || !data.name.trim()) {
+        throw new Error("Le nom de la marque est requis");
       }
-      return response.data;
+      if (!data.category_id || !data.category_id.trim()) {
+        throw new Error("La catégorie est requise");
+      }
+      
+      // Prepare update payload - set status to pending when updating
+      const updateData = {
+        ...data,
+        status: "pending" as const, // Brand owners can set status to pending when updating
+      };
+
+      try {
+        const response = await brandsApi.update(brandId, updateData);
+        if (response.error) {
+          // Provide more specific error messages
+          const errorMessage = response.error.message || response.error.code || "Échec de la mise à jour";
+          throw new Error(errorMessage);
+        }
+        return response.data;
+      } catch (error) {
+        // Handle network errors or other exceptions
+        if (error instanceof Error) {
+          throw error;
+        }
+        throw new Error("Erreur réseau. Veuillez vérifier votre connexion.");
+      }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["brand", brandId] });
+      queryClient.invalidateQueries({ queryKey: ["my-brand"] });
       queryClient.invalidateQueries({ queryKey: ["brands"] });
-      toast.success("Profil de la marque mis à jour avec succès!");
+      queryClient.invalidateQueries({ queryKey: ["brand", brandId] });
+      queryClient.invalidateQueries({ queryKey: ["featured-brands"] });
+      toast.success("Informations de la marque mises à jour avec succès!");
     },
     onError: (error: Error) => {
-      toast.error(error.message || "Une erreur est survenue");
+      console.error("Error updating brand:", error);
+      toast.error(error.message || "Une erreur est survenue lors de la mise à jour");
     },
   });
 
   const onSubmit = (data: BrandFormData) => {
-    updateBrand.mutate(data);
+    // Validate brandId before submission
+    if (!brandId || typeof brandId !== 'string') {
+      toast.error("Erreur: Aucune marque trouvée. Veuillez vous reconnecter.");
+      return;
+    }
+
+    // Ensure logo_url is preserved if user didn't change it
+    const logoUrl = data.logo_url?.trim() || brand?.logo_url || "";
+    
+    if (!logoUrl) {
+      toast.error("L'avatar est requis");
+      form.setError("logo_url", { 
+        type: "manual", 
+        message: "L'avatar est requis" 
+      });
+      return;
+    }
+
+    // Validate required fields
+    if (!data.name || !data.name.trim()) {
+      toast.error("Le nom de la marque est requis");
+      form.setError("name", { 
+        type: "manual", 
+        message: "Le nom est requis" 
+      });
+      return;
+    }
+
+    if (!data.category_id || !data.category_id.trim()) {
+      toast.error("La catégorie est requise");
+      form.setError("category_id", { 
+        type: "manual", 
+        message: "La catégorie est requise" 
+      });
+      return;
+    }
+
+    // Prepare data for API - backend will handle empty string to null conversion
+    const submitData: BrandFormData = {
+      category_id: data.category_id.trim(),
+      name: data.name.trim(),
+      description: data.description?.trim() || "",
+      logo_url: logoUrl,
+      location: data.location?.trim() || "",
+      website: data.website?.trim() || "",
+      instagram: data.instagram?.trim() || "",
+      facebook: data.facebook?.trim() || "",
+      phone: data.phone?.trim() || "",
+      email: data.email?.trim() || "",
+    };
+
+    updateBrand.mutate(submitData);
   };
 
   if (brandLoading) {
@@ -143,7 +248,7 @@ export default function BrandProfile() {
         <div className="container mx-auto px-4 py-12">
           <div className="flex items-center justify-center min-h-[400px]">
             <div className="text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+              <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto mb-4" />
               <p className="text-muted-foreground">Chargement...</p>
             </div>
           </div>
@@ -151,7 +256,7 @@ export default function BrandProfile() {
       </PageLayout>
     );
   }
-{  console.log( "brand id", brandId, brand);}
+
   if (!brandId || !brand) {
     return (
       <PageLayout>
@@ -162,7 +267,7 @@ export default function BrandProfile() {
               Aucune marque trouvée
             </h1>
             <p className="text-muted-foreground">
-              Vous devez créer une marque avant de pouvoir gérer votre profil.
+              Vous devez créer une marque avant de pouvoir gérer vos informations.
             </p>
           </div>
         </div>
@@ -170,17 +275,53 @@ export default function BrandProfile() {
     );
   }
 
+  // Check if brand is approved (defense in depth - should be handled by ProtectedRoute)
+  const isApproved = brand?.status === "approved";
+  const isFormDisabled = !isApproved;
+
   return (
     <PageLayout>
       <div className="container mx-auto px-4 py-12 max-w-4xl">
         <div className="glass rounded-3xl p-8 md:p-12">
+          {/* Approval Status Banner */}
+          {!isApproved && <BrandApprovalBanner />}
+          
           <div className="mb-8">
-            <h1 className="text-3xl md:text-4xl font-display font-bold text-foreground mb-2">
-              Gérer mon profil
-            </h1>
-            <p className="text-muted-foreground">
-              Modifiez les informations de votre marque
-            </p>
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h1 className="text-3xl md:text-4xl font-display font-bold text-foreground mb-2">
+                  Informations de la marque
+                </h1>
+                <p className="text-muted-foreground">
+                  Modifiez les informations de votre marque
+                </p>
+              </div>
+              {brand.status && (
+                <Badge
+                  variant={
+                    brand.status === "approved"
+                      ? "default"
+                      : brand.status === "pending"
+                      ? "secondary"
+                      : "destructive"
+                  }
+                  className="text-sm"
+                >
+                  {brand.status === "approved"
+                    ? "Approuvé"
+                    : brand.status === "pending"
+                    ? "En attente"
+                    : "Rejeté"}
+                </Badge>
+              )}
+            </div>
+            {brand.status === "pending" && (
+              <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-4 mt-4">
+                <p className="text-sm text-foreground">
+                  <strong>Votre marque est en cours d'examen.</strong> Les modifications seront soumises pour révision.
+                </p>
+              </div>
+            )}
           </div>
 
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -205,7 +346,11 @@ export default function BrandProfile() {
                   <div className="flex items-center gap-2">
                     <label
                       htmlFor="avatar"
-                      className="flex items-center gap-2 px-4 py-2 border border-input bg-background hover:bg-accent hover:text-accent-foreground rounded-md cursor-pointer text-sm font-medium transition-colors"
+                      className={`flex items-center gap-2 px-4 py-2 border border-input bg-background rounded-md text-sm font-medium transition-colors ${
+                        isFormDisabled 
+                          ? "cursor-not-allowed opacity-50" 
+                          : "hover:bg-accent hover:text-accent-foreground cursor-pointer"
+                      }`}
                     >
                       <Upload className="h-4 w-4" />
                       {avatarPreview ? "Changer l'avatar" : "Télécharger un avatar"}
@@ -216,6 +361,7 @@ export default function BrandProfile() {
                       accept="image/jpeg,image/png,image/webp,image/jpg"
                       onChange={handleAvatarChange}
                       className="hidden"
+                      disabled={isFormDisabled}
                     />
                     {avatarPreview && (
                       <Button
@@ -224,6 +370,7 @@ export default function BrandProfile() {
                         size="sm"
                         onClick={handleRemoveAvatar}
                         className="text-destructive hover:text-destructive"
+                        disabled={isFormDisabled}
                       >
                         <X className="h-4 w-4" />
                       </Button>
@@ -234,8 +381,21 @@ export default function BrandProfile() {
                   </p>
                   <input
                     type="hidden"
-                    {...form.register("logo_url", { required: "L'avatar est requis" })}
+                    {...form.register("logo_url", { 
+                      required: "L'avatar est requis",
+                      validate: (value) => {
+                        if (!value || value.trim() === "") {
+                          return "L'avatar est requis";
+                        }
+                        return true;
+                      }
+                    })}
                   />
+                  {form.formState.errors.logo_url && (
+                    <p className="text-sm text-destructive mt-1">
+                      {form.formState.errors.logo_url.message}
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
@@ -247,7 +407,11 @@ export default function BrandProfile() {
               </Label>
               <Select
                 value={form.watch("category_id")}
-                onValueChange={(value) => form.setValue("category_id", value)}
+                onValueChange={(value) => {
+                  form.setValue("category_id", value, { shouldValidate: true });
+                  form.clearErrors("category_id");
+                }}
+                disabled={isFormDisabled}
               >
                 <SelectTrigger id="category_id">
                   <SelectValue placeholder="Sélectionnez une catégorie" />
@@ -260,6 +424,11 @@ export default function BrandProfile() {
                   ))}
                 </SelectContent>
               </Select>
+              {form.formState.errors.category_id && (
+                <p className="text-sm text-destructive mt-1">
+                  {form.formState.errors.category_id.message}
+                </p>
+              )}
             </div>
 
             {/* Brand Name */}
@@ -269,9 +438,25 @@ export default function BrandProfile() {
               </Label>
               <Input
                 id="name"
-                {...form.register("name", { required: "Le nom est requis" })}
+                {...form.register("name", { 
+                  required: "Le nom est requis",
+                  minLength: {
+                    value: 2,
+                    message: "Le nom doit contenir au moins 2 caractères"
+                  },
+                  maxLength: {
+                    value: 100,
+                    message: "Le nom ne doit pas dépasser 100 caractères"
+                  }
+                })}
                 placeholder="Ex: Ma Belle Boutique"
+                disabled={isFormDisabled}
               />
+              {form.formState.errors.name && (
+                <p className="text-sm text-destructive mt-1">
+                  {form.formState.errors.name.message}
+                </p>
+              )}
             </div>
 
             {/* Description */}
@@ -282,6 +467,7 @@ export default function BrandProfile() {
                 {...form.register("description")}
                 placeholder="Décrivez votre marque en quelques mots..."
                 rows={4}
+                disabled={isFormDisabled}
               />
             </div>
 
@@ -293,6 +479,7 @@ export default function BrandProfile() {
                   id="phone"
                   {...form.register("phone")}
                   placeholder="+33 6 12 34 56 78"
+                  disabled={isFormDisabled}
                 />
               </div>
 
@@ -303,6 +490,7 @@ export default function BrandProfile() {
                   {...form.register("email")}
                   type="email"
                   placeholder="contact@example.com"
+                  disabled={isFormDisabled}
                 />
               </div>
             </div>
@@ -316,6 +504,7 @@ export default function BrandProfile() {
                   id="location"
                   {...form.register("location")}
                   placeholder="Ex: Paris, France"
+                  disabled={isFormDisabled}
                 />
               </div>
             </div>
@@ -329,6 +518,7 @@ export default function BrandProfile() {
                   {...form.register("website")}
                   type="url"
                   placeholder="https://www.example.com"
+                  disabled={isFormDisabled}
                 />
               </div>
 
@@ -339,6 +529,7 @@ export default function BrandProfile() {
                   {...form.register("instagram")}
                   type="url"
                   placeholder="https://www.instagram.com/votrecompte"
+                  disabled={isFormDisabled}
                 />
               </div>
 
@@ -349,28 +540,10 @@ export default function BrandProfile() {
                   {...form.register("facebook")}
                   type="url"
                   placeholder="https://www.facebook.com/votrepage"
+                  disabled={isFormDisabled}
                 />
               </div>
             </div>
-
-            {/* Status Info */}
-            {brand.status && (
-              <div className={`p-4 rounded-lg ${
-                brand.status === "approved" 
-                  ? "bg-green-500/10 border border-green-500/20" 
-                  : brand.status === "pending"
-                  ? "bg-yellow-500/10 border border-yellow-500/20"
-                  : "bg-red-500/10 border border-red-500/20"
-              }`}>
-                <p className="text-sm text-foreground">
-                  <strong>Statut:</strong> {
-                    brand.status === "approved" ? "Approuvé" :
-                    brand.status === "pending" ? "En attente d'approbation" :
-                    "Rejeté"
-                  }
-                </p>
-              </div>
-            )}
 
             {/* Submit Button */}
             <div className="flex gap-4 pt-4">
@@ -378,10 +551,13 @@ export default function BrandProfile() {
                 type="submit"
                 size="lg"
                 className="flex-1"
-                disabled={updateBrand.isPending}
+                disabled={updateBrand.isPending || isFormDisabled}
               >
                 {updateBrand.isPending ? (
-                  "Enregistrement..."
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Enregistrement...
+                  </>
                 ) : (
                   <>
                     <Save className="mr-2 h-4 w-4" />

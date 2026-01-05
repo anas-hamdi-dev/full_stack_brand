@@ -19,8 +19,10 @@ import Category from "./pages/Category";
 import NotFound from "./pages/NotFound";
 import ClientFavorites from "./pages/client/Favorites";
 import CompleteBrandDetails from "./pages/brand-owner/CompleteBrandDetails";
-import BrandProfile from "./pages/brand-owner/BrandProfile";
+import BrandOwnerProfile from "./pages/brand-owner/BrandOwnerProfile";
+import BrandDetails from "./pages/brand-owner/BrandDetails";
 import ProductsManagement from "./pages/brand-owner/ProductsManagement";
+import PendingApproval from "./pages/brand-owner/PendingApproval";
 import { BRAND_DETAILS_ROUTE } from "./components/BrandOwnerWarningBanner";
 
 const queryClient = new QueryClient();
@@ -32,7 +34,12 @@ const App = () => (
         <TooltipProvider>
           <Toaster />
           <Sonner />
-          <BrowserRouter>
+          <BrowserRouter
+            future={{
+              v7_startTransition: true,
+              v7_relativeSplatPath: true,
+            }}
+          >
             <ScrollToTop />
             <AuthModals />
             <Routes>
@@ -51,8 +58,11 @@ const App = () => (
             
             {/* Brand Owner Routes */}
             <Route path={BRAND_DETAILS_ROUTE} element={<ProtectedRoute requireBrandOwner><CompleteBrandDetails /></ProtectedRoute>} />
-            <Route path="/brand-owner/profile" element={<ProtectedRoute requireBrandOwner><BrandProfile /></ProtectedRoute>} />
-            <Route path="/brand-owner/products" element={<ProtectedRoute requireBrandOwner><ProductsManagement /></ProtectedRoute>} />
+            <Route path="/brand-owner/pending-approval" element={<ProtectedRoute requireBrandOwner><PendingApproval /></ProtectedRoute>} />
+            {/* Routes requiring brand approval */}
+            <Route path="/brand-owner/profile" element={<ProtectedRoute requireBrandOwner requireBrandApproved><BrandOwnerProfile /></ProtectedRoute>} />
+            <Route path="/brand-owner/brand" element={<ProtectedRoute requireBrandOwner requireBrandApproved><BrandDetails /></ProtectedRoute>} />
+            <Route path="/brand-owner/products" element={<ProtectedRoute requireBrandOwner requireBrandApproved><ProductsManagement /></ProtectedRoute>} />
             
             <Route path="*" element={<NotFound />} />
             </Routes>

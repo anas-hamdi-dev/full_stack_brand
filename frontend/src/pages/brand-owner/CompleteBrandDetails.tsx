@@ -41,7 +41,17 @@ const TOTAL_STEPS = 5;
 export default function CompleteBrandDetails() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const brandId = user?.brand_id;
+  // Ensure brandId is always a string - handle both string and object (MongoDB ObjectId) cases
+  const getBrandId = (): string | null => {
+    if (!user?.brand_id) return null;
+    if (typeof user.brand_id === 'string') return user.brand_id;
+    // Handle MongoDB ObjectId or populated object
+    const brandIdObj = user.brand_id as { _id?: string; toString?: () => string };
+    if (brandIdObj._id) return brandIdObj._id;
+    if (brandIdObj.toString) return brandIdObj.toString();
+    return String(user.brand_id);
+  };
+  const brandId = getBrandId();
   const { data: existingBrand } = useBrand(brandId || undefined);
   const { data: categories } = useCategories();
   const queryClient = useQueryClient();
@@ -131,6 +141,10 @@ export default function CompleteBrandDetails() {
 
       // If brand exists, update it; otherwise create new one
       if (brandId && existingBrand) {
+        // Ensure brandId is a valid string before making the API call
+        if (typeof brandId !== 'string') {
+          throw new Error("Erreur: ID de marque invalide. Veuillez vous reconnecter.");
+        }
         // Update existing brand
         const response = await brandsApi.update(brandId, brandData);
         if (response.error) {
@@ -219,8 +233,9 @@ export default function CompleteBrandDetails() {
     navigate("/");
   };
 
-  // Block access if user already has a brand
-  if (brandId) {
+  // Strict check: Redirect immediately if user already has a brand_id from backend
+  // This check is based solely on backend data (user.brand_id) and must come after all hooks
+  if (user?.brand_id) {
     return <Navigate to="/" replace />;
   }
 

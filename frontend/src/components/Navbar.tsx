@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, X, User, LogOut, Store, Heart, Package } from "lucide-react";
+import { Menu, X, User, LogOut, Heart, Package, UserCircle, Store } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   DropdownMenu,
@@ -102,8 +102,12 @@ const Navbar = () => {
                   {isBrandOwner && (
                     <>
                       <DropdownMenuItem onClick={() => navigate("/brand-owner/profile")}>
-                        <Store className="h-4 w-4 mr-2" />
+                        <UserCircle className="h-4 w-4 mr-2" />
                         Mon profil
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => navigate("/brand-owner/brand")}>
+                        <Store className="h-4 w-4 mr-2" />
+                        Ma marque
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => navigate("/brand-owner/products")}>
                         <Package className="h-4 w-4 mr-2" />
@@ -194,8 +198,19 @@ const Navbar = () => {
                             navigate("/brand-owner/profile");
                           }}
                         >
-                          <Store className="h-4 w-4 mr-2" />
+                          <UserCircle className="h-4 w-4 mr-2" />
                           Mon profil
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          className="w-full justify-center"
+                          onClick={() => {
+                            setIsOpen(false);
+                            navigate("/brand-owner/brand");
+                          }}
+                        >
+                          <Store className="h-4 w-4 mr-2" />
+                          Ma marque
                         </Button>
                         <Button 
                           variant="ghost" 
