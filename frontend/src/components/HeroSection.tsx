@@ -15,25 +15,22 @@ const HeroSection = () => {
 
       <div className="container mx-auto px-4 relative z-10">
         <div className="max-w-5xl mx-auto text-center">
-          {/* Badge */}
-          <div className="inline-flex items-center gap-2 glass rounded-full px-5 py-2 mb-8 animate-slide-up">
-            <Sparkles className="w-4 h-4 text-secondary" />
-            <span className="text-sm font-medium text-muted-foreground">Discover Tunisian Fashion Brands</span>
-          </div>
+          
 
           {/* Main Heading */}
           <h1 className="font-display text-5xl md:text-7xl lg:text-8xl font-bold mb-6 animate-slide-up-delay-1">
-            <span className="text-foreground">Tunisian</span>
+            <span className="text-foreground">all tunisian🌶️</span>
             <br />
-            <span className="text-gradient-primary">Fashion</span>
-            <span className="text-foreground">, One Place</span>
+            <span className="text-gradient-primary">brands</span>
+            <span className="text-foreground">, in  One Place</span>
           </h1>
+
 
           {/* Subtitle */}
           <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-10 leading-relaxed animate-slide-up-delay-2">
-            Explore the best of Tunisia's fashion scene. From streetwear to traditional, 
-            men's classics to women's trends — discover authentic fashion brands defining our style.
-          </p>
+          explore all tunisian  clothing  brands & products  in one place
+           
+            </p>
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-slide-up-delay-3">
@@ -49,7 +46,7 @@ const HeroSection = () => {
           <div className="grid grid-cols-3 gap-8 mt-16 max-w-2xl mx-auto animate-slide-up-delay-4">
             <div className="text-center">
               <div className="font-display text-3xl md:text-4xl font-bold text-gradient-primary">50+</div>
-              <div className="text-sm text-muted-foreground mt-1">Fashion Brands</div>
+              <div className="text-sm text-muted-foreground mt-1">Brands</div>
             </div>
             <div className="text-center">
               <div className="font-display text-3xl md:text-4xl font-bold text-gradient-secondary">8</div>

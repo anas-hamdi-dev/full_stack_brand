@@ -1,7 +1,10 @@
 import { Button } from "@/components/ui/button";
-import { Shirt } from "lucide-react";
+import { Shirt, Check } from "lucide-react";
+import { useAuthModal } from "@/contexts/AuthModalContext";
 
 const CTASection = () => {
+  const { openSignUp } = useAuthModal();
+
   return (
     <section className="py-24 relative overflow-hidden">
       <div className="container mx-auto px-4">
@@ -26,15 +29,34 @@ const CTASection = () => {
               of fashion enthusiasts and potential customers every month.
             </p>
 
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Button variant="glass" size="xl">
-                Learn More
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-slide-up-delay-3">
+              <Button variant="glass" size="xl" onClick={openSignUp}>
+                Submit Brand
               </Button>
             </div>
 
-            <p className="text-sm text-muted-foreground mt-8">
-              Free listing • No hidden fees • Verified fashion brands only
-            </p>
+            {/* <Link to="/brands"> */}
+              {/* <Button variant="hero" size="xl" className="group">
+                Explore Brands
+                <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
+              </Button> */}
+            {/* </Link> */}
+          {/* </div> */}
+
+            <ul className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 mt-8 text-sm text-muted-foreground">
+              <li className="flex items-center gap-2">
+                <Check className="w-4 h-4 text-primary flex-shrink-0" />
+                <span>Free listing</span>
+              </li>
+              <li className="flex items-center gap-2">
+                <Check className="w-4 h-4 text-primary flex-shrink-0" />
+                <span>No hidden fees</span>
+              </li>
+              <li className="flex items-center gap-2">
+                <Check className="w-4 h-4 text-primary flex-shrink-0" />
+                <span>Verified fashion brands only</span>
+              </li>
+            </ul>
           </div>
         </div>
       </div>

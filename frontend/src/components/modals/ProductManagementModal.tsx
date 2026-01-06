@@ -18,7 +18,7 @@ interface ProductData {
   name: string;
   description?: string | null;
   price?: number | null;
-  images: string[];
+  images: string[]; 
   external_url?: string | null;
   brand_id?: string | null;
   id?: string;

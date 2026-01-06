@@ -59,7 +59,6 @@ const App = () => (
             {/* Brand Owner Routes */}
             <Route path={BRAND_DETAILS_ROUTE} element={<ProtectedRoute requireBrandOwner><CompleteBrandDetails /></ProtectedRoute>} />
             <Route path="/brand-owner/pending-approval" element={<ProtectedRoute requireBrandOwner><PendingApproval /></ProtectedRoute>} />
-            {/* Routes requiring brand approval */}
             <Route path="/brand-owner/profile" element={<ProtectedRoute requireBrandOwner requireBrandApproved><BrandOwnerProfile /></ProtectedRoute>} />
             <Route path="/brand-owner/brand" element={<ProtectedRoute requireBrandOwner requireBrandApproved><BrandDetails /></ProtectedRoute>} />
             <Route path="/brand-owner/products" element={<ProtectedRoute requireBrandOwner requireBrandApproved><ProductsManagement /></ProtectedRoute>} />

@@ -1,9 +1,8 @@
 import { Helmet } from "react-helmet";
 import PageLayout from "@/components/PageLayout";
 import HeroSection from "@/components/HeroSection";
-import CategoriesSection from "@/components/CategoriesSection";
-import FeaturedSection from "@/components/FeaturedSection";
-import AboutSection from "@/components/AboutSection";
+import PartnerBrandsCarousel from "@/components/PartnerBrandsCarousel";
+import FeaturesSection from "@/components/FeaturesSection";
 import CTASection from "@/components/CTASection";
 import Footer from "@/components/Footer";
 
@@ -23,9 +22,8 @@ const Index = () => {
         <PageLayout>
         <main>
           <HeroSection />
-          <CategoriesSection />
-          <FeaturedSection />
-          <AboutSection />
+          <PartnerBrandsCarousel />
+          <FeaturesSection />
           <CTASection />
         </main>
         <Footer />
