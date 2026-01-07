@@ -100,6 +100,24 @@
           phoneSuffix = phoneSuffix.replace(/\D/g, '').slice(-8);
         }
 
+        // Extract Instagram username - convert URL to username if needed
+        let instagramUsername = "";
+        if (brand.instagram) {
+          const instagramStr = brand.instagram.trim();
+          // If it's a URL, extract the username
+          if (instagramStr.startsWith("http://") || instagramStr.startsWith("https://")) {
+            const urlMatch = instagramStr.match(/instagram\.com\/([a-zA-Z0-9._]+)/);
+            if (urlMatch && urlMatch[1]) {
+              instagramUsername = urlMatch[1];
+            } else {
+              instagramUsername = instagramStr;
+            }
+          } else {
+            // Already a username, remove @ if present at the start
+            instagramUsername = instagramStr.replace(/^@/, "");
+          }
+        }
+
         const formValues = {
           category_id: categoryId,
           name: brand.name || "",
@@ -107,7 +125,7 @@
           logo_url: brand.logo_url || "",
           location: brand.location || "",
           website: brand.website || "",
-          instagram: brand.instagram || "",
+          instagram: instagramUsername,
           facebook: brand.facebook || "",
           phone: phoneSuffix,
           email: brand.email || "",
@@ -296,6 +314,10 @@
       const phoneValue = data.phone?.trim() || "";
       const fullPhoneNumber = phoneValue ? `+216${phoneValue.replace(/\D/g, '')}` : "";
 
+      // Format Instagram username - ensure it doesn't have @ prefix (backend will handle it)
+      const instagramUsername = data.instagram?.trim() || "";
+      const formattedInstagram = instagramUsername ? instagramUsername.replace(/^@+/, "") : "";
+
       const submitData: BrandFormData = {
         category_id: data.category_id.trim(),
         name: data.name.trim(),
@@ -303,7 +325,7 @@
         logo_url: logoUrl,
         location: data.location?.trim() || "",
         website: data.website?.trim() || "",
-        instagram: data.instagram?.trim() || "",
+        instagram: formattedInstagram || "",
         facebook: data.facebook?.trim() || "",
         phone: fullPhoneNumber || "",
         email: data.email?.trim() || "",
@@ -573,8 +595,8 @@
                     <div className="flex items-center px-3 h-10 rounded-md border border-input bg-muted text-sm text-muted-foreground whitespace-nowrap">
                       +216
                     </div>
-                    <Input
-                      id="phone"
+                  <Input
+                    id="phone"
                       type="tel"
                       placeholder="XX XXX XXX"
                       value={form.watch("phone") || ""}
@@ -584,11 +606,11 @@
                         form.setValue("phone", value, { shouldValidate: true });
                       }}
                       className="bg-background flex-1"
-                      disabled={isFormDisabled}
+                    disabled={isFormDisabled}
                       maxLength={8}
                       pattern="[2-9]\d{7}"
                       title="Enter 8 digits starting with 2, 4, 5, or 9"
-                    />
+                  />
                   </div>
                 </div>
 
@@ -633,13 +655,25 @@
 
                 <div className="space-y-2">
                   <Label htmlFor="instagram">Instagram</Label>
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-center px-3 h-10 rounded-md border border-input bg-muted text-sm text-muted-foreground whitespace-nowrap">
+                      @
+                    </div>
                   <Input
                     id="instagram"
                     {...form.register("instagram")}
-                    type="url"
-                    placeholder="https://www.instagram.com/youraccount"
+                      type="text"
+                      placeholder="username"
+                      value={form.watch("instagram") || ""}
+                      onChange={(e) => {
+                        // Remove @ if user types it, we add it automatically
+                        const value = e.target.value.replace(/^@+/, "").replace(/[^a-zA-Z0-9._]/g, "");
+                        form.setValue("instagram", value, { shouldValidate: true });
+                      }}
+                      className="bg-background flex-1"
                     disabled={isFormDisabled}
                   />
+                  </div>
                 </div>
 
                 <div className="space-y-2">

@@ -98,8 +98,33 @@ router.post('/', authenticate, isBrandOwnerApproved, async (req, res) => {
   try {
     const { name, description, price, images } = req.body;
 
-    if (!name || !images || !Array.isArray(images) || images.length === 0) {
-      return res.status(400).json({ error: 'Name and at least one image are required' });
+    // Validate required fields
+    if (!name || !name.trim()) {
+      return res.status(400).json({ error: 'Product name is required' });
+    }
+
+    // Validate price - price is required
+    if (price === undefined || price === null || price === '') {
+      return res.status(400).json({ error: 'Price is required' });
+    }
+
+    const priceNum = typeof price === 'string' ? parseFloat(price) : price;
+    if (isNaN(priceNum) || priceNum < 0) {
+      return res.status(400).json({ error: 'Price must be a valid number greater than or equal to 0' });
+    }
+
+    // Validate images - at least one image is required
+    if (!images || !Array.isArray(images) || images.length === 0) {
+      return res.status(400).json({ error: 'At least one image is required' });
+    }
+
+    // Validate image formats - only allow HTTP/HTTPS URLs or data URLs
+    const validImageRegex = /^(https?:\/\/.+|data:image\/(jpeg|jpg|png|webp);base64,.+)$/;
+    const invalidImages = images.filter(img => !validImageRegex.test(img));
+    if (invalidImages.length > 0) {
+      return res.status(400).json({ 
+        error: 'Invalid image format. Only JPG, PNG, and WebP formats are supported. Images must be valid URLs or base64 data URLs.' 
+      });
     }
 
     // Ensure user owns the brand
@@ -108,10 +133,10 @@ router.post('/', authenticate, isBrandOwnerApproved, async (req, res) => {
     }
 
     const product = await Product.create({
-      name,
-      description,
+      name: name.trim(),
+      description: description?.trim() || null,
       brand_id: req.user.brand_id,
-      price: price || null,
+      price: priceNum,
       images
     });
 
@@ -122,6 +147,11 @@ router.post('/', authenticate, isBrandOwnerApproved, async (req, res) => {
 
     res.status(201).json({ data: product });
   } catch (error) {
+    // Handle Mongoose validation errors
+    if (error.name === 'ValidationError') {
+      const errors = Object.values(error.errors).map((err) => err.message);
+      return res.status(400).json({ error: errors.join(', ') });
+    }
     res.status(500).json({ error: error.message });
   }
 });
@@ -132,10 +162,43 @@ router.patch('/:id', authenticate, isBrandOwnerApproved, checkProductOwnership, 
     const { name, description, price, images } = req.body;
 
     const updateData = {};
-    if (name !== undefined) updateData.name = name;
-    if (description !== undefined) updateData.description = description;
-    if (price !== undefined) updateData.price = price;
-    if (images !== undefined) updateData.images = images;
+    if (name !== undefined) {
+      if (!name || !name.trim()) {
+        return res.status(400).json({ error: 'Product name cannot be empty' });
+      }
+      updateData.name = name.trim();
+    }
+    if (description !== undefined) updateData.description = description?.trim() || null;
+    
+    // Validate price if provided in the update - price is required and cannot be null or empty
+    if (price !== undefined) {
+      if (price === null || price === '') {
+        return res.status(400).json({ error: 'Price is required and cannot be empty' });
+      }
+      const priceNum = typeof price === 'string' ? parseFloat(price) : price;
+      if (isNaN(priceNum) || priceNum < 0) {
+        return res.status(400).json({ error: 'Price must be a valid number greater than or equal to 0' });
+      }
+      updateData.price = priceNum;
+    }
+    
+    // Validate images if provided
+    if (images !== undefined) {
+      if (!Array.isArray(images) || images.length === 0) {
+        return res.status(400).json({ error: 'At least one image is required' });
+      }
+      
+      // Validate image formats
+      const validImageRegex = /^(https?:\/\/.+|data:image\/(jpeg|jpg|png|webp);base64,.+)$/;
+      const invalidImages = images.filter(img => !validImageRegex.test(img));
+      if (invalidImages.length > 0) {
+        return res.status(400).json({ 
+          error: 'Invalid image format. Only JPG, PNG, and WebP formats are supported. Images must be valid URLs or base64 data URLs.' 
+        });
+      }
+      
+      updateData.images = images;
+    }
 
     const product = await Product.findByIdAndUpdate(
       req.params.id,
@@ -152,6 +215,11 @@ router.patch('/:id', authenticate, isBrandOwnerApproved, checkProductOwnership, 
 
     res.json({ data: product });
   } catch (error) {
+    // Handle Mongoose validation errors
+    if (error.name === 'ValidationError') {
+      const errors = Object.values(error.errors).map((err) => err.message);
+      return res.status(400).json({ error: errors.join(', ') });
+    }
     res.status(500).json({ error: error.message });
   }
 });

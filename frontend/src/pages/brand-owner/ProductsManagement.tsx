@@ -28,7 +28,6 @@ interface Product {
   description?: string | null;
   price?: number | null;
   images: string[];
-  external_url?: string | null;
   brand_id?: string | null;
   createdAt?: string;
 }
@@ -195,7 +194,7 @@ export default function ProductsManagement() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {products.map((product: any) => (
+            {products.map((product) => (
               <Card key={product._id || product.id} className="overflow-hidden">
                 <div className="aspect-video bg-muted relative">
                   {product.images && product.images.length > 0 ? (
@@ -274,9 +273,8 @@ export default function ProductsManagement() {
             description: editingProduct.description || "",
             price: editingProduct.price || null,
             images: editingProduct.images || [],
-            external_url: editingProduct.external_url || null,
             brand_id: editingProduct.brand_id || null,
-            created_at: editingProduct.createdAt || editingProduct.created_at || "",
+            created_at: editingProduct.createdAt || "",
           } : null}
           isLoading={createProduct.isPending || updateProduct.isPending}
         />

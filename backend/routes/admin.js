@@ -267,11 +267,21 @@
       }
 
       // Remove external_url if present (MVP simplification)
-      const { external_url, ...productData } = req.body;
+      const { external_url, price, ...productData } = req.body;
+
+      // Validate price - price is required
+      if (price === undefined || price === null || price === '') {
+        return res.status(400).json({ error: 'Price is required' });
+      }
+
+      const priceNum = typeof price === 'string' ? parseFloat(price) : price;
+      if (isNaN(priceNum) || priceNum < 0) {
+        return res.status(400).json({ error: 'Price must be a valid number greater than or equal to 0' });
+      }
 
       const product = await Product.create({
         ...productData,
-        price: req.body.price || null
+        price: priceNum
       });
       await product.populate({
         path: 'brand_id',
@@ -292,6 +302,18 @@
 
       // Remove external_url if present (MVP simplification)
       const { external_url, ...updateData } = req.body;
+
+      // Validate price if provided
+      if (updateData.price !== undefined) {
+        if (updateData.price === null || updateData.price === '') {
+          return res.status(400).json({ error: 'Price is required' });
+        }
+        const priceNum = typeof updateData.price === 'string' ? parseFloat(updateData.price) : updateData.price;
+        if (isNaN(priceNum) || priceNum < 0) {
+          return res.status(400).json({ error: 'Price must be a valid number greater than or equal to 0' });
+        }
+        updateData.price = priceNum;
+      }
 
       const product = await Product.findByIdAndUpdate(
         req.params.id,

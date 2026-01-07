@@ -65,7 +65,7 @@ const Brands = () => {
               <SelectContent>
                 <SelectItem value="all">All Categories</SelectItem>
                 {categories?.map((cat) => (
-                  <SelectItem key={cat.id} value={cat.name}>
+                  <SelectItem key={cat._id || cat.id} value={cat.name}>
                     {cat.name}
                   </SelectItem>
                 ))}

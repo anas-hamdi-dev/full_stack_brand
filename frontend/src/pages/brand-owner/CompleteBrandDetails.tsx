@@ -85,7 +85,9 @@ export default function CompleteBrandDetails() {
         logo_url: existingBrand.logo_url || "",
         location: existingBrand.location || "",
         website: existingBrand.website || "",
-        instagram: existingBrand.instagram || "",
+        instagram: existingBrand.instagram 
+          ? existingBrand.instagram.replace(/^https?:\/\/.*instagram\.com\//, "").replace(/^@/, "") 
+          : "",
         facebook: existingBrand.facebook || "",
         phone: existingBrand.phone || "",
         email: existingBrand.email || "",
@@ -140,9 +142,14 @@ export default function CompleteBrandDetails() {
         if (typeof brandId !== 'string') {
           throw new Error("Error: Invalid brand ID. Please sign in again.");
         }
+        // Format Instagram username - remove @ prefix if present
+        const formattedData = {
+          ...data,
+          instagram: data.instagram?.trim() ? data.instagram.trim().replace(/^@+/, "") : "",
+        };
         // Update existing brand - preserve existing status, don't send status field
         const brandData = {
-          ...data,
+          ...formattedData,
         };
         const response = await brandsApi.update(brandId, brandData);
         if (response.error) {
@@ -150,9 +157,14 @@ export default function CompleteBrandDetails() {
         }
         return response.data;
       } else {
+        // Format Instagram username - remove @ prefix if present
+        const formattedData = {
+          ...data,
+          instagram: data.instagram?.trim() ? data.instagram.trim().replace(/^@+/, "") : "",
+        };
         // Create new brand - set status to pending for new brands
         const brandData = {
-          ...data,
+          ...formattedData,
           status: "pending" as const,
         };
         const response = await brandsApi.create(brandData);
@@ -505,12 +517,23 @@ export default function CompleteBrandDetails() {
 
               <div className="space-y-2">
                 <Label htmlFor="instagram">Instagram</Label>
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center px-3 h-10 rounded-md border border-input bg-muted text-sm text-muted-foreground whitespace-nowrap">
+                    @
+                  </div>
                 <Input
                   id="instagram"
                   {...form.register("instagram")}
-                  type="url"
-                  placeholder="https://www.instagram.com/youraccount"
+                    type="text"
+                    placeholder="username"
+                    onChange={(e) => {
+                      // Remove @ if user types it, we add it automatically
+                      let value = e.target.value.replace(/^@+/, "").replace(/[^a-zA-Z0-9._]/g, "");
+                      form.setValue("instagram", value, { shouldValidate: true });
+                    }}
+                    className="bg-background flex-1"
                 />
+                </div>
               </div>
 
               <div className="space-y-2">

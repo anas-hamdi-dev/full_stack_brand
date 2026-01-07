@@ -23,7 +23,6 @@ export interface FavoriteProduct {
   } | null;
   price?: number | null;
   images: string[];
-  external_url?: string | null;
   createdAt?: string;
   created_at?: string;
 }
@@ -90,7 +89,6 @@ const normalizeProduct = (product: any): FavoriteProduct => {
     name: product.name || '',
     description: product.description || null,
     price: product.price || null,
-    external_url: product.external_url || null,
   };
 };
 

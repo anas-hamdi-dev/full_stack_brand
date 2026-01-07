@@ -22,22 +22,48 @@ export interface Product {
   } | null;
   price?: number | null;
   images: string[];
-  external_url?: string | null;
   createdAt?: string;
   created_at?: string; // For backward compatibility
 }
 
 // Normalize product data from backend
 const normalizeProduct = (product: any): Product => {
+  // Handle brand_id - if it's populated (object), map it to brand
+  let brand = null;
+  if (product.brand_id) {
+    if (typeof product.brand_id === 'object' && product.brand_id !== null) {
+      // brand_id is populated (brand object)
+      let category = null;
+      
+      // Handle category_id - if it's populated (object), map it to category
+      if (product.brand_id.category_id) {
+        if (typeof product.brand_id.category_id === 'object' && product.brand_id.category_id !== null) {
+          // category_id is populated (category object)
+          category = {
+            _id: product.brand_id.category_id._id || product.brand_id.category_id.id,
+            name: product.brand_id.category_id.name,
+            icon: product.brand_id.category_id.icon,
+          };
+        }
+      }
+      
+      brand = {
+        _id: product.brand_id._id || product.brand_id.id,
+        id: product.brand_id._id || product.brand_id.id,
+        name: product.brand_id.name,
+        logo_url: product.brand_id.logo_url || null,
+        website: product.brand_id.website || null,
+        category_id: category ? category._id : (product.brand_id.category_id || null),
+        category,
+      };
+    }
+  }
+  
   return {
     ...product,
     id: product._id || product.id,
     created_at: product.createdAt || product.created_at,
-    external_url: product.external_url || null,
-    brand: product.brand_id ? {
-      ...product.brand_id,
-      id: product.brand_id._id || product.brand_id.id,
-    } : null,
+    brand,
   };
 };
 

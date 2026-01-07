@@ -87,7 +87,7 @@ const ProductDetail = () => {
     );
   }
 
-  const officialUrl = product.external_url || product.brand?.website;
+  const officialUrl = product.brand?.website;
   const images =
     product.images && product.images.length > 0
       ? product.images

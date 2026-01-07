@@ -11,7 +11,9 @@ export default function PageLayout({ children }: PageLayoutProps) {
     <>
       <BrandOwnerWarningBanner />
       <Navbar />
-      {children}
+      <div className="min-h-screen pb-16">
+        {children}
+      </div>
     </>
   );
 }

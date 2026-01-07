@@ -159,12 +159,21 @@ const BrandDetail = () => {
                     <span>{brand.phone}</span>
                   </a>
                 )}
-                {brand.instagram && (
-                  <a href={brand.instagram} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
-                    <Instagram className="w-4 h-4" />
-                    <span>Instagram</span>
-                  </a>
-                )}
+                {brand.instagram && (() => {
+                  // Convert username to Instagram URL if it's not already a URL
+                  let instagramUrl = brand.instagram.trim();
+                  if (!instagramUrl.startsWith("http://") && !instagramUrl.startsWith("https://")) {
+                    // Remove @ if present and create URL
+                    const username = instagramUrl.replace(/^@/, "");
+                    instagramUrl = `https://www.instagram.com/${username}`;
+                  }
+                  return (
+                    <a href={instagramUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
+                      <Instagram className="w-4 h-4" />
+                      <span>@{brand.instagram.replace(/^@/, "").replace(/^https?:\/\/.*instagram\.com\//, "")}</span>
+                    </a>
+                  );
+                })()}
                 {brand.facebook && (
                   <a href={brand.facebook} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
                     <Facebook className="w-4 h-4" />

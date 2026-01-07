@@ -75,9 +75,9 @@ async function apiFetch<T>(
   let response: Response;
   try {
     response = await fetch(url, {
-      ...options,
-      headers,
-    });
+    ...options,
+    headers,
+  });
   } catch (error) {
     // Network error
     throw new ApiError(
@@ -129,11 +129,11 @@ async function apiFetch<T>(
     }
 
     // For other endpoints, handle 401 as authentication required
-    if (response.status === 401) {
-      removeAuthToken();
-      window.location.href = '/admin/login';
-      throw new ApiError('Authentication required', 401);
-    }
+  if (response.status === 401) {
+    removeAuthToken();
+    window.location.href = '/admin/login';
+    throw new ApiError('Authentication required', 401);
+  }
 
     // For other errors, return the error message
     const errorCode = typeof errorData.error === 'object' ? errorData.error.code : undefined;

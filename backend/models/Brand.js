@@ -52,9 +52,13 @@ const brandSchema = new mongoose.Schema({
     trim: true,
     validate: {
       validator: function(v) {
-        return !v || /^https?:\/\/.+/.test(v);
+        if (!v) return true; // Allow empty
+        // Accept either URL format or username format (@username or username)
+        const isUrl = /^https?:\/\/.+/.test(v);
+        const isUsername = /^@?[a-zA-Z0-9._]+$/.test(v);
+        return isUrl || isUsername;
       },
-      message: 'Instagram URL must be a valid URL'
+      message: 'Instagram must be a valid URL or username (e.g., @username or username)'
     }
   },
   facebook: {
