@@ -53,6 +53,7 @@
     const queryClient = useQueryClient();
     const [avatarFile, setAvatarFile] = useState<File | null>(null);
     const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+    const [initialFormValues, setInitialFormValues] = useState<BrandFormData | null>(null);
 
     const form = useForm<BrandFormData>({
       defaultValues: {
@@ -86,7 +87,20 @@
           }
         }
 
-        form.reset({
+        // Extract phone number - if it has +216 prefix, remove it to show only 8 digits
+        let phoneSuffix = "";
+        if (brand.phone) {
+          const phoneStr = brand.phone.trim();
+          if (phoneStr.startsWith("+216")) {
+            phoneSuffix = phoneStr.replace("+216", "").trim();
+          } else {
+            phoneSuffix = phoneStr;
+          }
+          // Ensure we only keep the last 8 digits if there are more
+          phoneSuffix = phoneSuffix.replace(/\D/g, '').slice(-8);
+        }
+
+        const formValues = {
           category_id: categoryId,
           name: brand.name || "",
           description: brand.description || "",
@@ -95,14 +109,64 @@
           website: brand.website || "",
           instagram: brand.instagram || "",
           facebook: brand.facebook || "",
-          phone: brand.phone || "",
+          phone: phoneSuffix,
           email: brand.email || "",
+        };
+
+        // Use reset with options to keep defaultValues
+        form.reset(formValues, {
+          keepDefaultValues: false,
+          keepValues: false,
         });
+        
+        // Store initial form values for comparison
+        setInitialFormValues({ ...formValues });
+        
+        // Explicitly set category_id after a brief delay to ensure Select component picks it up
+        // This handles cases where categories might not be loaded yet
+        if (categoryId) {
+          // Use setTimeout to ensure this runs after React has updated
+          setTimeout(() => {
+            form.setValue("category_id", categoryId, { 
+              shouldValidate: false,
+              shouldDirty: false,
+            });
+          }, 0);
+        }
+        
         if (brand.logo_url) {
           setAvatarPreview(brand.logo_url);
         }
       }
     }, [brand, form]);
+
+    // Ensure category is set when categories are loaded (in case categories load after brand)
+    useEffect(() => {
+      if (brand && categories && categories.length > 0) {
+        // Handle category_id - check populated category first, then category_id
+        let categoryId = "";
+        if (brand.category && brand.category._id) {
+          categoryId = brand.category._id;
+        } else if (brand.category_id) {
+          if (typeof brand.category_id === 'string') {
+            categoryId = brand.category_id;
+          } else if (typeof brand.category_id === 'object' && brand.category_id !== null && '_id' in brand.category_id) {
+            categoryId = (brand.category_id as { _id: string })._id;
+          }
+        }
+
+        // Only update if category exists in the categories list and is different from current value
+        if (categoryId && categories.some(cat => cat._id === categoryId)) {
+          const currentCategoryId = form.getValues("category_id");
+          if (currentCategoryId !== categoryId) {
+            form.setValue("category_id", categoryId, { 
+              shouldValidate: false,
+              shouldDirty: false,
+            });
+          }
+        }
+      }
+    }, [brand, categories, form]);
 
     // Handle avatar file upload
     const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -110,12 +174,12 @@
       if (!file) return;
 
       if (!["image/jpeg", "image/png", "image/webp", "image/jpg"].includes(file.type)) {
-        toast.error("Seuls les fichiers JPEG, PNG et WebP sont autorisés");
+        toast.error("Only JPEG, PNG and WebP files are allowed");
         return;
       }
 
       if (file.size > 5 * 1024 * 1024) {
-        toast.error("La taille du fichier ne doit pas dépasser 5MB");
+        toast.error("File size must not exceed 5MB");
         return;
       }
 
@@ -140,15 +204,15 @@
       mutationFn: async (data: BrandFormData) => {
         // Ensure brandId is a valid string
         if (!brandId || typeof brandId !== 'string') {
-          throw new Error("Aucune marque trouvée. Veuillez vous reconnecter.");
+          throw new Error("No brand found. Please sign in again.");
         }
         
         // Validate required fields
         if (!data.name || !data.name.trim()) {
-          throw new Error("Le nom de la marque est requis");
+          throw new Error("Brand name is required");
         }
         if (!data.category_id || !data.category_id.trim()) {
-          throw new Error("La catégorie est requise");
+          throw new Error("Category is required");
         }
         
         // Prepare update payload - don't change status, preserve existing status
@@ -160,7 +224,7 @@
           const response = await brandsApi.update(brandId, updateData);
           if (response.error) {
             // Provide more specific error messages
-            const errorMessage = response.error.message || response.error.code || "Échec de la mise à jour";
+            const errorMessage = response.error.message || response.error.code || "Update failed";
             throw new Error(errorMessage);
           }
           return response.data;
@@ -169,26 +233,31 @@
           if (error instanceof Error) {
             throw error;
           }
-          throw new Error("Erreur réseau. Veuillez vérifier votre connexion.");
+          throw new Error("Network error. Please check your connection.");
         }
       },
-      onSuccess: () => {
+      onSuccess: (data) => {
         queryClient.invalidateQueries({ queryKey: ["my-brand"] });
         queryClient.invalidateQueries({ queryKey: ["brands"] });
         queryClient.invalidateQueries({ queryKey: ["brand", brandId] });
         queryClient.invalidateQueries({ queryKey: ["featured-brands"] });
-        toast.success("Informations de la marque mises à jour avec succès!");
+        
+        // Update initial form values after successful save to reset change detection
+        const currentValues = form.getValues();
+        setInitialFormValues(currentValues);
+        
+        toast.success("Brand information updated successfully!");
       },
       onError: (error: Error) => {
         console.error("Error updating brand:", error);
-        toast.error(error.message || "Une erreur est survenue lors de la mise à jour");
+        toast.error(error.message || "An error occurred while updating");
       },
     });
 
     const onSubmit = (data: BrandFormData) => {
       // Validate brandId before submission
       if (!brandId || typeof brandId !== 'string') {
-        toast.error("Erreur: Aucune marque trouvée. Veuillez vous reconnecter.");
+        toast.error("Error: No brand found. Please sign in again.");
         return;
       }
 
@@ -196,34 +265,37 @@
       const logoUrl = data.logo_url?.trim() || brand?.logo_url || "";
       
       if (!logoUrl) {
-        toast.error("L'avatar est requis");
+        toast.error("Avatar is required");
         form.setError("logo_url", { 
           type: "manual", 
-          message: "L'avatar est requis" 
+          message: "Avatar is required" 
         });
         return;
       }
 
       // Validate required fields
       if (!data.name || !data.name.trim()) {
-        toast.error("Le nom de la marque est requis");
+        toast.error("Brand name is required");
         form.setError("name", { 
           type: "manual", 
-          message: "Le nom est requis" 
+          message: "Name is required" 
         });
         return;
       }
 
       if (!data.category_id || !data.category_id.trim()) {
-        toast.error("La catégorie est requise");
+        toast.error("Category is required");
         form.setError("category_id", { 
           type: "manual", 
-          message: "La catégorie est requise" 
+          message: "Category is required" 
         });
         return;
       }
 
-      // Prepare data for API - backend will handle empty string to null conversion
+      // Prepare data for API - combine +216 prefix with phone suffix if phone is provided
+      const phoneValue = data.phone?.trim() || "";
+      const fullPhoneNumber = phoneValue ? `+216${phoneValue.replace(/\D/g, '')}` : "";
+
       const submitData: BrandFormData = {
         category_id: data.category_id.trim(),
         name: data.name.trim(),
@@ -233,7 +305,7 @@
         website: data.website?.trim() || "",
         instagram: data.instagram?.trim() || "",
         facebook: data.facebook?.trim() || "",
-        phone: data.phone?.trim() || "",
+        phone: fullPhoneNumber || "",
         email: data.email?.trim() || "",
       };
 
@@ -247,7 +319,7 @@
             <div className="flex items-center justify-center min-h-[400px]">
               <div className="text-center">
                 <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto mb-4" />
-                <p className="text-muted-foreground">Chargement...</p>
+                <p className="text-muted-foreground">Loading...</p>
               </div>
             </div>
           </div>
@@ -262,10 +334,10 @@
             <div className="glass rounded-3xl p-8 md:p-12 text-center max-w-2xl mx-auto">
               <Store className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
               <h1 className="text-2xl font-display font-bold text-foreground mb-2">
-                Aucune marque trouvée
+                No Brand Found
               </h1>
               <p className="text-muted-foreground">
-                Vous devez créer une marque avant de pouvoir gérer vos informations.
+                You must create a brand before you can manage your information.
               </p>
             </div>
           </div>
@@ -276,6 +348,41 @@
     // Brand owners can always edit their brand details - no approval required
     const isFormDisabled = false;
 
+    // Watch all form values to detect changes
+    const currentValues = form.watch();
+
+    // Check if form has been modified
+    const hasFormChanged = (): boolean => {
+      if (!initialFormValues) return false;
+
+      // Compare all form fields
+      const fieldsToCompare: (keyof BrandFormData)[] = [
+        'category_id',
+        'name',
+        'description',
+        'logo_url',
+        'location',
+        'website',
+        'instagram',
+        'facebook',
+        'phone',
+        'email',
+      ];
+
+      for (const field of fieldsToCompare) {
+        const currentValue = (currentValues[field] || '').toString().trim();
+        const initialValue = (initialFormValues[field] || '').toString().trim();
+        
+        if (currentValue !== initialValue) {
+          return true;
+        }
+      }
+
+      return false;
+    };
+
+    const isFormModified = hasFormChanged();
+
     return (
       <PageLayout>
         <div className="container mx-auto px-4 py-12 max-w-4xl">
@@ -284,10 +391,10 @@
               <div className="flex items-center justify-between mb-4">
                 <div>
                   <h1 className="text-3xl md:text-4xl font-display font-bold text-foreground mb-2">
-                    Informations de la marque
+                    Brand Information
                   </h1>
                   <p className="text-muted-foreground">
-                    Modifiez les informations de votre marque
+                    Edit your brand information
                   </p>
                 </div>
                 {brand.status && (
@@ -302,10 +409,10 @@
                     className="text-sm"
                   >
                     {brand.status === "approved"
-                      ? "Approuvé"
+                      ? "Approved"
                       : brand.status === "pending"
-                      ? "En attente"
-                      : "Rejeté"}
+                      ? "Pending"
+                      : "Rejected"}
                   </Badge>
                 )}
               </div>
@@ -315,7 +422,7 @@
               {/* Avatar Upload */}
               <div className="space-y-2">
                 <Label htmlFor="avatar">
-                  Avatar de la marque <span className="text-destructive">*</span>
+                  Brand Avatar <span className="text-destructive">*</span>
                 </Label>
                 <div className="flex items-start gap-4">
                   <div className="flex-shrink-0">
@@ -340,7 +447,7 @@
                         }`}
                       >
                         <Upload className="h-4 w-4" />
-                        {avatarPreview ? "Changer l'avatar" : "Télécharger un avatar"}
+                        {avatarPreview ? "Change Avatar" : "Upload Avatar"}
                       </label>
                       <input
                         id="avatar"
@@ -364,15 +471,15 @@
                       )}
                     </div>
                     <p className="text-xs text-muted-foreground">
-                      Formats acceptés: JPEG, PNG, WebP (max 5MB)
+                      Accepted formats: JPEG, PNG, WebP (max 5MB)
                     </p>
                     <input
                       type="hidden"
                       {...form.register("logo_url", { 
-                        required: "L'avatar est requis",
+                        required: "Avatar is required",
                         validate: (value) => {
                           if (!value || value.trim() === "") {
-                            return "L'avatar est requis";
+                            return "Avatar is required";
                           }
                           return true;
                         }
@@ -390,18 +497,18 @@
               {/* Category */}
               <div className="space-y-2">
                 <Label htmlFor="category_id" className="text-base">
-                  Catégorie <span className="text-destructive">*</span>
+                  Category <span className="text-destructive">*</span>
                 </Label>
                 <Select
-                  value={form.watch("category_id")}
+                  value={form.watch("category_id") || ""}
                   onValueChange={(value) => {
                     form.setValue("category_id", value, { shouldValidate: true });
                     form.clearErrors("category_id");
                   }}
-                  disabled={isFormDisabled}
+                  disabled={isFormDisabled || !categories || categories.length === 0}
                 >
                   <SelectTrigger id="category_id">
-                    <SelectValue placeholder="Sélectionnez une catégorie" />
+                    <SelectValue placeholder="Select a category" />
                   </SelectTrigger>
                   <SelectContent>
                     {categories?.map((category) => (
@@ -421,22 +528,22 @@
               {/* Brand Name */}
               <div className="space-y-2">
                 <Label htmlFor="name">
-                  Nom de la marque <span className="text-destructive">*</span>
+                  Brand Name <span className="text-destructive">*</span>
                 </Label>
                 <Input
                   id="name"
                   {...form.register("name", { 
-                    required: "Le nom est requis",
+                    required: "Name is required",
                     minLength: {
                       value: 2,
-                      message: "Le nom doit contenir au moins 2 caractères"
+                      message: "Name must contain at least 2 characters"
                     },
                     maxLength: {
                       value: 100,
-                      message: "Le nom ne doit pas dépasser 100 caractères"
+                      message: "Name must not exceed 100 characters"
                     }
                   })}
-                  placeholder="Ex: Ma Belle Boutique"
+                  placeholder="Ex: My Beautiful Boutique"
                   disabled={isFormDisabled}
                 />
                 {form.formState.errors.name && (
@@ -452,7 +559,7 @@
                 <Textarea
                   id="description"
                   {...form.register("description")}
-                  placeholder="Décrivez votre marque en quelques mots..."
+                  placeholder="Describe your brand in a few words..."
                   rows={4}
                   disabled={isFormDisabled}
                 />
@@ -461,17 +568,32 @@
               {/* Contact Info */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="phone">Téléphone</Label>
-                  <Input
-                    id="phone"
-                    {...form.register("phone")}
-                    placeholder="+33 6 12 34 56 78"
-                    disabled={isFormDisabled}
-                  />
+                  <Label htmlFor="phone">Phone</Label>
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-center px-3 h-10 rounded-md border border-input bg-muted text-sm text-muted-foreground whitespace-nowrap">
+                      +216
+                    </div>
+                    <Input
+                      id="phone"
+                      type="tel"
+                      placeholder="XX XXX XXX"
+                      value={form.watch("phone") || ""}
+                      onChange={(e) => {
+                        // Only allow digits and limit to 8 digits
+                        const value = e.target.value.replace(/\D/g, '').slice(0, 8);
+                        form.setValue("phone", value, { shouldValidate: true });
+                      }}
+                      className="bg-background flex-1"
+                      disabled={isFormDisabled}
+                      maxLength={8}
+                      pattern="[2-9]\d{7}"
+                      title="Enter 8 digits starting with 2, 4, 5, or 9"
+                    />
+                  </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email de contact</Label>
+                  <Label htmlFor="email">Contact Email</Label>
                   <Input
                     id="email"
                     {...form.register("email")}
@@ -484,7 +606,7 @@
 
               {/* Location */}
               <div className="space-y-2">
-                <Label htmlFor="location">Localisation</Label>
+                <Label htmlFor="location">Location</Label>
                 <div className="flex gap-2">
                   <MapPin className="h-5 w-5 text-muted-foreground mt-2.5" />
                   <Input
@@ -499,7 +621,7 @@
               {/* Social Links */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="website">Site web</Label>
+                  <Label htmlFor="website">Website</Label>
                   <Input
                     id="website"
                     {...form.register("website")}
@@ -515,7 +637,7 @@
                     id="instagram"
                     {...form.register("instagram")}
                     type="url"
-                    placeholder="https://www.instagram.com/votrecompte"
+                    placeholder="https://www.instagram.com/youraccount"
                     disabled={isFormDisabled}
                   />
                 </div>
@@ -526,7 +648,7 @@
                     id="facebook"
                     {...form.register("facebook")}
                     type="url"
-                    placeholder="https://www.facebook.com/votrepage"
+                    placeholder="https://www.facebook.com/yourpage"
                     disabled={isFormDisabled}
                   />
                 </div>
@@ -538,17 +660,17 @@
                   type="submit"
                   size="lg"
                   className="flex-1"
-                  disabled={updateBrand.isPending || isFormDisabled}
+                  disabled={updateBrand.isPending || isFormDisabled || !isFormModified}
                 >
                   {updateBrand.isPending ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Enregistrement...
+                      Saving...
                     </>
                   ) : (
                     <>
                       <Save className="mr-2 h-4 w-4" />
-                      Enregistrer les modifications
+                      Save Changes
                     </>
                   )}
                 </Button>

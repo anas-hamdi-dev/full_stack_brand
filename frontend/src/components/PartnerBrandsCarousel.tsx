@@ -9,16 +9,18 @@ import aachekLogo from "@/assets/9achek.tn.jpg";
 import casetteLogo from "@/assets/casette.jpg";
 import qowaLogo from "@/assets/qowa.jpg";
 import arabiLogo from "@/assets/arabi.jpg";
+import dymesLogo from "@/assets/dymes.jpg";
 
 // Static partner brands data
 const staticBrands = [
-  { name: "Alsater", logo: alsaterLogo },
+  { name: "Alsater.tn", logo: alsaterLogo },
+  { name: "Qowa", logo: qowaLogo },
+  { name: "dymes", logo: dymesLogo },
+  { name: "9achek.tn", logo: aachekLogo },
   { name: "Spidz Genz", logo: spidzGenzLogo },
   { name: "Tanit", logo: tanitLogo },
   { name: "Tunstreet", logo: tunstreetLogo },
-  { name: "9achek", logo: aachekLogo },
   { name: "Casette", logo: casetteLogo },
-  { name: "Qowa", logo: qowaLogo },
   { name: "Arabi", logo: arabiLogo },
 ];
 

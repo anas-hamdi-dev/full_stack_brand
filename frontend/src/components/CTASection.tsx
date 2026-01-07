@@ -1,9 +1,9 @@
 import { Button } from "@/components/ui/button";
-import { Shirt, Check } from "lucide-react";
+import { Shirt, Check, TrendingUp } from "lucide-react";
 import { useAuthModal } from "@/contexts/AuthModalContext";
 
 const CTASection = () => {
-  const { openSignUp } = useAuthModal();
+  const { openSignUpAsBrandOwner } = useAuthModal();
 
   return (
     <section className="py-24 relative overflow-hidden">
@@ -25,13 +25,13 @@ const CTASection = () => {
             </h2>
 
             <p className="text-lg text-muted-foreground mb-10 max-w-xl mx-auto">
-              Join Tunisia's premier fashion directory and showcase your brand to thousands 
-              of fashion enthusiasts and potential customers every month.
+            List your brand and grow your audience nationwide.
             </p>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-slide-up-delay-3">
-              <Button variant="glass" size="xl" onClick={openSignUp}>
-                Submit Brand
+              <Button variant="glass" className="bg-gradient-primary text-primary-foreground hover:bg-gradient-primary/90 group" size="xl" onClick={openSignUpAsBrandOwner}>
+              Boost your brand's visibility now
+              <TrendingUp className="w-5 h-5 ml-2 transition-transform group-hover:scale-110" />
               </Button>
             </div>
 
@@ -48,13 +48,10 @@ const CTASection = () => {
                 <Check className="w-4 h-4 text-primary flex-shrink-0" />
                 <span>Free listing</span>
               </li>
+              
               <li className="flex items-center gap-2">
                 <Check className="w-4 h-4 text-primary flex-shrink-0" />
-                <span>No hidden fees</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <Check className="w-4 h-4 text-primary flex-shrink-0" />
-                <span>Verified fashion brands only</span>
+                <span>simple brand submission </span>
               </li>
             </ul>
           </div>

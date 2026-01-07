@@ -1,22 +1,22 @@
 import { Heart, Globe, Shirt } from "lucide-react";
 
-const features = [
-  {
-    icon: Heart,
-    title: "Support Local Fashion",
-    description: "Every brand listed is 100% Tunisian-owned, helping you invest in our local fashion industry.",
-  },
-  {
-    icon: Globe,
-    title: "Tunisian Style Worldwide",
-    description: "Connecting Tunisian fashion excellence with style enthusiasts globally.",
-  },
-  {
-    icon: Shirt,
-    title: "Curated Collections",
-    description: "From streetwear to traditional, we showcase the best of Tunisian fashion diversity.",
-  },
-];
+  const features = [
+    {
+      icon: Heart,
+      title: "Discover Local Fashion",
+      description: "Every brand listed is 100% Tunisian-owned, helping you invest in our local fashion industry.",
+    },
+    {
+      icon: Globe,
+      title: "Tunisian Style Worldwide",
+      description: "Connecting Tunisian fashion excellence with style enthusiasts globally.",
+    },
+    {
+      icon: Shirt,
+      title: "Curated Collections",
+      description: "From streetwear to traditional, we showcase the best of Tunisian fashion diversity.",
+    },
+  ];
 
 const FeaturesSection = () => {
   return (
@@ -68,6 +68,7 @@ const FeaturesSection = () => {
 };
 
 export default FeaturesSection;
+
 
 
 

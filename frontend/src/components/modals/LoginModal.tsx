@@ -40,8 +40,10 @@ export default function LoginModal({ open, onOpenChange, onSwitchToSignUp }: Log
       // Redirect based on role
       if (user.role === "client") {
         navigate("/client/dashboard");
+      } else if (user.role === "brand_owner") {
+        // Brand owners stay on current page or go to home
+        navigate("/");
       } else {
-        // For other roles, stay on current page or go to home
         navigate("/");
       }
     }
@@ -61,7 +63,20 @@ export default function LoginModal({ open, onOpenChange, onSwitchToSignUp }: Log
     const { error } = await signIn(email, password);
     
     if (error) {
-      toast.error(error.message || "Failed to sign in");
+      // Check if error is about admin access
+      if (error.message?.includes('Admin access denied') || error.message?.includes('admin panel')) {
+        const adminPanelUrl = import.meta.env.VITE_ADMIN_PANEL_URL || "http://localhost:5174";
+        toast.error(
+          error.message || "Admin users must use the admin panel to sign in. Redirecting...",
+          { duration: 5000 }
+        );
+        // Redirect to admin panel after a short delay
+        setTimeout(() => {
+          window.location.href = adminPanelUrl;
+        }, 2000);
+      } else {
+        toast.error(error.message || "Failed to sign in");
+      }
       setIsLoading(false);
       return;
     }
@@ -69,7 +84,7 @@ export default function LoginModal({ open, onOpenChange, onSwitchToSignUp }: Log
     setIsLoading(false);
     
     // The redirect will be handled by the useEffect hook when user state updates
-    toast.success("Connexion réussie");
+    toast.success("Signed in successfully");
   };
 
   return (
@@ -77,23 +92,23 @@ export default function LoginModal({ open, onOpenChange, onSwitchToSignUp }: Log
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="text-2xl font-display font-bold text-foreground text-center">
-            Connexion
+            Sign In
           </DialogTitle>
         </DialogHeader>
 
         <div className="space-y-6">
           <p className="text-muted-foreground text-center text-sm">
-            Connectez-vous à votre compte
+            Sign in to your account
           </p>
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Adresse email</Label>
+              <Label htmlFor="email">Email Address</Label>
               <Input
                 id="email"
                 type="email"
-                placeholder="Adresse email"
+                placeholder="Email address"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -102,7 +117,7 @@ export default function LoginModal({ open, onOpenChange, onSwitchToSignUp }: Log
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password">Mot de passe</Label>
+              <Label htmlFor="password">Password</Label>
               <Input
                 id="password"
                 type="password"
@@ -118,10 +133,10 @@ export default function LoginModal({ open, onOpenChange, onSwitchToSignUp }: Log
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Connexion...
+                  Signing in...
                 </>
               ) : (
-                "Se connecter"
+                "Sign In"
               )}
             </Button>
           </form>
@@ -129,7 +144,7 @@ export default function LoginModal({ open, onOpenChange, onSwitchToSignUp }: Log
           {/* Sign Up Link */}
           <div className="text-center">
             <p className="text-sm text-muted-foreground">
-              Vous n'avez pas de compte ?{" "}
+              Don't have an account?{" "}
               <button
                 type="button"
                 onClick={() => {
@@ -138,7 +153,7 @@ export default function LoginModal({ open, onOpenChange, onSwitchToSignUp }: Log
                 }}
                 className="text-primary hover:underline"
               >
-                S'inscrire
+                Sign Up
               </button>
             </p>
           </div>

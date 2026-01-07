@@ -18,9 +18,9 @@ const Index = () => {
         <meta name="keywords" content="Tunisian brands, Tunisia, local brands, Tunisian fashion, Tunisian food, Tunisian startups, Made in Tunisia" />
       </Helmet>
 
-      <div className="min-h-screen bg-background noise">
+      <div className="min-h-screen noise">
         <PageLayout>
-        <main>
+        <main className="relative">
           <HeroSection />
           <PartnerBrandsCarousel />
           <FeaturesSection />

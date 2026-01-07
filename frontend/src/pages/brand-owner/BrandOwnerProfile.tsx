@@ -47,7 +47,7 @@ export default function BrandOwnerProfile() {
         phone: data.phone?.trim() || undefined,
       });
       if (response.error) {
-        throw new Error(response.error.message || "Échec de la mise à jour du profil");
+        throw new Error(response.error.message || "Failed to update profile");
       }
       // Backend returns { user: {...} }, API client wraps it as { data: { user: {...} } }
       return (response.data as { user?: unknown })?.user || response.data;
@@ -56,16 +56,16 @@ export default function BrandOwnerProfile() {
       // Refresh user data to get updated information
       await refreshUser();
       queryClient.invalidateQueries({ queryKey: ["user"] });
-      toast.success("Profil mis à jour avec succès!");
+      toast.success("Profile updated successfully!");
     },
     onError: (error: Error) => {
-      toast.error(error.message || "Une erreur est survenue");
+      toast.error(error.message || "An error occurred");
     },
   });
 
   const onSubmit = (data: ProfileFormData) => {
     if (!data.full_name.trim()) {
-      toast.error("Le nom complet est requis");
+      toast.error("Full name is required");
       return;
     }
     updateProfile.mutate(data);
@@ -78,7 +78,7 @@ export default function BrandOwnerProfile() {
           <div className="flex items-center justify-center min-h-[400px]">
             <div className="text-center">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-              <p className="text-muted-foreground">Chargement...</p>
+              <p className="text-muted-foreground">Loading...</p>
             </div>
           </div>
         </div>
@@ -92,10 +92,10 @@ export default function BrandOwnerProfile() {
         <div className="glass rounded-3xl p-8 md:p-12">
           <div className="mb-8">
             <h1 className="text-3xl md:text-4xl font-display font-bold text-foreground mb-2">
-              Mon profil
+              My Profile
             </h1>
             <p className="text-muted-foreground">
-              Gérez vos informations personnelles
+              Manage your personal information
             </p>
           </div>
 
@@ -117,27 +117,27 @@ export default function BrandOwnerProfile() {
                 />
               </div>
               <p className="text-xs text-muted-foreground">
-                L'email ne peut pas être modifié
+                Email cannot be modified
               </p>
             </div>
 
             {/* Full Name */}
             <div className="space-y-2">
               <Label htmlFor="full_name" className="text-base">
-                Nom complet <span className="text-destructive">*</span>
+                Full Name <span className="text-destructive">*</span>
               </Label>
               <div className="relative">
                 <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                 <Input
                   id="full_name"
                   {...form.register("full_name", { 
-                    required: "Le nom complet est requis",
+                    required: "Full name is required",
                     minLength: {
                       value: 2,
-                      message: "Le nom doit contenir au moins 2 caractères"
+                      message: "Name must contain at least 2 characters"
                     }
                   })}
-                  placeholder="Votre nom complet"
+                  placeholder="Your full name"
                   className="pl-10"
                 />
               </div>
@@ -151,13 +151,13 @@ export default function BrandOwnerProfile() {
             {/* Phone */}
             <div className="space-y-2">
               <Label htmlFor="phone" className="text-base">
-                Téléphone
+                Phone
               </Label>
               <Input
                 id="phone"
                 {...form.register("phone")}
                 type="tel"
-                placeholder="+33 6 12 34 56 78"
+                placeholder="+216 12 345 678"
               />
               {form.formState.errors.phone && (
                 <p className="text-sm text-destructive mt-1">
@@ -175,11 +175,11 @@ export default function BrandOwnerProfile() {
                 disabled={updateProfile.isPending}
               >
                 {updateProfile.isPending ? (
-                  "Enregistrement..."
+                  "Saving..."
                 ) : (
                   <>
                     <Save className="mr-2 h-4 w-4" />
-                    Enregistrer les modifications
+                    Save Changes
                   </>
                 )}
               </Button>

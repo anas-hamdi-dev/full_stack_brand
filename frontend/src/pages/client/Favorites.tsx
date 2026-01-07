@@ -98,13 +98,13 @@ export default function Favorites() {
               <CardContent className="py-16 text-center">
                 <Heart className="h-20 w-20 text-destructive mx-auto mb-6 opacity-50" />
                 <CardTitle className="text-2xl font-display font-bold text-foreground mb-2">
-                  Erreur lors du chargement
+                  Error Loading
                 </CardTitle>
                 <CardDescription className="text-base mb-6">
-                  {error instanceof Error ? error.message : "Une erreur est survenue lors du chargement de vos favoris."}
+                  {error instanceof Error ? error.message : "An error occurred while loading your favorites."}
                 </CardDescription>
                 <Button variant="hero" onClick={() => window.location.reload()}>
-                  Réessayer
+                  Try Again
                 </Button>
               </CardContent>
             </Card>
@@ -222,21 +222,21 @@ export default function Favorites() {
               <CardContent className="py-16 text-center">
                 <Heart className="h-20 w-20 text-muted-foreground mx-auto mb-6 opacity-50" />
                 <CardTitle className="text-2xl font-display font-bold text-foreground mb-2">
-                  Aucun produit favorite
+                  No Favorite Products
                 </CardTitle>
                 <CardDescription className="text-base mb-6">
-                  Commencez à explorer les produits et ajoutez ceux que vous aimez à vos favoris.
+                  Start exploring products and add the ones you like to your favorites.
                 </CardDescription>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                   <Link to="/gallery">
                     <Button variant="hero" size="lg">
-                      Explorer la galerie
+                      Explore Gallery
                       <ArrowRight className="h-4 w-4 ml-2" />
                     </Button>
                   </Link>
                   <Link to="/brands">
                     <Button variant="outline" size="lg">
-                      Explorer les marques
+                      Explore Brands
                     </Button>
                   </Link>
                 </div>

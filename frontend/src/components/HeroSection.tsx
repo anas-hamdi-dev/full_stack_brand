@@ -1,10 +1,10 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Sparkles } from "lucide-react";
+import { ArrowRight, Sparkles, ShoppingBag } from "lucide-react";
 
 const HeroSection = () => {
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-24 pb-16">
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20 pb-16 -mt-4">
       {/* Background Effects */}
       <div className="absolute inset-0 bg-hero-glow" />
       <div className="absolute inset-0 grid-pattern opacity-30" />
@@ -38,6 +38,12 @@ const HeroSection = () => {
               <Button variant="hero" size="xl" className="group">
                 Explore Brands
                 <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
+              </Button>
+            </Link>
+            <Link to="/gallery">
+              <Button variant="outline" size="xl" className="group">
+                <ShoppingBag className="w-5 h-5 mr-2" />
+                View Gallery
               </Button>
             </Link>
           </div>

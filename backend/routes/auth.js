@@ -20,6 +20,14 @@ router.post('/signin', async (req, res) => {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
+    // Reject admin login attempts - admins should use the admin panel
+    if (user.role === 'admin') {
+      return res.status(403).json({ 
+        error: 'Admin access denied',
+        message: 'Admin users must sign in through the admin panel. Please use the admin panel login page.'
+      });
+    }
+
     // Generate JWT token with 7-day expiration
     const token = jwt.sign(
       { userId: user._id, role: user.role },
@@ -47,12 +55,13 @@ router.post('/signup', async (req, res) => {
       console.log('Signup request body:', { email, password: password ? '***' : undefined, full_name, phone, role });
     }
 
-    if (!email || !password || !role) {
+    if (!email || !password || !role || !phone) {
       return res.status(400).json({ 
-        error: 'Email, password, and role are required',
+        error: 'Email, password, phone, and role are required',
         received: { 
           email: !!email, 
           password: !!password, 
+          phone: !!phone,
           role: !!role 
         }
       });
@@ -60,6 +69,16 @@ router.post('/signup', async (req, res) => {
 
     if (!['client', 'brand_owner'].includes(role)) {
       return res.status(400).json({ error: 'Invalid role. Must be "client" or "brand_owner"' });
+    }
+
+    // Validate Tunisian phone number format
+    // Format: +216 followed by 8 digits, first digit after country code must be 2, 4, 5, or 9
+    const cleanedPhone = phone.replace(/[\s-]/g, '');
+    const tunisianPhoneRegex = /^\+216[2-9]\d{7}$/;
+    if (!tunisianPhoneRegex.test(cleanedPhone)) {
+      return res.status(400).json({ 
+        error: 'Invalid phone number format. Must be a valid Tunisian mobile number (+216 followed by 8 digits starting with 2, 4, 5, or 9)' 
+      });
     }
 
     // Check if user already exists
@@ -76,7 +95,7 @@ router.post('/signup', async (req, res) => {
       email,
       password, // Will be hashed by pre-save hook
       full_name: defaultFullName,
-      phone: phone || undefined,
+      phone: cleanedPhone, // Use cleaned phone number
       role
     });
 

@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Menu, X, User, LogOut, Heart, Package, UserCircle, Store } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import logo from "@/assets/logo.svg";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,7 +15,7 @@ import {
 import { toast } from "sonner";
 import { useAuthModal } from "@/contexts/AuthModalContext";
 
-const Navbar = () => {
+const   Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
   const { user, isClient, isBrandOwner, signOut } = useAuth();
@@ -22,7 +23,7 @@ const Navbar = () => {
 
   const handleSignOut = async () => {
     await signOut();
-    toast.success("Déconnexion réussie");
+    toast.success("Signed out successfully");
     navigate("/");
   };
 
@@ -51,20 +52,29 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="w-full px-4 py-4">
-      <div className="container mx-auto">
+    <nav className="w-full px-4 py-4 relative -mb-4">
+      {/* Background Effects - matching HeroSection */}
+      <div className="absolute inset-0" style={{ background: 'var(--gradient-hero)' }} />
+      <div className="absolute inset-0 grid-pattern opacity-20" />
+      
+      {/* Subtle Animated Orbs */}
+      <div className="absolute top-0 left-1/4 w-64 h-64 bg-primary/10 rounded-full blur-[100px] animate-pulse-slow" />
+      <div className="absolute top-0 right-1/4 w-48 h-48 bg-secondary/8 rounded-full blur-[80px] animate-pulse-slow" style={{ animationDelay: '2s' }} />
+
+      <div className="container mx-auto relative z-10">
         <div className="glass rounded-2xl px-6 py-4 flex items-center justify-between">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-primary flex items-center justify-center">
-              <span className="font-display font-bold text-xl text-primary-foreground">M</span>
-            </div>
-            <span className="font-display font-bold text-xl text-foreground">el mall</span>
+            <img 
+              src={logo} 
+              alt="el mall logo" 
+              className="h-10 w-auto object-contain"
+            />
           </Link>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-8">
-            {navLinks.map((link) => (
+            {navLinks.map((link) => ( 
               link.href.startsWith("/#") ? (
                 <button
                   key={link.name}
@@ -96,34 +106,34 @@ const Navbar = () => {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
-                  <DropdownMenuLabel>Mon compte</DropdownMenuLabel>
+                  <DropdownMenuLabel>My Account</DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   {isBrandOwner && (
                     <>
                       <DropdownMenuItem onClick={() => navigate("/brand-owner/profile")}>
                         <UserCircle className="h-4 w-4 mr-2" />
-                        Mon profil
+                        My Profile
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => navigate("/brand-owner/brand")}>
                         <Store className="h-4 w-4 mr-2" />
-                        Ma marque
+                        My Brand
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => navigate("/brand-owner/products")}>
                         <Package className="h-4 w-4 mr-2" />
-                        Mes produits
+                        My Products
                       </DropdownMenuItem>
                     </>
                   )}
                   {isClient && (
                     <DropdownMenuItem onClick={() => navigate("/client/favorites")}>
                       <Heart className="h-4 w-4 mr-2" />
-                      Mes Favoris
+                      My Favorites
                     </DropdownMenuItem>
                   )}
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleSignOut}>
                     <LogOut className="h-4 w-4 mr-2" />
-                    Se déconnecter
+                    Sign Out
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -136,15 +146,15 @@ const Navbar = () => {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48">
-                  <DropdownMenuLabel>Se connecter</DropdownMenuLabel>
+                  <DropdownMenuLabel>Sign In</DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={openLogin}>
                     <User className="h-4 w-4 mr-2" />
-                    Connexion
+                    Login
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={openSignUp}>
                     <User className="h-4 w-4 mr-2" />
-                    S'inscrire
+                    Sign Up
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -198,7 +208,7 @@ const Navbar = () => {
                           }}
                         >
                           <UserCircle className="h-4 w-4 mr-2" />
-                          Mon profil
+                          My Profile
                         </Button>
                         <Button 
                           variant="ghost" 
@@ -209,7 +219,7 @@ const Navbar = () => {
                           }}
                         >
                           <Store className="h-4 w-4 mr-2" />
-                          Ma marque
+                          My Brand
                         </Button>
                         <Button 
                           variant="ghost" 
@@ -220,7 +230,7 @@ const Navbar = () => {
                           }}
                         >
                           <Package className="h-4 w-4 mr-2" />
-                          Mes produits
+                          My Products
                         </Button>
                       </>
                     )}
@@ -234,7 +244,7 @@ const Navbar = () => {
                         }}
                       >
                         <Heart className="h-4 w-4 mr-2" />
-                        Mes Favoris
+                        My Favorites
                       </Button>
                     )}
                     <Button 
@@ -246,7 +256,7 @@ const Navbar = () => {
                       }}
                     >
                       <LogOut className="h-4 w-4 mr-2" />
-                      Se déconnecter
+                      Sign Out
                     </Button>
                   </>
                 ) : (
@@ -260,7 +270,7 @@ const Navbar = () => {
                       }}
                     >
                       <User className="h-4 w-4 mr-2" />
-                      Connexion
+                      Login
                     </Button>
                     <Button 
                       variant="hero" 
@@ -270,7 +280,7 @@ const Navbar = () => {
                         openSignUp();
                       }}
                     >
-                      S'inscrire
+                      Sign Up
                     </Button>
                   </>
                 )}

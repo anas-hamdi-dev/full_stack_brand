@@ -15,7 +15,17 @@ router.patch('/me', authenticate, async (req, res) => {
     const updateData = {};
 
     if (full_name !== undefined) updateData.full_name = full_name;
-    if (phone !== undefined) updateData.phone = phone;
+    if (phone !== undefined) {
+      // Validate Tunisian phone number format
+      const cleanedPhone = phone.replace(/[\s-]/g, '');
+      const tunisianPhoneRegex = /^\+216[2-9]\d{7}$/;
+      if (!tunisianPhoneRegex.test(cleanedPhone)) {
+        return res.status(400).json({ 
+          error: 'Invalid phone number format. Must be a valid Tunisian mobile number (+216 followed by 8 digits starting with 2, 4, 5, or 9)' 
+        });
+      }
+      updateData.phone = cleanedPhone;
+    }
 
     const user = await User.findByIdAndUpdate(
       req.userId,

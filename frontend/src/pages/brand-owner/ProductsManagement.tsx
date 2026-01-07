@@ -46,19 +46,19 @@ export default function ProductsManagement() {
     mutationFn: async (data: { name: string; description?: string | null; price?: number | null; images: string[] }) => {
       const response = await productsApi.create(data);
       if (response.error) {
-        throw new Error(response.error.message || "Échec de la création du produit");
+        throw new Error(response.error.message || "Failed to create product");
       }
       return response.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["brand-products", brandId] });
       queryClient.invalidateQueries({ queryKey: ["products"] });
-      toast.success("Produit créé avec succès!");
+      toast.success("Product created successfully!");
       setIsModalOpen(false);
       setEditingProduct(null);
     },
     onError: (error: Error) => {
-      toast.error(error.message || "Une erreur est survenue");
+      toast.error(error.message || "An error occurred");
     },
   });
 
@@ -66,19 +66,19 @@ export default function ProductsManagement() {
     mutationFn: async ({ id, data }: { id: string; data: { name?: string; description?: string | null; price?: number | null; images?: string[] } }) => {
       const response = await productsApi.update(id, data);
       if (response.error) {
-        throw new Error(response.error.message || "Échec de la mise à jour du produit");
+        throw new Error(response.error.message || "Failed to update product");
       }
       return response.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["brand-products", brandId] });
       queryClient.invalidateQueries({ queryKey: ["products"] });
-      toast.success("Produit mis à jour avec succès!");
+      toast.success("Product updated successfully!");
       setIsModalOpen(false);
       setEditingProduct(null);
     },
     onError: (error: Error) => {
-      toast.error(error.message || "Une erreur est survenue");
+      toast.error(error.message || "An error occurred");
     },
   });
 
@@ -86,18 +86,18 @@ export default function ProductsManagement() {
     mutationFn: async (id: string) => {
       const response = await productsApi.delete(id);
       if (response.error) {
-        throw new Error(response.error.message || "Échec de la suppression du produit");
+        throw new Error(response.error.message || "Failed to delete product");
       }
       return response.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["brand-products", brandId] });
       queryClient.invalidateQueries({ queryKey: ["products"] });
-      toast.success("Produit supprimé avec succès!");
+      toast.success("Product deleted successfully!");
       setDeletingProductId(null);
     },
     onError: (error: Error) => {
-      toast.error(error.message || "Une erreur est survenue");
+      toast.error(error.message || "An error occurred");
     },
   });
 
@@ -131,10 +131,10 @@ export default function ProductsManagement() {
           <div className="glass rounded-3xl p-8 md:p-12 text-center max-w-2xl mx-auto">
             <Package className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
             <h1 className="text-2xl font-display font-bold text-foreground mb-2">
-              Aucune marque trouvée
+              No Brand Found
             </h1>
             <p className="text-muted-foreground">
-              Vous devez créer une marque avant de pouvoir gérer vos produits.
+              You must create a brand before you can manage your products.
             </p>
           </div>
         </div>
@@ -148,10 +148,10 @@ export default function ProductsManagement() {
         <div className="mb-8 flex items-center justify-between">
           <div>
             <h1 className="text-3xl md:text-4xl font-display font-bold text-foreground mb-2">
-              Gérer mes produits
+              Manage My Products
             </h1>
             <p className="text-muted-foreground">
-              Créez, modifiez et supprimez vos produits
+              Create, edit, and delete your products
             </p>
           </div>
           <Button
@@ -162,7 +162,7 @@ export default function ProductsManagement() {
             size="lg"
           >
             <Plus className="mr-2 h-4 w-4" />
-            Ajouter un produit
+            Add Product
           </Button>
         </div>
 
@@ -170,17 +170,17 @@ export default function ProductsManagement() {
           <div className="flex items-center justify-center min-h-[400px]">
             <div className="text-center">
               <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto mb-4" />
-              <p className="text-muted-foreground">Chargement des produits...</p>
+              <p className="text-muted-foreground">Loading products...</p>
             </div>
           </div>
         ) : products.length === 0 ? (
           <div className="glass rounded-3xl p-12 text-center">
             <Package className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
             <h2 className="text-2xl font-display font-bold text-foreground mb-2">
-              Aucun produit
+              No Products
             </h2>
             <p className="text-muted-foreground mb-6">
-              Commencez par ajouter votre premier produit
+              Start by adding your first product
             </p>
             <Button
               onClick={() => {
@@ -190,7 +190,7 @@ export default function ProductsManagement() {
               size="lg"
             >
               <Plus className="mr-2 h-4 w-4" />
-              Ajouter un produit
+              Add Product
             </Button>
           </div>
         ) : (
@@ -228,7 +228,7 @@ export default function ProductsManagement() {
                       </Badge>
                     ) : (
                       <Badge variant="outline" className="text-sm">
-                        Prix sur demande
+                        Price on request
                       </Badge>
                     )}
                     {product.images && product.images.length > 1 && (
@@ -245,7 +245,7 @@ export default function ProductsManagement() {
                       onClick={() => handleEdit(product)}
                     >
                       <Edit className="h-4 w-4 mr-2" />
-                      Modifier
+                      Edit
                     </Button>
                     <Button
                       variant="destructive"
@@ -254,7 +254,7 @@ export default function ProductsManagement() {
                       onClick={() => handleDelete(product._id || product.id)}
                     >
                       <Trash2 className="h-4 w-4 mr-2" />
-                      Supprimer
+                      Delete
                     </Button>
                   </div>
                 </CardContent>
@@ -285,19 +285,19 @@ export default function ProductsManagement() {
         <AlertDialog open={!!deletingProductId} onOpenChange={(open) => !open && setDeletingProductId(null)}>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Confirmer la suppression</AlertDialogTitle>
+              <AlertDialogTitle>Confirm Deletion</AlertDialogTitle>
               <AlertDialogDescription>
-                Êtes-vous sûr de vouloir supprimer ce produit ? Cette action est irréversible.
+                Are you sure you want to delete this product? This action cannot be undone.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>Annuler</AlertDialogCancel>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
               <AlertDialogAction
                 onClick={confirmDelete}
                 className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                 disabled={deleteProduct.isPending}
               >
-                {deleteProduct.isPending ? "Suppression..." : "Supprimer"}
+                {deleteProduct.isPending ? "Deleting..." : "Delete"}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAuthModal } from "@/contexts/AuthModalContext";
 import { useNavigate } from "react-router-dom";
@@ -20,7 +20,10 @@ const signUpSchema = z.object({
   email: z.string().email("Please enter a valid email"),
   password: z.string().min(8, "Password must be at least 8 characters"),
   full_name: z.string().min(2, "Name must be at least 2 characters"),
-  phone: z.string().optional(),
+  phone: z.string()
+    .min(8, "Phone number must be 8 digits")
+    .max(8, "Phone number must be 8 digits")
+    .regex(/^[2-9]\d{7}$/, "Invalid Tunisian phone number. Must start with 2, 4, 5, or 9 and be 8 digits"),
   role: z.enum(["client", "brand_owner"]),
   acceptTerms: z.boolean().refine(val => val === true, "You must accept the terms and conditions"),
 });
@@ -34,17 +37,27 @@ interface SignUpModalProps {
 }
 
 export default function SignUpModal({ open, onOpenChange, onSwitchToLogin }: SignUpModalProps) {
+  const { defaultSignUpRole } = useAuthModal();
   const [formData, setFormData] = useState<SignUpFormData>({
     email: "",
     password: "",
     full_name: "",
     phone: "",
-    role: "client",
+    role: defaultSignUpRole || "client",
     acceptTerms: false,
   });
   const [isLoading, setIsLoading] = useState(false);
   const { signUp } = useAuth();
   const navigate = useNavigate();
+
+  // Update role when modal opens and defaultSignUpRole changes
+  useEffect(() => {
+    if (open && defaultSignUpRole) {
+      setFormData(prev => ({ ...prev, role: defaultSignUpRole }));
+    } else if (open && !defaultSignUpRole) {
+      setFormData(prev => ({ ...prev, role: "client" }));
+    }
+  }, [open, defaultSignUpRole]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -58,11 +71,14 @@ export default function SignUpModal({ open, onOpenChange, onSwitchToLogin }: Sig
 
     setIsLoading(true);
     
+    // Combine country code with phone number
+    const fullPhoneNumber = `+216${formData.phone}`;
+    
     const { error, user: newUser } = await signUp({
       email: formData.email,
       password: formData.password,
       full_name: formData.full_name,
-      phone: formData.phone || undefined,
+      phone: fullPhoneNumber,
       role: formData.role,
     });
     
@@ -79,12 +95,12 @@ export default function SignUpModal({ open, onOpenChange, onSwitchToLogin }: Sig
     
     // Handle post-signup flow based on role
     if (formData.role === "brand_owner") {
-      toast.success("Compte créé avec succès! Vous pouvez maintenant créer votre marque depuis votre profil.");
+      toast.success("Account created successfully! You can now create your brand from your profile.");
       // Brand owners can create their brand later from their profile
       navigate("/");
     } else {
       // For clients, redirect to dashboard
-      toast.success("Compte créé avec succès!");
+      toast.success("Account created successfully!");
       navigate("/client/dashboard");
     }
     
@@ -104,20 +120,20 @@ export default function SignUpModal({ open, onOpenChange, onSwitchToLogin }: Sig
       <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-3xl font-display font-bold text-foreground text-center">
-            Créer un nouveau compte
+            Create New Account
           </DialogTitle>
         </DialogHeader>
 
         <div className="space-y-6">
           <p className="text-muted-foreground text-center text-sm">
-            Rejoignez notre communauté de mode tunisienne
+            Join our Tunisian fashion community
           </p>
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Role Selection */}
             <div className="space-y-3">
-              <Label>Je suis un(e) :</Label>
+              <Label>I am a: <span className="text-destructive">*</span></Label>
               <div className="grid grid-cols-2 gap-4">
                 <button
                   type="button"
@@ -151,7 +167,7 @@ export default function SignUpModal({ open, onOpenChange, onSwitchToLogin }: Sig
                 >
                   <div className="flex flex-col items-center gap-3">
                     <Store className="h-8 w-8 text-foreground" />
-                    <span className="font-medium text-foreground">Vendeur</span>
+                    <span className="font-medium text-foreground">Brand Owner</span>
                   </div>
                   {formData.role === "brand_owner" && (
                     <div className="absolute top-2 right-2">
@@ -166,11 +182,11 @@ export default function SignUpModal({ open, onOpenChange, onSwitchToLogin }: Sig
 
             {/* Full Name */}
             <div className="space-y-2">
-              <Label htmlFor="full_name">Nom complet</Label>
+              <Label htmlFor="full_name">Full Name <span className="text-destructive">*</span></Label>
               <Input
                 id="full_name"
                 type="text"
-                placeholder="Votre nom complet"
+                placeholder="Your full name"
                 value={formData.full_name}
                 onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
                 required
@@ -180,11 +196,11 @@ export default function SignUpModal({ open, onOpenChange, onSwitchToLogin }: Sig
 
             {/* Email */}
             <div className="space-y-2">
-              <Label htmlFor="email">Adresse email</Label>
+              <Label htmlFor="email">Email Address <span className="text-destructive">*</span></Label>
               <Input
                 id="email"
                 type="email"
-                placeholder="Adresse email"
+                placeholder="Email address"
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 required
@@ -194,24 +210,40 @@ export default function SignUpModal({ open, onOpenChange, onSwitchToLogin }: Sig
 
             {/* Phone */}
             <div className="space-y-2">
-              <Label htmlFor="phone">Téléphone (optionnel)</Label>
-              <Input
-                id="phone"
-                type="tel"
-                placeholder="+216 12 345 678"
-                value={formData.phone}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                className="bg-background"
-              />
+              <Label htmlFor="phone">
+                Phone Number <span className="text-destructive">*</span>
+              </Label>
+              <div className="flex items-center gap-2">
+                <div className="flex items-center px-3 h-10 rounded-md border border-input bg-muted text-sm text-muted-foreground whitespace-nowrap">
+                  +216
+                </div>
+                <Input
+                  id="phone"
+                  type="tel"
+                  placeholder="12 345 678"
+                  value={formData.phone}
+                  onChange={(e) => {
+                    // Only allow digits and limit to 8 digits
+                    const value = e.target.value.replace(/\D/g, '').slice(0, 8);
+                    setFormData({ ...formData, phone: value });
+                  }}
+                  className="bg-background flex-1"
+                  required
+                  maxLength={8}
+                  pattern="[2-9]\d{7}"
+                  title="Enter 8 digits starting with 2, 4, 5, or 9"
+                />
+              </div>
+              
             </div>
 
             {/* Password */}
             <div className="space-y-2">
-              <Label htmlFor="password">Mot de passe (minimum 8 caractères)</Label>
+              <Label htmlFor="password">Password (minimum 8 characters) <span className="text-destructive">*</span></Label>
               <Input
                 id="password"
                 type="password"
-                placeholder="Mot de passe"
+                placeholder="Password"
                 value={formData.password}
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 required
@@ -228,10 +260,10 @@ export default function SignUpModal({ open, onOpenChange, onSwitchToLogin }: Sig
                 className="mt-1"
               />
               <Label htmlFor="acceptTerms" className="text-sm leading-relaxed cursor-pointer">
-                En cliquant sur Inscription, vous acceptez nos{" "}
-                <a href="#" className="underline hover:text-primary">Termes et conditions</a> et{" "}
-                <a href="#" className="underline hover:text-primary">Politique de confidentialité</a>.
-                Vous pouvez recevoir des notifications par SMS et par e-mail de notre part.
+                By clicking Sign Up, you agree to our{" "}
+                <a href="#" className="underline hover:text-primary">Terms and Conditions</a> and{" "}
+                <a href="#" className="underline hover:text-primary">Privacy Policy</a>.
+                You may receive SMS and email notifications from us. <span className="text-destructive">*</span>
               </Label>
             </div>
 
@@ -240,10 +272,10 @@ export default function SignUpModal({ open, onOpenChange, onSwitchToLogin }: Sig
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Inscription en cours...
+                  Signing up...
                 </>
               ) : (
-                "S'inscrire"
+                "Sign Up"
               )}
             </Button>
           </form>
@@ -251,7 +283,7 @@ export default function SignUpModal({ open, onOpenChange, onSwitchToLogin }: Sig
           {/* Login Link */}
           <div className="text-center">
             <p className="text-sm text-muted-foreground">
-              Vous avez déjà un compte ?{" "}
+              Already have an account?{" "}
               <button
                 type="button"
                 onClick={() => {
@@ -260,7 +292,7 @@ export default function SignUpModal({ open, onOpenChange, onSwitchToLogin }: Sig
                 }}
                 className="text-primary hover:underline"
               >
-                Se connecter
+                Sign In
               </button>
             </p>
           </div>

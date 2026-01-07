@@ -3,10 +3,12 @@ import { createContext, useContext, useState, ReactNode } from "react";
 interface AuthModalContextType {
   loginOpen: boolean;
   signUpOpen: boolean;
+  defaultSignUpRole: "client" | "brand_owner" | null;
   setLoginOpen: (open: boolean) => void;
   setSignUpOpen: (open: boolean) => void;
   openLogin: () => void;
   openSignUp: () => void;
+  openSignUpAsBrandOwner: () => void;
   closeModals: () => void;
 }
 
@@ -15,6 +17,7 @@ const AuthModalContext = createContext<AuthModalContextType | undefined>(undefin
 export function AuthModalProvider({ children }: { children: ReactNode }) {
   const [loginOpen, setLoginOpen] = useState(false);
   const [signUpOpen, setSignUpOpen] = useState(false);
+  const [defaultSignUpRole, setDefaultSignUpRole] = useState<"client" | "brand_owner" | null>(null);
 
   const openLogin = () => {
     setSignUpOpen(false);
@@ -23,12 +26,28 @@ export function AuthModalProvider({ children }: { children: ReactNode }) {
 
   const openSignUp = () => {
     setLoginOpen(false);
+    setDefaultSignUpRole(null);
     setSignUpOpen(true);
+  };
+
+  const openSignUpAsBrandOwner = () => {
+    setLoginOpen(false);
+    setDefaultSignUpRole("brand_owner");
+    setSignUpOpen(true);
+  };
+
+  const handleSetSignUpOpen = (open: boolean) => {
+    setSignUpOpen(open);
+    if (!open) {
+      // Reset default role when modal closes
+      setDefaultSignUpRole(null);
+    }
   };
 
   const closeModals = () => {
     setLoginOpen(false);
     setSignUpOpen(false);
+    setDefaultSignUpRole(null);
   };
 
   return (
@@ -36,10 +55,12 @@ export function AuthModalProvider({ children }: { children: ReactNode }) {
       value={{
         loginOpen,
         signUpOpen,
+        defaultSignUpRole,
         setLoginOpen,
-        setSignUpOpen,
+        setSignUpOpen: handleSetSignUpOpen,
         openLogin,
         openSignUp,
+        openSignUpAsBrandOwner,
         closeModals,
       }}
     >

@@ -69,32 +69,84 @@ async function apiFetch<T>(
     headers['Authorization'] = `Bearer ${token}`;
   }
 
-  const response = await fetch(url, {
-    ...options,
-    headers,
-  });
+  // Check if this is an auth endpoint (signin/signup) - these can return 401 for invalid credentials
+  const isAuthEndpoint = endpoint.includes('/auth/signin') || endpoint.includes('/auth/signup');
 
-  // Handle 401 Unauthorized - token expired or invalid
-  if (response.status === 401) {
-    removeAuthToken();
-    window.location.href = '/admin/login';
-    throw new ApiError('Authentication required', 401);
+  let response: Response;
+  try {
+    response = await fetch(url, {
+      ...options,
+      headers,
+    });
+  } catch (error) {
+    // Network error
+    throw new ApiError(
+      error instanceof Error ? error.message : 'Network error. Please check your connection.',
+      0
+    );
   }
 
-  const data = await response.json();
+  // Try to parse JSON, but handle non-JSON responses gracefully
+  let data: unknown;
+  const contentType = response.headers.get('content-type');
+  const isJson = contentType && contentType.includes('application/json');
+
+  if (isJson) {
+    try {
+      data = await response.json();
+    } catch (parseError) {
+      // Response is JSON but parsing failed
+      throw new ApiError(
+        `Failed to parse response: ${response.statusText}`,
+        response.status
+      );
+    }
+  } else {
+    // Not JSON, try to get text
+    const text = await response.text();
+    data = text ? { error: text } : {};
+  }
 
   if (!response.ok) {
-    const errorMessage = data.error?.message || `HTTP ${response.status}: ${response.statusText}`;
-    throw new ApiError(errorMessage, response.status, data.error?.code);
+    // Extract error message from various possible formats
+    let errorMessage = 'An error occurred';
+    const errorData = data as { error?: string | { message?: string; code?: string }; message?: string };
+    
+    if (typeof errorData.error === 'string') {
+      errorMessage = errorData.error;
+    } else if (errorData.error && typeof errorData.error === 'object' && errorData.error.message) {
+      errorMessage = errorData.error.message;
+    } else if (errorData.message) {
+      errorMessage = errorData.message;
+    } else {
+      errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+    }
+
+    // For auth endpoints, return the actual error message (don't redirect)
+    if (isAuthEndpoint) {
+      const errorCode = typeof errorData.error === 'object' ? errorData.error.code : undefined;
+      throw new ApiError(errorMessage, response.status, errorCode);
+    }
+
+    // For other endpoints, handle 401 as authentication required
+    if (response.status === 401) {
+      removeAuthToken();
+      window.location.href = '/admin/login';
+      throw new ApiError('Authentication required', 401);
+    }
+
+    // For other errors, return the error message
+    const errorCode = typeof errorData.error === 'object' ? errorData.error.code : undefined;
+    throw new ApiError(errorMessage, response.status, errorCode);
   }
 
-  return data;
+  return data as T;
 }
 
 // Auth API
 export const authApi = {
   signIn: async (email: string, password: string) => {
-    const response = await apiFetch<{ user: any; token: string }>('/auth/signin', {
+    const response = await apiFetch<{ user: any; token: string }>('/admin/auth/signin', {
       method: 'POST',
       body: JSON.stringify({ email, password }),
     });

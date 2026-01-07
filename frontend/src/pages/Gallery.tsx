@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { Helmet } from "react-helmet";
-import PageLayout from "@/components/PageLayout";
+import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { useProducts } from "@/hooks/useProducts";
 import ProductCard from "@/components/ProductCard";
@@ -61,8 +61,9 @@ const Gallery = () => {
         <meta name="description" content="Browse our gallery of fashion items from various Tunisian brands. Discover unique clothing and accessories." />
       </Helmet>
       
-      <PageLayout>
-      <main className="pb-20">
+      <Navbar />
+      
+      <main className="pt-32 pb-20">
         <div className="container mx-auto px-4">
           {/* Search Bar */}
           <div className="mb-12">
@@ -154,8 +155,8 @@ const Gallery = () => {
           )}
         </div>
       </main>
+      
       <Footer />
-      </PageLayout>
     </div>
   );
 };

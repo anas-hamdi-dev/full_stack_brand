@@ -34,7 +34,7 @@ export default function ProtectedRoute({
 
   useEffect(() => {
     if (!isLoading && !user && (requireAuth || requireClient || requireBrandOwner)) {
-      toast.info("Veuillez vous connecter pour accéder à cette page");
+      toast.info("Please sign in to access this page");
       openLogin();
     }
   }, [isLoading, user, requireAuth, requireClient, requireBrandOwner, openLogin]);
@@ -59,8 +59,8 @@ export default function ProtectedRoute({
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center glass rounded-3xl p-8 max-w-md">
-          <h1 className="text-2xl font-display font-bold text-foreground mb-2">Accès refusé</h1>
-          <p className="text-muted-foreground">Cette zone est réservée aux clients uniquement.</p>
+          <h1 className="text-2xl font-display font-bold text-foreground mb-2">Access Denied</h1>
+          <p className="text-muted-foreground">This area is reserved for clients only.</p>
         </div>
       </div>
     );
@@ -70,8 +70,8 @@ export default function ProtectedRoute({
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center glass rounded-3xl p-8 max-w-md">
-          <h1 className="text-2xl font-display font-bold text-foreground mb-2">Accès refusé</h1>
-          <p className="text-muted-foreground">Cette zone est réservée aux vendeurs uniquement.</p>
+          <h1 className="text-2xl font-display font-bold text-foreground mb-2">Access Denied</h1>
+          <p className="text-muted-foreground">This area is reserved for brand owners only.</p>
         </div>
       </div>
     );
@@ -83,8 +83,8 @@ export default function ProtectedRoute({
       return (
         <div className="min-h-screen flex items-center justify-center bg-background">
           <div className="text-center glass rounded-3xl p-8 max-w-md">
-            <h1 className="text-2xl font-display font-bold text-foreground mb-2">Accès refusé</h1>
-            <p className="text-muted-foreground">Cette zone est réservée aux vendeurs uniquement.</p>
+            <h1 className="text-2xl font-display font-bold text-foreground mb-2">Access Denied</h1>
+            <p className="text-muted-foreground">This area is reserved for brand owners only.</p>
           </div>
         </div>
       );

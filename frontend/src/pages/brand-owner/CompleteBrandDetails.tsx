@@ -104,13 +104,13 @@ export default function CompleteBrandDetails() {
 
     // Validate file type
     if (!["image/jpeg", "image/png", "image/webp", "image/jpg"].includes(file.type)) {
-      toast.error("Seuls les fichiers JPEG, PNG et WebP sont autorisés");
+      toast.error("Only JPEG, PNG and WebP files are allowed");
       return;
     }
 
     // Validate file size (5MB max)
     if (file.size > 5 * 1024 * 1024) {
-      toast.error("La taille du fichier ne doit pas dépasser 5MB");
+      toast.error("File size must not exceed 5MB");
       return;
     }
 
@@ -138,7 +138,7 @@ export default function CompleteBrandDetails() {
       if (brandId && existingBrand) {
         // Ensure brandId is a valid string before making the API call
         if (typeof brandId !== 'string') {
-          throw new Error("Erreur: ID de marque invalide. Veuillez vous reconnecter.");
+          throw new Error("Error: Invalid brand ID. Please sign in again.");
         }
         // Update existing brand - preserve existing status, don't send status field
         const brandData = {
@@ -146,7 +146,7 @@ export default function CompleteBrandDetails() {
         };
         const response = await brandsApi.update(brandId, brandData);
         if (response.error) {
-          throw new Error(response.error.message || "Échec de la mise à jour de la marque");
+          throw new Error(response.error.message || "Failed to update brand");
         }
         return response.data;
       } else {
@@ -157,7 +157,7 @@ export default function CompleteBrandDetails() {
         };
         const response = await brandsApi.create(brandData);
         if (response.error) {
-          throw new Error(response.error.message || "Échec de la création de la marque");
+          throw new Error(response.error.message || "Failed to create brand");
         }
         return response.data;
       }
@@ -177,11 +177,11 @@ export default function CompleteBrandDetails() {
         console.error("Error refreshing user:", error);
       }
       
-      toast.success(brandId ? "Les détails de votre marque ont été mis à jour avec succès!" : "Les détails de votre marque ont été soumis avec succès!");
+      toast.success(brandId ? "Your brand details have been updated successfully!" : "Your brand details have been submitted successfully!");
       setCurrentStep(TOTAL_STEPS);
     },
     onError: (error: Error) => {
-      toast.error(error.message || "Une erreur est survenue");
+      toast.error(error.message || "An error occurred");
     },
   });
 
@@ -195,18 +195,18 @@ export default function CompleteBrandDetails() {
       if (currentStep === 2) {
         form.trigger("category_id");
         if (!form.getValues("category_id")) {
-          toast.error("Veuillez sélectionner une catégorie");
+          toast.error("Please select a category");
           return;
         }
       }
       if (currentStep === 3) {
         form.trigger(["name", "logo_url"]);
         if (!form.getValues("name")) {
-          toast.error("Le nom de la marque est requis");
+          toast.error("Brand name is required");
           return;
         }
         if (!form.getValues("logo_url")) {
-          toast.error("L'avatar de la marque est requis");
+          toast.error("Brand avatar is required");
           return;
         }
       }
@@ -214,7 +214,7 @@ export default function CompleteBrandDetails() {
         // Submit form on step 4 before going to step 5
         const isValid = await form.trigger();
         if (!isValid) {
-          toast.error("Veuillez corriger les erreurs dans le formulaire");
+          toast.error("Please correct the errors in the form");
           return;
         }
         onSubmit(form.getValues());
@@ -249,19 +249,19 @@ export default function CompleteBrandDetails() {
             <div className="mb-6">
               <Store className="h-16 w-16 mx-auto text-primary mb-4" />
               <h1 className="text-3xl md:text-4xl font-display font-bold text-foreground mb-4">
-                Bienvenue dans la configuration de votre marque
+                Welcome to Brand Setup
               </h1>
               <p className="text-muted-foreground text-lg">
-                Pour offrir la meilleure expérience à vos clients et être visible sur notre plateforme,
-                nous avons besoin de quelques informations sur votre marque.
+                To provide the best experience for your clients and be visible on our platform,
+                we need some information about your brand.
               </p>
             </div>
             <div className="space-y-4">
               <p className="text-sm text-muted-foreground">
-                Ce processus ne prendra que quelques minutes. Vous pourrez modifier ces informations plus tard.
+                This process will only take a few minutes. You can modify this information later.
               </p>
               <Button onClick={nextStep} size="lg" className="w-full md:w-auto">
-                Commencer <ArrowRight className="ml-2 h-4 w-4" />
+                Get Started <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </div>
           </div>
@@ -279,28 +279,28 @@ export default function CompleteBrandDetails() {
             <div className="mb-6">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-2xl md:text-3xl font-display font-bold text-foreground">
-                  Étape 2: Catégorie
+                  Step 2: Category
                 </h2>
                 <span className="text-sm text-muted-foreground">
                   {currentStep} / {TOTAL_STEPS}
                 </span>
               </div>
               <p className="text-muted-foreground">
-                Sélectionnez la catégorie qui correspond le mieux à votre marque.
+                Select the category that best matches your brand.
               </p>
             </div>
 
             <form className="space-y-6">
               <div className="space-y-2">
                 <Label htmlFor="category_id" className="text-base">
-                  Catégorie <span className="text-destructive">*</span>
+                  Category <span className="text-destructive">*</span>
                 </Label>
                 <Select
                   value={form.watch("category_id")}
                   onValueChange={(value) => form.setValue("category_id", value)}
                 >
                   <SelectTrigger id="category_id">
-                    <SelectValue placeholder="Sélectionnez une catégorie" />
+                    <SelectValue placeholder="Select a category" />
                   </SelectTrigger>
                   <SelectContent>
                     {categories?.map((category) => (
@@ -314,10 +314,10 @@ export default function CompleteBrandDetails() {
 
               <div className="flex gap-4 pt-4">
                 <Button type="button" variant="outline" onClick={prevStep} className="flex-1">
-                  <ArrowLeft className="mr-2 h-4 w-4" /> Précédent
+                  <ArrowLeft className="mr-2 h-4 w-4" /> Previous
                 </Button>
                 <Button type="button" onClick={nextStep} className="flex-1">
-                  Suivant <ArrowRight className="ml-2 h-4 w-4" />
+                  Next <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </div>
             </form>
@@ -336,14 +336,14 @@ export default function CompleteBrandDetails() {
             <div className="mb-6">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-2xl md:text-3xl font-display font-bold text-foreground">
-                  Étape 3: Détails de la marque
+                  Step 3: Brand Details
                 </h2>
                 <span className="text-sm text-muted-foreground">
                   {currentStep} / {TOTAL_STEPS}
                 </span>
               </div>
               <p className="text-muted-foreground">
-                Renseignez les informations principales de votre marque.
+                Fill in the main information about your brand.
               </p>
             </div>
 
@@ -351,7 +351,7 @@ export default function CompleteBrandDetails() {
               {/* Avatar Upload */}
               <div className="space-y-2">
                 <Label htmlFor="avatar">
-                  Avatar de la marque <span className="text-destructive">*</span>
+                  Brand Avatar <span className="text-destructive">*</span>
                 </Label>
                 <div className="flex items-start gap-4">
                   <div className="flex-shrink-0">
@@ -372,7 +372,7 @@ export default function CompleteBrandDetails() {
                         className="flex items-center gap-2 px-4 py-2 border border-input bg-background hover:bg-accent hover:text-accent-foreground rounded-md cursor-pointer text-sm font-medium transition-colors"
                       >
                         <Upload className="h-4 w-4" />
-                        {avatarPreview ? "Changer l'avatar" : "Télécharger un avatar"}
+                        {avatarPreview ? "Change Avatar" : "Upload Avatar"}
                       </label>
                       <input
                         id="avatar"
@@ -394,11 +394,11 @@ export default function CompleteBrandDetails() {
                       )}
                     </div>
                     <p className="text-xs text-muted-foreground">
-                      Formats acceptés: JPEG, PNG, WebP (max 5MB)
+                      Accepted formats: JPEG, PNG, WebP (max 5MB)
                     </p>
                     <input
                       type="hidden"
-                      {...form.register("logo_url", { required: "L'avatar est requis" })}
+                      {...form.register("logo_url", { required: "Avatar is required" })}
                     />
                   </div>
                 </div>
@@ -406,12 +406,12 @@ export default function CompleteBrandDetails() {
 
               <div className="space-y-2">
                 <Label htmlFor="name">
-                  Nom de la marque <span className="text-destructive">*</span>
+                  Brand Name <span className="text-destructive">*</span>
                 </Label>
                 <Input
                   id="name"
-                  {...form.register("name", { required: "Le nom est requis" })}
-                  placeholder="Ex: Ma Belle Boutique"
+                  {...form.register("name", { required: "Name is required" })}
+                  placeholder="Ex: My Beautiful Boutique"
                 />
               </div>
 
@@ -420,14 +420,14 @@ export default function CompleteBrandDetails() {
                 <Textarea
                   id="description"
                   {...form.register("description")}
-                  placeholder="Décrivez votre marque en quelques mots..."
+                  placeholder="Describe your brand in a few words..."
                   rows={4}
                 />
               </div>
 
 
               <div className="space-y-2">
-                <Label htmlFor="phone">Téléphone</Label>
+                <Label htmlFor="phone">Phone</Label>
                 <Input
                   id="phone"
                   {...form.register("phone")}
@@ -436,7 +436,7 @@ export default function CompleteBrandDetails() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="email">Email de contact</Label>
+                <Label htmlFor="email">Contact Email</Label>
                 <Input
                   id="email"
                   {...form.register("email")}
@@ -447,10 +447,10 @@ export default function CompleteBrandDetails() {
 
               <div className="flex gap-4 pt-4">
                 <Button type="button" variant="outline" onClick={prevStep} className="flex-1">
-                  <ArrowLeft className="mr-2 h-4 w-4" /> Précédent
+                  <ArrowLeft className="mr-2 h-4 w-4" /> Previous
                 </Button>
                 <Button type="button" onClick={nextStep} className="flex-1">
-                  Suivant <ArrowRight className="ml-2 h-4 w-4" />
+                  Next <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </div>
             </form>
@@ -469,20 +469,20 @@ export default function CompleteBrandDetails() {
             <div className="mb-6">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-2xl md:text-3xl font-display font-bold text-foreground">
-                  Étape 4: Localisation et réseaux sociaux
+                  Step 4: Location and Social Media
                 </h2>
                 <span className="text-sm text-muted-foreground">
                   {currentStep} / {TOTAL_STEPS}
                 </span>
               </div>
               <p className="text-muted-foreground">
-                Ajoutez votre localisation et vos liens sociaux (optionnel).
+                Add your location and social links (optional).
               </p>
             </div>
 
             <form className="space-y-6">
               <div className="space-y-2">
-                <Label htmlFor="location">Localisation</Label>
+                <Label htmlFor="location">Location</Label>
                 <div className="flex gap-2">
                   <MapPin className="h-5 w-5 text-muted-foreground mt-2.5" />
                   <Input
@@ -494,7 +494,7 @@ export default function CompleteBrandDetails() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="website">Site web</Label>
+                <Label htmlFor="website">Website</Label>
                 <Input
                   id="website"
                   {...form.register("website")}
@@ -509,7 +509,7 @@ export default function CompleteBrandDetails() {
                   id="instagram"
                   {...form.register("instagram")}
                   type="url"
-                  placeholder="https://www.instagram.com/votrecompte"
+                  placeholder="https://www.instagram.com/youraccount"
                 />
               </div>
 
@@ -519,13 +519,13 @@ export default function CompleteBrandDetails() {
                   id="facebook"
                   {...form.register("facebook")}
                   type="url"
-                  placeholder="https://www.facebook.com/votrepage"
+                  placeholder="https://www.facebook.com/yourpage"
                 />
               </div>
 
               <div className="flex gap-4 pt-4">
                 <Button type="button" variant="outline" onClick={prevStep} className="flex-1">
-                  <ArrowLeft className="mr-2 h-4 w-4" /> Précédent
+                  <ArrowLeft className="mr-2 h-4 w-4" /> Previous
                 </Button>
                 <Button 
                   type="button" 
@@ -534,10 +534,10 @@ export default function CompleteBrandDetails() {
                   disabled={createOrUpdateBrand.isPending}
                 >
                   {createOrUpdateBrand.isPending ? (
-                    "Soumission en cours..."
+                    "Submitting..."
                   ) : (
                     <>
-                      Soumettre <ArrowRight className="ml-2 h-4 w-4" />
+                      Submit <ArrowRight className="ml-2 h-4 w-4" />
                     </>
                   )}
                 </Button>
@@ -558,21 +558,21 @@ export default function CompleteBrandDetails() {
             <div className="mb-6">
               <CheckCircle2 className="h-16 w-16 mx-auto text-green-500 mb-4" />
               <h1 className="text-3xl md:text-4xl font-display font-bold text-foreground mb-4">
-                Félicitations!
+                Congratulations!
               </h1>
               <p className="text-muted-foreground text-lg mb-4">
-                Les détails de votre marque ont été soumis avec succès.
+                Your brand details have been submitted successfully.
               </p>
               <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-4 mt-6">
                 <p className="text-sm text-foreground">
-                  <strong>Votre marque est en cours d'examen.</strong>
+                  <strong>Your brand is under review.</strong>
                   <br />
-                  L'approbation peut prendre jusqu'à 24 heures. Certaines fonctionnalités seront disponibles après l'approbation.
+                  Approval may take up to 24 hours. Some features will be available after approval.
                 </p>
               </div>
             </div>
             <Button onClick={goToDashboard} size="lg" className="w-full md:w-auto">
-              Aller au tableau de bord
+              Go to Dashboard
             </Button>
           </div>
         </div>

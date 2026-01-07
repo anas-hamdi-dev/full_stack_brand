@@ -209,17 +209,21 @@ export default function ProductManagementModal({
 
           {/* Price */}
           <div className="space-y-2">
-            <Label htmlFor="productPrice">Price ($)</Label>
-            <Input
-              id="productPrice"
-              type="number"
-              step="0.01"
-              min="0"
-              placeholder="0.00"
-              value={formData.price}
-              onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-              disabled={isLoading}
-            />
+            <Label htmlFor="productPrice">Price (TND)</Label>
+            <div className="flex items-center gap-2">
+              <Input
+                id="productPrice"
+                type="number"
+                step="0.01"
+                min="0"
+                placeholder="0.00"
+                value={formData.price}
+                onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                disabled={isLoading}
+                className="flex-1"
+              />
+              <span className="text-sm text-muted-foreground whitespace-nowrap">TND</span>
+            </div>
           </div>
 
           {/* External URL */}

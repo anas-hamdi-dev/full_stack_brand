@@ -98,7 +98,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return { error: new Error("Access denied. Admin role required.") };
       }
     } catch (error: any) {
-      return { error: error instanceof Error ? error : new Error(error.message || "Login failed") };
+      // Extract error message from ApiError or other error types
+      let errorMessage = "Login failed";
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      } else if (error?.message) {
+        errorMessage = error.message;
+      } else if (typeof error === 'string') {
+        errorMessage = error;
+      }
+      return { error: new Error(errorMessage) };
     }
   };
 

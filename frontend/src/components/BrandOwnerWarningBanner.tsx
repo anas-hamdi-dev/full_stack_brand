@@ -28,8 +28,8 @@ export default function BrandOwnerWarningBanner() {
     return null;
   }
 
-  const message = "Les détails de votre marque sont incomplets. Veuillez compléter les informations de votre marque pour accéder à toutes les fonctionnalités.";
-  const buttonText = "Compléter les détails";
+  const message = "Your brand details are incomplete. Please complete your brand information to access all features.";
+  const buttonText = "Complete Details";
 
   return (
     <div className="w-full bg-yellow-500/10 border-b border-yellow-500/20">
@@ -38,7 +38,7 @@ export default function BrandOwnerWarningBanner() {
           <div className="flex items-center gap-3 flex-1">
             <AlertTriangle className="h-5 w-5 text-yellow-600 dark:text-yellow-400 flex-shrink-0" />
             <p className="text-sm text-foreground">
-              <span className="font-medium">Détails incomplets</span>
+              <span className="font-medium">Incomplete Details</span>
               {" "}
               {message}
             </p>
@@ -55,7 +55,7 @@ export default function BrandOwnerWarningBanner() {
             <button
               onClick={() => setIsDismissed(true)}
               className="p-1 hover:bg-yellow-500/20 rounded transition-colors"
-              aria-label="Fermer"
+              aria-label="Close"
             >
               <X className="h-4 w-4 text-foreground" />
             </button>
