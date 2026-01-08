@@ -220,7 +220,7 @@ export default function SignUpModal({ open, onOpenChange, onSwitchToLogin }: Sig
                 <Input
                   id="phone"
                   type="tel"
-                  placeholder="12 345 678"
+                  placeholder="XX XXX XXX"
                   value={formData.phone}
                   onChange={(e) => {
                     // Only allow digits and limit to 8 digits

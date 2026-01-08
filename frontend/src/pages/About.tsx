@@ -27,7 +27,7 @@ const About = () => {
             {/* What We Do */}
             <div className="mb-20">
               <h2 className="font-display text-3xl font-bold text-foreground mb-6">Our Mission</h2>
-              <p className="text-muted-foreground max-w-2xl">
+              <p className="text-muted-foreground max-w-2xl text-lg">
                 We make discovering Tunisian brands simple. Whether you're a fashion lover or a brand owner, Elmall connects you with the best of Tunisian style.
               </p>
             </div>
@@ -36,12 +36,29 @@ const About = () => {
             <div className="mb-20">
               <h2 className="font-display text-3xl font-bold text-foreground mb-12 text-center">Our Values</h2>
               <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {[
-                  { icon: Heart, title: "Passion", description: "Love for Tunisian fashion and culture" },
-                  { icon: Users, title: "Community", description: "Connecting brands and fashion lovers" },
-                  { icon: Target, title: "Quality", description: "Only verified, quality brands" },
-                  { icon: Globe, title: "Visibility", description: "Showcasing Tunisian fashion globally" },
-                ].map((value) => (
+               
+              {[
+  { 
+    icon: Heart, 
+    title: "Passion", 
+    description: "We love consuming 100% Tounsi." 
+  },
+  { 
+    icon: Users, 
+    title: "Community", 
+    description: "Connecting brands and fans." 
+  },
+  { 
+    icon: Target, 
+    title: "Support", 
+    description: "Helping local brands grow." 
+  },
+  { 
+    icon: Globe, 
+    title: "Reach", 
+    description: "Showcasing Tunisian brands  everywhere." 
+  },
+].map((value) => (
                   <div key={value.title} className="glass rounded-2xl p-6 text-center hover-lift">
                     <div className="w-14 h-14 rounded-xl bg-gradient-primary flex items-center justify-center mx-auto mb-4">
                       <value.icon className="w-7 h-7 text-primary-foreground" />
