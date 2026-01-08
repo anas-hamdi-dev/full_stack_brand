@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { Facebook, Instagram } from "lucide-react";
-import logo from "@/assets/logo.png";
+import logo from "@/assets/logo.svg";
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();

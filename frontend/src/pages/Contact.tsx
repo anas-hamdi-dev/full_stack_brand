@@ -1,13 +1,13 @@
-import { Link } from "react-router-dom";
 import PageLayout from "@/components/PageLayout";
 import Footer from "@/components/Footer";
-import { ArrowLeft, Mail, Phone, MapPin, Send } from "lucide-react";
+import { Mail, Phone, MapPin, Send } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
 import { contactMessagesApi } from "@/lib/api";
+import BackButton from "@/components/BackButton";
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -51,10 +51,14 @@ const Contact = () => {
       <main className="pb-16">
         <div className="container mx-auto px-4">
           {/* Header */}
-
+          <div className="mb-8">
+            <div className="mb-6">
+              <BackButton to="/" label="Back to Home" />
+            </div>
             <h1 className="font-display text-4xl md:text-5xl font-bold text-foreground mb-4">
               Get in <span className="text-gradient-primary">Touch</span>
             </h1>
+          </div>
 
 
           <div className="grid lg:grid-cols-2 gap-12">
@@ -140,7 +144,7 @@ const Contact = () => {
                     </div>
                     <div>
                       <h3 className="font-semibold text-foreground">Location</h3>
-                      <p className="text-muted-foreground">Tunis,Bizerte</p>
+                      <p className="text-muted-foreground">Bizerte, Tunisia</p>
                     </div>
                   </div>
                 </div>

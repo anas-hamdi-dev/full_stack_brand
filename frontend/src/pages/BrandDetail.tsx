@@ -3,8 +3,10 @@ import { Helmet } from "react-helmet";
 import PageLayout from "@/components/PageLayout";
 import Footer from "@/components/Footer";
 import { useBrand, useBrandProducts } from "@/hooks/useBrands";
-import { MapPin, Globe, Mail, Phone, Instagram, Facebook, ArrowLeft, CheckCircle2, Crown } from "lucide-react";
+import { MapPin, Globe, Mail, Phone, Instagram, Facebook, CheckCircle2, Crown } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import BackButton from "@/components/BackButton";
 import ProductCard from "@/components/ProductCard";
 
 const BrandDetail = () => {
@@ -36,9 +38,7 @@ const BrandDetail = () => {
         <PageLayout>
         <div className="pb-20 container mx-auto px-4 text-center">
           <h1 className="text-3xl font-display font-bold text-foreground mb-4">Brand Not Found</h1>
-          <Link to="/brands">
-            <Button variant="hero">Back to Brands</Button>
-          </Link>
+          <BackButton to="/brands" label="Back to Brands" />
         </div>
         <Footer />
         </PageLayout>
@@ -57,10 +57,9 @@ const BrandDetail = () => {
       <main className="pb-20">
         <div className="container mx-auto px-4">
           {/* Back Button */}
-          <Link to="/brands" className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground mb-8 transition-colors">
-            <ArrowLeft className="w-4 h-4" />
-            Back to Brands
-          </Link>
+          <div className="mb-8">
+            <BackButton to="/brands" label="Back to Brands" />
+          </div>
 
           {/* Brand Header - Glass Morphism Theme */}
           <div className="glass rounded-3xl p-8 md:p-12 mb-12 hover-lift relative overflow-hidden">
@@ -71,43 +70,42 @@ const BrandDetail = () => {
             <div className="relative z-10 flex flex-col items-center text-center">
               {/* Circular Logo */}
               <div className="relative mb-6">
-                <div className="w-32 h-32 md:w-40 md:h-40 rounded-full bg-gradient-to-br from-primary/20 to-secondary/20 backdrop-blur-sm border-2 border-primary/30 flex flex-col items-center justify-center p-4 shadow-lg glow-primary">
+                <Avatar className="w-32 h-32 md:w-40 md:h-40 border-2 border-primary/30 shadow-lg bg-gradient-to-br from-primary/20 to-secondary/20 backdrop-blur-sm">
                   {brand.logo_url ? (
-                    <img 
-                      src={brand.logo_url} 
+                    <AvatarImage
+                      src={brand.logo_url}
                       alt={`${brand.name} logo`}
-                      className="w-full h-full object-contain rounded-full"
+                      className="object-cover"
                     />
-                  ) : (
-                    <div className="text-center">
+                  ) : null}
+                  <AvatarFallback className="bg-gradient-to-br from-primary/20 to-secondary/20 text-foreground">
+                    <div className="flex flex-col items-center justify-center">
                       {/* Crown Icon Inside Logo */}
                       <div className="flex items-center justify-center gap-1 mb-2">
                         <div className="w-4 h-px bg-primary/40"></div>
                         <Crown className="w-4 h-4 text-primary" />
                         <div className="w-4 h-px bg-primary/40"></div>
                       </div>
-                      {/* Brand Name Inside Logo */}
-                      <div className="text-foreground">
-                        <div className="text-xs md:text-sm font-display font-bold leading-tight">
-                          {brand.name.split(' ').slice(0, 2).join(' ').toUpperCase()}
-                        </div>
+                      {/* Brand Name Initials */}
+                      <div className="text-xs md:text-sm font-display font-bold leading-tight">
+                        {brand.name
+                          .split(' ')
+                          .map(word => word.charAt(0))
+                          .join('')
+                          .toUpperCase()
+                          .slice(0, 2)}
                       </div>
                     </div>
-                  )}
-                </div>
+                  </AvatarFallback>
+                </Avatar>
               </div>
+              
+              {/* Brand Name */}
+              <h1 className="font-display font-bold text-2xl md:text-3xl lg:text-4xl text-foreground mb-3">
+                {brand.name}
+              </h1>
 
-              {/* Brand Name with Verification Badge */}
-              <div className="flex items-center justify-center gap-2 mb-2">
-                <h1 className="font-display font-bold text-2xl md:text-3xl lg:text-4xl text-foreground">
-                  {brand.name}
-                </h1>
-                {brand.is_verified && (
-                  <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center flex-shrink-0 shadow-lg">
-                    <CheckCircle2 className="w-4 h-4 text-primary-foreground" />
-                  </div>
-                )}
-              </div>
+              
 
               {/* Category Badge */}
               {brand?.category?.name && (
@@ -123,13 +121,6 @@ const BrandDetail = () => {
                 </p>
               )}
 
-              {/* Rating */}
-              {brand.rating && (
-                <div className="flex items-center gap-1 text-sm text-muted-foreground mb-6">
-                  <span className="text-primary font-semibold">{brand.rating.toFixed(1)}</span>
-                  <span>⭐</span>
-                </div>
-              )}
             </div>
 
             {/* Contact Information */}
@@ -189,7 +180,7 @@ const BrandDetail = () => {
             <h2 className="font-display font-bold text-2xl text-foreground mb-8">Shop Collection</h2>
             
             {productsLoading ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
                 {[1, 2, 3, 4].map((i) => (
                   <div key={i} className="animate-pulse">
                     <div className="h-64 bg-muted rounded-2xl" />
@@ -199,8 +190,8 @@ const BrandDetail = () => {
                 ))}
               </div>
             ) : products && products.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {products.map((product: any) => (
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+                {products.map((product) => (
                   <ProductCard
                     key={product.id || product._id}
                     id={product.id || product._id}

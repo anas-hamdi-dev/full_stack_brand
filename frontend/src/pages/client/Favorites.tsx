@@ -8,6 +8,7 @@ import { Heart, ArrowRight, X, ExternalLink } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
+import BackButton from "@/components/BackButton";
 
 export default function Favorites() {
   const { user } = useAuth();
@@ -72,6 +73,9 @@ export default function Favorites() {
         <div className="container mx-auto px-4">
           {/* Header */}
           <div className="mb-8">
+            <div className="mb-6">
+              <BackButton to="/" label="Back to Home" />
+            </div>
             <h1 className="font-display text-4xl md:text-5xl font-bold text-foreground mb-2">
               Favorites
             </h1>

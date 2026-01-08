@@ -12,7 +12,7 @@ import {
 import { useAuth } from "@/contexts/AuthContext";
 import { useSidebar } from "@/contexts/SidebarContext";
 import { cn } from "@/lib/utils";
-import logo from "@/assets/logo.png";
+import logo from "@/assets/logo.svg";
 
 const navItems = [
   { icon: LayoutDashboard, label: "Dashboard", href: "/admin" },

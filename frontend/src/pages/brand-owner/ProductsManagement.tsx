@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { Plus, Edit, Trash2, Package, Loader2 } from "lucide-react";
 import PageLayout from "@/components/PageLayout";
 import ProductManagementModal from "@/components/modals/ProductManagementModal";
+import BackButton from "@/components/BackButton";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -62,7 +63,7 @@ export default function ProductsManagement() {
   });
 
   const updateProduct = useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: { name?: string; description?: string | null; price?: number | null; images?: string[] } }) => {
+    mutationFn: async ({ id, data }: { id: string; data: { name?: string; description?: string | null; price: number; images?: string[] } }) => {
       const response = await productsApi.update(id, data);
       if (response.error) {
         throw new Error(response.error.message || "Failed to update product");
@@ -100,7 +101,7 @@ export default function ProductsManagement() {
     },
   });
 
-  const handleSubmit = (productData: { name: string; description?: string | null; price?: number | null; images: string[] }) => {
+  const handleSubmit = (productData: { name: string; description?: string | null; price: number; images: string[] }) => {
     if (editingProduct) {
       updateProduct.mutate({ id: editingProduct._id, data: productData });
     } else {
@@ -144,6 +145,9 @@ export default function ProductsManagement() {
   return (
     <PageLayout>
       <div className="container mx-auto px-4 py-12 max-w-6xl">
+        <div className="mb-6">
+          <BackButton to="/" label="Back to home" />
+        </div>
         <div className="mb-8 flex items-center justify-between">
           <div>
             <h1 className="text-3xl md:text-4xl font-display font-bold text-foreground mb-2">
@@ -271,7 +275,7 @@ export default function ProductsManagement() {
             id: editingProduct._id || editingProduct.id || "",
             name: editingProduct.name,
             description: editingProduct.description || "",
-            price: editingProduct.price || null,
+            price: editingProduct.price ?? 0,
             images: editingProduct.images || [],
             brand_id: editingProduct.brand_id || null,
             created_at: editingProduct.createdAt || "",

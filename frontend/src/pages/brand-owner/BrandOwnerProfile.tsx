@@ -9,6 +9,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { User, Save, Mail } from "lucide-react";
 import PageLayout from "@/components/PageLayout";
+import BackButton from "@/components/BackButton";
 
 interface ProfileFormData {
   full_name: string;
@@ -193,6 +194,9 @@ export default function BrandOwnerProfile() {
   return (
     <PageLayout>
       <div className="container mx-auto px-4 py-12 max-w-4xl">
+        <div className="mb-6">
+          <BackButton to="/" label="Back to home" />
+        </div>
         <div className="glass rounded-3xl p-8 md:p-12">
           <div className="mb-8">
             <h1 className="text-3xl md:text-4xl font-display font-bold text-foreground mb-2">

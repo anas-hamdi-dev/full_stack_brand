@@ -21,6 +21,7 @@
   import PageLayout from "@/components/PageLayout";
   import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
   import { Badge } from "@/components/ui/badge";
+  import BackButton from "@/components/BackButton";
 
   interface BrandFormData {
     category_id: string;
@@ -408,6 +409,9 @@
     return (
       <PageLayout>
         <div className="container mx-auto px-4 py-12 max-w-4xl">
+          <div className="mb-6">
+          <BackButton to="/" label="Back to home" />
+          </div>
           <div className="glass rounded-3xl p-8 md:p-12">
             <div className="mb-8">
               <div className="flex items-center justify-between mb-4">

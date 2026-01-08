@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Search, Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import BackButton from "@/components/BackButton";
 import {
   Select,
   SelectContent,
@@ -39,13 +40,13 @@ const Gallery = () => {
     
     // Apply search filter
     if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase().trim();
+    const query = searchQuery.toLowerCase().trim();
       filtered = filtered.filter((product) => {
-        const nameMatch = product.name.toLowerCase().includes(query);
-        const descriptionMatch = product.description?.toLowerCase().includes(query);
-        const brandMatch = product.brand?.name.toLowerCase().includes(query);
-        return nameMatch || descriptionMatch || brandMatch;
-      });
+      const nameMatch = product.name.toLowerCase().includes(query);
+      const descriptionMatch = product.description?.toLowerCase().includes(query);
+      const brandMatch = product.brand?.name.toLowerCase().includes(query);
+      return nameMatch || descriptionMatch || brandMatch;
+    });
     }
     
     // Apply category filter
@@ -92,24 +93,27 @@ const Gallery = () => {
       
       <PageLayout>
         <main className="pb-16">
-          <div className="container mx-auto px-4">
+        <div className="container mx-auto px-4">
             {/* Header */}
-            <div className="mb-12">
-              <h1 className="font-display text-4xl md:text-5xl font-bold text-foreground mb-4">
-                <span className="text-gradient-primary">Gallery</span>
-              </h1>
+          <div className="mb-12">
+            <div className="mb-6">
+              <BackButton to="/" label="Back to Home" />
             </div>
+            <h1 className="font-display text-4xl md:text-5xl font-bold text-foreground mb-4">
+               <span className="text-gradient-primary">Gallery</span>
+            </h1>
+          </div>
 
             {/* Filters */}
             <div className="flex flex-col md:flex-row gap-4 mb-8">
               <div className="relative flex-1 max-w-md">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                <Input
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+              <Input
                   placeholder="Search products..."
-                  value={searchQuery}
-                  onChange={(e) => handleSearchChange(e.target.value)}
+                value={searchQuery}
+                onChange={(e) => handleSearchChange(e.target.value)}
                   className="pl-10"
-                />
+              />
               </div>
               <Select value={selectedCategory} onValueChange={handleCategoryChange}>
                 <SelectTrigger className="w-full md:w-[200px]">
@@ -132,13 +136,13 @@ const Gallery = () => {
               {filteredProducts?.length || 0} products found
             </p>
 
-            {/* Gallery Grid */}
+          {/* Gallery Grid */}
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
               {isLoading ? (
                 Array.from({ length: 12 }).map((_, i) => (
-                  <Skeleton key={i} className="h-[280px] rounded-2xl" />
+                <Skeleton key={i} className="h-[280px] rounded-2xl" />
                 ))
-              ) : displayedProducts.length > 0 ? (
+          ) : displayedProducts.length > 0 ? (
                 displayedProducts.map((product) => (
                   <ProductCard
                     key={product.id}
@@ -165,24 +169,24 @@ const Gallery = () => {
                   )}
                 </div>
               )}
-            </div>
-
-            {/* Load More Button */}
-            {!isLoading && displayedProducts.length > 0 && hasMore && (
-              <div className="flex justify-center mt-8">
-                <Button
-                  variant="outline"
-                  size="lg"
-                  onClick={handleLoadMore}
-                  className="min-w-[200px]"
-                >
-                  Load More
-                </Button>
               </div>
-            )}
-          </div>
-        </main>
-        <Footer />
+
+              {/* Load More Button */}
+            {!isLoading && displayedProducts.length > 0 && hasMore && (
+                <div className="flex justify-center mt-8">
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    onClick={handleLoadMore}
+                    className="min-w-[200px]"
+                  >
+                  Load More
+                  </Button>
+            </div>
+          )}
+        </div>
+      </main>
+      <Footer />
       </PageLayout>
     </div>
   );

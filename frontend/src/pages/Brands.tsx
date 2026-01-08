@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
 import PageLayout from "@/components/PageLayout";
 import Footer from "@/components/Footer";
 import BrandCard from "@/components/BrandCard";
@@ -8,7 +7,8 @@ import { useCategories } from "@/hooks/useCategories";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Filter, ArrowLeft } from "lucide-react";
+import { Search, Filter } from "lucide-react";
+import BackButton from "@/components/BackButton";
 import {
   Select,
   SelectContent,
@@ -39,11 +39,12 @@ const Brands = () => {
         <div className="container mx-auto px-4">
           {/* Header */}
           <div className="mb-12">
-            
+            <div className="mb-6">
+              <BackButton to="/" label="Back to Home" />
+            </div>
             <h1 className="font-display text-4xl md:text-5xl font-bold text-foreground mb-4">
               All <span className="text-gradient-primary">Brands</span>
             </h1>
-            
           </div>
 
           {/* Filters */}

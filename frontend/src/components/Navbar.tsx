@@ -52,7 +52,7 @@ const   Navbar = () => {
   };
 
   return (
-    <nav className="w-full px-4 py-4 relative -mb-4">
+    <nav className="w-full px-4 py-4 relative mb-8">
       {/* Background Effects - matching HeroSection */}
       <div className="absolute inset-0" style={{ background: 'var(--gradient-hero)' }} />
       <div className="absolute inset-0 grid-pattern opacity-20" />

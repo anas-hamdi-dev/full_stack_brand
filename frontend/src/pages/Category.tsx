@@ -5,7 +5,7 @@ import BrandCard from "@/components/BrandCard";
 import { useBrands } from "@/hooks/useBrands";
 import { useCategories } from "@/hooks/useCategories";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowLeft } from "lucide-react";
+import BackButton from "@/components/BackButton";
 
 
 const Category = () => {
@@ -24,10 +24,9 @@ const Category = () => {
         <div className="container mx-auto px-4">
           {/* Header */}
           <div className="mb-12">
-            <Link to="/brands" className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground mb-6 transition-colors">
-              <ArrowLeft className="w-4 h-4" />
-              All Brands
-            </Link>
+            <div className="mb-6">
+              <BackButton to="/brands" label="Back to Brands" />
+            </div>
             <h1 className="font-display text-4xl md:text-5xl font-bold text-foreground mb-4">
               <span className="text-gradient-primary">{category?.name || decodedName}</span>
             </h1>

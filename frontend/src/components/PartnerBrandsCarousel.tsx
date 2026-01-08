@@ -75,6 +75,7 @@ const PartnerBrandsCarousel = () => {
                 </div>
               </div>
             ))}
+            
           </div>
         </div>
       </div>

@@ -170,17 +170,21 @@ router.patch('/:id', authenticate, isBrandOwnerApproved, checkProductOwnership, 
     }
     if (description !== undefined) updateData.description = description?.trim() || null;
     
-    // Validate price if provided in the update - price is required and cannot be null or empty
-    if (price !== undefined) {
-      if (price === null || price === '') {
-        return res.status(400).json({ error: 'Price is required and cannot be empty' });
-      }
-      const priceNum = typeof price === 'string' ? parseFloat(price) : price;
-      if (isNaN(priceNum) || priceNum < 0) {
-        return res.status(400).json({ error: 'Price must be a valid number greater than or equal to 0' });
-      }
-      updateData.price = priceNum;
+    // Price is always required in updates - validate it
+    // Since price is a required field in the schema, we must validate it
+    if (price === undefined) {
+      return res.status(400).json({ error: 'Price is required and must be provided' });
     }
+    
+    if (price === null || price === '') {
+      return res.status(400).json({ error: 'Price is required and cannot be empty' });
+    }
+    
+    const priceNum = typeof price === 'string' ? parseFloat(price) : price;
+    if (isNaN(priceNum) || priceNum < 0) {
+      return res.status(400).json({ error: 'Price must be a valid number greater than or equal to 0' });
+    }
+    updateData.price = priceNum;
     
     // Validate images if provided
     if (images !== undefined) {

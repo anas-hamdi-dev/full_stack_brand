@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 interface BrandCardProps {
   id: string;
@@ -24,38 +25,36 @@ const BrandCard = ({
   featured = false,
 }: BrandCardProps) => {
   const cleanedName = cleanBrandName(name);
+  const initials = cleanedName
+    .split(" ")
+    .map(word => word.charAt(0))
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
+
   return (
     <Link
       to={`/brand/${id}`}
-      className="group glass rounded-3xl overflow-hidden hover-lift block"
+      className="group glass rounded-3xl hover-lift block border border-border/30 w-full max-w-[14rem] md:max-w-[16rem] mx-auto"
     >
       {/* Content */}
-      <div className="p-4 md:p-6 flex flex-col items-center text-center">
-        
+      <div className="p-6 md:p-8 flex flex-col items-center justify-center text-center">
         {/* Avatar */}
-        <div className="relative mb-4">
-          <div className="w-16 h-16 md:w-20 md:h-20 rounded-full overflow-hidden flex items-center justify-center">
-            {logoUrl ? (
-              <img
-                src={logoUrl}
-                alt={`${cleanedName} logo`}
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <div className="text-background font-display font-bold text-sm md:text-base">
-                {cleanedName
-                  .split(" ")
-                  .map(word => word.charAt(0))
-                  .join("")
-                  .toUpperCase()
-                  .slice(0, 2)}
-              </div>
-            )}
-          </div>
-        </div>
+        <Avatar className="w-28 h-28 md:w-32 md:h-32 border-2 border-border/50 mb-4">
+          {logoUrl ? (
+            <AvatarImage
+              src={logoUrl}
+              alt={`${cleanedName} logo`}
+              className="object-cover"
+            />
+          ) : null}
+          <AvatarFallback className="bg-primary/20 text-foreground font-display font-bold text-lg md:text-xl">
+            {initials}
+          </AvatarFallback>
+        </Avatar>
 
         {/* Brand Name */}
-        <h3 className="font-display font-bold text-base md:text-lg text-foreground group-hover:text-primary transition-colors line-clamp-1">
+        <h3 className="text-base md:text-lg font-display font-semibold text-center text-foreground leading-tight group-hover:text-primary transition-colors line-clamp-1">
           {cleanedName}
         </h3>
       </div>
