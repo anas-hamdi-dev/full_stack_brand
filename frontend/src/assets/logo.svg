@@ -1,0 +1,31 @@
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 800 200"
+  width="800"
+  height="200"
+>
+  <text
+    x="50%"
+    y="55%"
+    text-anchor="middle"
+    dominant-baseline="middle"
+    font-size="140"
+    font-weight="800"
+    letter-spacing="6"
+    fill="#F5E2C8"
+    style="font-family: Arial Black, Impact, sans-serif;"
+  >
+    ELMALL
+  </text>
+
+  <text
+    x="690"
+    y="95"
+    font-size="48"
+    font-weight="700"
+    fill="#F5E2C8"
+    style="font-family: Arial Black, Impact, sans-serif;"
+  >
+    TN
+  </text>
+</svg>
