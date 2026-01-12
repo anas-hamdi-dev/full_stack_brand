@@ -3,33 +3,21 @@ import PageLayout from "@/components/PageLayout";
 import Footer from "@/components/Footer";
 import BrandCard from "@/components/BrandCard";
 import { useBrands } from "@/hooks/useBrands";
-import { useCategories } from "@/hooks/useCategories";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Filter } from "lucide-react";
+import { Search } from "lucide-react";
 import BackButton from "@/components/BackButton";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 
 
 const Brands = () => {
   const { data: brands, isLoading: brandsLoading } = useBrands();
-  const { data: categories } = useCategories();
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<string>("all");
 
   const filteredBrands = brands?.filter((brand) => {
     const matchesSearch = brand.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       brand.description?.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = selectedCategory === "all" || 
-      brand.category?.name === selectedCategory;
-    return matchesSearch && matchesCategory;
+    return matchesSearch;
   });
 
   return (
@@ -58,20 +46,6 @@ const Brands = () => {
                 className="pl-10"
               />
             </div>
-            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-              <SelectTrigger className="w-full md:w-[200px]">
-                <Filter className="w-4 h-4 mr-2" />
-                <SelectValue placeholder="Category" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Categories</SelectItem>
-                {categories?.map((cat) => (
-                  <SelectItem key={cat._id || cat.id} value={cat.name}>
-                    {cat.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
           </div>
 
           {/* Results count */}
@@ -91,7 +65,7 @@ const Brands = () => {
                 <Button 
                   variant="outline" 
                   className="mt-4"
-                  onClick={() => { setSearchQuery(""); setSelectedCategory("all"); }}
+                  onClick={() => { setSearchQuery(""); }}
                 >
                   Clear Filters
                 </Button>
@@ -102,7 +76,6 @@ const Brands = () => {
                   key={brand.id}
                   id={brand.id}
                   name={brand.name}
-                  category={brand.category?.name || "Fashion"}
                   location={brand.location || "Tunisia"}
                   description={brand.description || "Tunisian fashion brand"}
                   logoUrl={brand.logo_url}

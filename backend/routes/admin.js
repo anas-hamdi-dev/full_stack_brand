@@ -4,7 +4,6 @@ const router = express.Router();
 const User = require('../models/User');
 const Brand = require('../models/Brand');
 const Product = require('../models/Product');
-const Category = require('../models/Category');
 const ContactMessage = require('../models/ContactMessage');
 const Favorite = require('../models/Favorite');
 const authenticate = require('../middleware/auth');
@@ -64,7 +63,6 @@ router.get('/dashboard/stats', async (req, res) => {
     const stats = {
       brands: await Brand.countDocuments(),
       products: await Product.countDocuments(),
-      categories: await Category.countDocuments(),
       messages: await ContactMessage.countDocuments(),
       brandOwners: await User.countDocuments({ role: 'brand_owner' })
     };
@@ -79,7 +77,6 @@ router.get('/dashboard/recent-brands', async (req, res) => {
   try {
     const limit = parseInt(req.query.limit) || 5;
     const brands = await Brand.find()
-      .populate('category_id', 'name icon')
       .populate('ownerId', 'full_name email')
       .sort({ createdAt: -1 })
       .limit(limit);
@@ -94,16 +91,13 @@ router.get('/dashboard/recent-brands', async (req, res) => {
 // GET /api/admin/brands
 router.get('/brands', async (req, res) => {
   try {
-    const { search, category_id, page, limit, sortBy = 'createdAt', sortOrder = 'desc' } = req.query;
+    const { search, page, limit, sortBy = 'createdAt', sortOrder = 'desc' } = req.query;
     const query = {};
 
     if (search) {
       query.name = { $regex: search, $options: 'i' };
     }
 
-    if (category_id) {
-      query.category_id = category_id;
-    }
 
     const pageNum = parseInt(page) || 1;
     const limitNum = parseInt(limit) || 20;
@@ -114,7 +108,6 @@ router.get('/brands', async (req, res) => {
 
     const [brands, total] = await Promise.all([
       Brand.find(query)
-        .populate('category_id', 'name icon')
         .populate('ownerId', 'full_name email')
         .sort(sortOptions)
         .limit(limitNum)
@@ -140,7 +133,6 @@ router.get('/brands', async (req, res) => {
 router.get('/brands/:id', async (req, res) => {
   try {
     const brand = await Brand.findById(req.params.id)
-      .populate('category_id', 'name icon')
       .populate('ownerId', 'full_name email');
     
     if (!brand) {
@@ -166,8 +158,7 @@ router.patch('/brands/:id', validateImages({ fields: ['logo_url'], maxSizeMB: 10
       req.params.id,
       { $set: updateData },
       { new: true, runValidators: true }
-    ).populate('category_id', 'name icon')
-     .populate('ownerId', 'full_name email');
+    ).populate('ownerId', 'full_name email');
 
     if (!brand) {
       return res.status(404).json({ error: 'Brand not found' });
@@ -207,11 +198,7 @@ router.get('/products', async (req, res) => {
       Product.find(query)
         .populate({
           path: 'brand_id',
-          select: 'name logo_url',
-          populate: {
-            path: 'category_id',
-            select: 'name icon'
-          }
+          select: 'name logo_url'
         })
         .sort({ createdAt: -1 })
         .limit(limitNum)
@@ -239,11 +226,7 @@ router.get('/products/:id', async (req, res) => {
     const product = await Product.findById(req.params.id)
       .populate({
         path: 'brand_id',
-        select: 'name logo_url',
-        populate: {
-          path: 'category_id',
-          select: 'name icon'
-        }
+        select: 'name logo_url'
       });
     
     if (!product) {
@@ -284,8 +267,7 @@ router.post('/products', validateProductImages, async (req, res) => {
         price: priceNum
     });
     await product.populate({
-      path: 'brand_id',
-      populate: { path: 'category_id' }
+      path: 'brand_id'
     });
     res.status(201).json({ data: product });
   } catch (error) {
@@ -320,8 +302,7 @@ router.patch('/products/:id', validateProductImages, async (req, res) => {
       { $set: updateData },
       { new: true, runValidators: true }
     ).populate({
-      path: 'brand_id',
-      populate: { path: 'category_id' }
+      path: 'brand_id'
     });
 
     if (!product) {
@@ -346,122 +327,6 @@ router.delete('/products/:id', async (req, res) => {
     await Product.findByIdAndDelete(req.params.id);
 
     res.json({ success: true, message: 'Product deleted successfully' });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// ==================== Categories Management ====================
-
-// GET /api/admin/categories
-router.get('/categories', async (req, res) => {
-  try {
-    const { search, page, limit } = req.query;
-    const query = {};
-
-    if (search) {
-      query.name = { $regex: search, $options: 'i' };
-    }
-
-    const pageNum = parseInt(page) || 1;
-    const limitNum = parseInt(limit) || 20;
-    const skip = (pageNum - 1) * limitNum;
-
-    const [categories, total] = await Promise.all([
-      Category.find(query)
-        .sort({ name: 1 })
-        .limit(limitNum)
-        .skip(skip),
-      Category.countDocuments(query)
-    ]);
-
-    res.json({
-      data: categories,
-      pagination: {
-        page: pageNum,
-        limit: limitNum,
-        total,
-        totalPages: Math.ceil(total / limitNum)
-      }
-    });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// GET /api/admin/categories/:id
-router.get('/categories/:id', async (req, res) => {
-  try {
-    const category = await Category.findById(req.params.id);
-    
-    if (!category) {
-      return res.status(404).json({ error: 'Category not found' });
-    }
-    
-    res.json({ data: category });
-  } catch (error) {
-    if (error.name === 'CastError') {
-      return res.status(400).json({ error: 'Invalid category ID' });
-    }
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// POST /api/admin/categories
-router.post('/categories', validateImages({ fields: ['icon'], maxSizeMB: 10 }), async (req, res) => {
-  try {
-    const category = await Category.create({
-      ...req.body,
-      brand_count: 0
-    });
-    res.status(201).json({ data: category });
-  } catch (error) {
-    if (error.code === 11000) {
-      return res.status(409).json({ error: 'Category name already exists' });
-    }
-    res.status(400).json({ error: error.message });
-  }
-});
-
-// PATCH /api/admin/categories/:id
-router.patch('/categories/:id', validateImages({ fields: ['icon'], maxSizeMB: 10 }), async (req, res) => {
-  try {
-    const category = await Category.findByIdAndUpdate(
-      req.params.id,
-      { $set: req.body },
-      { new: true, runValidators: true }
-    );
-
-    if (!category) {
-      return res.status(404).json({ error: 'Category not found' });
-    }
-
-    res.json({ data: category });
-  } catch (error) {
-    if (error.code === 11000) {
-      return res.status(409).json({ error: 'Category name already exists' });
-    }
-    res.status(400).json({ error: error.message });
-  }
-});
-
-// DELETE /api/admin/categories/:id
-router.delete('/categories/:id', async (req, res) => {
-  try {
-    const category = await Category.findById(req.params.id);
-    if (!category) {
-      return res.status(404).json({ error: 'Category not found' });
-    }
-
-    const brandCount = await Brand.countDocuments({ category_id: req.params.id });
-    if (brandCount > 0) {
-      return res.status(400).json({ 
-        error: `Cannot delete category. ${brandCount} brand(s) are associated with this category.` 
-      });
-    }
-
-    await Category.findByIdAndDelete(req.params.id);
-    res.json({ success: true, message: 'Category deleted successfully' });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -762,7 +627,7 @@ router.get('/brand-owners', async (req, res) => {
     const [brandOwners, total] = await Promise.all([
       User.find(query)
         .select('-password')
-        .populate('brand_id', 'name logo_url category_id')
+        .populate('brand_id', 'name logo_url')
         .sort({ createdAt: -1 })
         .limit(limitNum)
         .skip(skip),

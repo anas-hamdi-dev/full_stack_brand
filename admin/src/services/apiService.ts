@@ -3,10 +3,8 @@ import {
   adminDashboardApi,
   adminBrandsApi,
   adminProductsApi,
-  adminCategoriesApi,
   adminMessagesApi,
   adminBrandSubmissionsApi,
-  categoriesApi,
 } from "@/lib/api";
 
 // Helper function to convert backend data to frontend format
@@ -14,7 +12,6 @@ function convertBrand(brand: any): any {
   return {
     id: brand._id || brand.id,
     name: brand.name,
-    category_id: brand.category_id?._id || brand.category_id || null,
     description: brand.description || null,
     logo_url: brand.logo_url || null,
     location: brand.location || null,
@@ -27,9 +24,6 @@ function convertBrand(brand: any): any {
     status: brand.status || "approved",
     created_at: brand.createdAt || brand.created_at,
     updated_at: brand.updatedAt || brand.updated_at,
-    categories: brand.category_id && typeof brand.category_id === 'object' 
-      ? { id: brand.category_id._id, name: brand.category_id.name, icon: brand.category_id.icon }
-      : null,
   };
 }
 
@@ -53,16 +47,6 @@ function convertProduct(product: any): any {
   };
 }
 
-function convertCategory(category: any): any {
-  return {
-    id: category._id || category.id,
-    name: category.name,
-    icon: category.icon || "",
-    description: category.description || null,
-    brand_count: category.brand_count || 0,
-    created_at: category.createdAt || category.created_at,
-  };
-}
 
 function convertMessage(message: any): any {
   return {
@@ -93,8 +77,8 @@ function convertSubmission(submission: any): any {
 
 // Brands Service (using API)
 export const brandsService = {
-  getAll: async (search?: string, category_id?: string) => {
-    const response = await adminBrandsApi.getAll({ search, category_id });
+  getAll: async (search?: string) => {
+    const response = await adminBrandsApi.getAll({ search });
     return (response.data || []).map(convertBrand);
   },
 
@@ -118,32 +102,6 @@ export const brandsService = {
   },
 };
 
-// Categories Service (using API)
-export const categoriesService = {
-  getAll: async () => {
-    const categories = await categoriesApi.getAll();
-    return categories.map(convertCategory);
-  },
-
-  getById: async (id: string) => {
-    const category = await adminCategoriesApi.getById(id);
-    return convertCategory(category);
-  },
-
-  create: async (data: any) => {
-    const category = await adminCategoriesApi.create(data);
-    return convertCategory(category);
-  },
-
-  update: async (id: string, data: any) => {
-    const category = await adminCategoriesApi.update(id, data);
-    return convertCategory(category);
-  },
-
-  delete: async (id: string) => {
-    await adminCategoriesApi.delete(id);
-  },
-};
 
 // Products Service (using API)
 export const productsService = {

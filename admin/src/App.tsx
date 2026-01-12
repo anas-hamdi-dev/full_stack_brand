@@ -11,7 +11,6 @@ import AdminLogin from "./pages/admin/AdminLogin";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminBrands from "./pages/admin/AdminBrands";
 import AdminProducts from "./pages/admin/AdminProducts";
-import AdminCategories from "./pages/admin/AdminCategories";
 import AdminMessages from "./pages/admin/AdminMessages";
 import NotFound from "./pages/NotFound";
 
@@ -35,7 +34,6 @@ const App = () => (
             <Route path="/admin" element={<ProtectedRoute requireAdmin><AdminDashboard /></ProtectedRoute>} />
             <Route path="/admin/brands" element={<ProtectedRoute requireAdmin><AdminBrands /></ProtectedRoute>} />
             <Route path="/admin/products" element={<ProtectedRoute requireAdmin><AdminProducts /></ProtectedRoute>} />
-            <Route path="/admin/categories" element={<ProtectedRoute requireAdmin><AdminCategories /></ProtectedRoute>} />
             <Route path="/admin/messages" element={<ProtectedRoute requireAdmin><AdminMessages /></ProtectedRoute>} />
             
             {/* 404 Handler */}

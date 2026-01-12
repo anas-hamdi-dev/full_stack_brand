@@ -8,7 +8,7 @@ const { isBrandOwner, isBrandOwnerApproved, checkProductOwnership } = require('.
 // GET /api/products
 router.get('/', async (req, res) => {
   try {
-    const { brand_id, category_id, search, limit } = req.query;
+    const { brand_id, search, limit } = req.query;
     
     // Get approved brands
     let approvedBrandIds = [];
@@ -19,16 +19,6 @@ router.get('/', async (req, res) => {
         approvedBrandIds = [brand_id];
       } else {
         // Brand not found or not approved, return empty result
-        return res.json({ data: [] });
-      }
-    } else if (category_id) {
-      // Only include approved brands in this category
-      const brands = await Brand.find({ 
-        category_id, 
-        status: 'approved' 
-      }).select('_id');
-      approvedBrandIds = brands.map(b => b._id);
-      if (approvedBrandIds.length === 0) {
         return res.json({ data: [] });
       }
     } else {
@@ -51,11 +41,7 @@ router.get('/', async (req, res) => {
     const products = await Product.find(query)
       .populate({
         path: 'brand_id',
-        select: 'name logo_url website category_id',
-        populate: {
-          path: 'category_id',
-          select: 'name icon'
-        }
+        select: 'name logo_url website'
       })
       .sort({ createdAt: -1 })
       .limit(limitNum);
@@ -71,8 +57,7 @@ router.get('/:id', async (req, res) => {
   try {
     const product = await Product.findById(req.params.id)
       .populate({
-        path: 'brand_id',
-        populate: { path: 'category_id' }
+        path: 'brand_id'
       });
     if (!product) {
       return res.status(404).json({ error: 'Product not found' });
@@ -141,8 +126,7 @@ router.post('/', authenticate, isBrandOwnerApproved, async (req, res) => {
     });
 
     await product.populate({
-      path: 'brand_id',
-      populate: { path: 'category_id' }
+      path: 'brand_id'
     });
 
     res.status(201).json({ data: product });
@@ -209,8 +193,7 @@ router.patch('/:id', authenticate, isBrandOwnerApproved, checkProductOwnership, 
       { $set: updateData },
       { new: true, runValidators: true }
     ).populate({
-      path: 'brand_id',
-      populate: { path: 'category_id' }
+      path: 'brand_id'
     });
 
     if (!product) {

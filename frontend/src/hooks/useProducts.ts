@@ -13,12 +13,6 @@ export interface Product {
     name: string;
     logo_url?: string | null;
     website?: string | null;
-    category_id?: string | null;
-    category?: {
-      _id: string;
-      name: string;
-      icon: string;
-    } | null;
   } | null;
   price?: number | null;
   images: string[];
@@ -33,28 +27,12 @@ const normalizeProduct = (product: any): Product => {
   if (product.brand_id) {
     if (typeof product.brand_id === 'object' && product.brand_id !== null) {
       // brand_id is populated (brand object)
-      let category = null;
-      
-      // Handle category_id - if it's populated (object), map it to category
-      if (product.brand_id.category_id) {
-        if (typeof product.brand_id.category_id === 'object' && product.brand_id.category_id !== null) {
-          // category_id is populated (category object)
-          category = {
-            _id: product.brand_id.category_id._id || product.brand_id.category_id.id,
-            name: product.brand_id.category_id.name,
-            icon: product.brand_id.category_id.icon,
-          };
-        }
-      }
-      
       brand = {
         _id: product.brand_id._id || product.brand_id.id,
         id: product.brand_id._id || product.brand_id.id,
         name: product.brand_id.name,
         logo_url: product.brand_id.logo_url || null,
         website: product.brand_id.website || null,
-        category_id: category ? category._id : (product.brand_id.category_id || null),
-        category,
       };
     }
   }
@@ -69,7 +47,6 @@ const normalizeProduct = (product: any): Product => {
 
 export const useProducts = (params?: {
   brand_id?: string;
-  category_id?: string;
   search?: string;
   limit?: number;
 }) => {

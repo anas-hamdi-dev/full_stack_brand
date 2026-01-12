@@ -5,12 +5,6 @@ export interface Brand {
   _id: string;
   id?: string; // For backward compatibility
   name: string;
-  category_id?: string | null;
-  category?: {
-    _id: string;
-    name: string;
-    icon: string;
-  } | null;
   description?: string | null;
   logo_url?: string | null;
   location?: string | null;
@@ -29,30 +23,9 @@ export interface Brand {
 
 // Normalize brand data from backend
 const normalizeBrand = (brand: any): Brand => {
-  // Handle category_id - if it's populated (object), map it to category
-  let category = null;
-  let category_id: string | null = null;
-  
-  if (brand.category_id) {
-    if (typeof brand.category_id === 'object' && brand.category_id !== null) {
-      // category_id is populated (category object)
-      category = {
-        _id: brand.category_id._id || brand.category_id.id,
-        name: brand.category_id.name,
-        icon: brand.category_id.icon,
-      };
-      category_id = category._id;
-    } else {
-      // category_id is just an ID string
-      category_id = brand.category_id;
-    }
-  }
-  
   return {
     ...brand,
     id: brand._id || brand.id,
-    category_id,
-    category,
     created_at: brand.createdAt || brand.created_at,
     updated_at: brand.updatedAt || brand.updated_at,
   };

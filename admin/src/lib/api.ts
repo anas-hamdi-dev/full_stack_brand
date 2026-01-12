@@ -173,7 +173,7 @@ export const authApi = {
 // Admin Dashboard API
 export const adminDashboardApi = {
   getStats: async () => {
-    const response = await apiFetch<{ data: { brands: number; products: number; categories: number; messages: number } }>('/admin/dashboard/stats');
+    const response = await apiFetch<{ data: { brands: number; products: number; messages: number } }>('/admin/dashboard/stats');
     return response.data;
   },
 
@@ -185,10 +185,9 @@ export const adminDashboardApi = {
 
 // Admin Brands API
 export const adminBrandsApi = {
-  getAll: async (params?: { search?: string; category_id?: string; page?: number; limit?: number; sortBy?: string; sortOrder?: string }) => {
+  getAll: async (params?: { search?: string; page?: number; limit?: number; sortBy?: string; sortOrder?: string }) => {
     const queryParams = new URLSearchParams();
     if (params?.search) queryParams.append('search', params.search);
-    if (params?.category_id) queryParams.append('category_id', params.category_id);
     if (params?.page) queryParams.append('page', params.page.toString());
     if (params?.limit) queryParams.append('limit', params.limit.toString());
     if (params?.sortBy) queryParams.append('sortBy', params.sortBy);
@@ -230,11 +229,10 @@ export const adminBrandsApi = {
 
 // Admin Products API
 export const adminProductsApi = {
-  getAll: async (params?: { search?: string; brand_id?: string; category_id?: string; page?: number; limit?: number; sortBy?: string; sortOrder?: string }) => {
+  getAll: async (params?: { search?: string; brand_id?: string; page?: number; limit?: number; sortBy?: string; sortOrder?: string }) => {
     const queryParams = new URLSearchParams();
     if (params?.search) queryParams.append('search', params.search);
     if (params?.brand_id) queryParams.append('brand_id', params.brand_id);
-    if (params?.category_id) queryParams.append('category_id', params.category_id);
     if (params?.page) queryParams.append('page', params.page.toString());
     if (params?.limit) queryParams.append('limit', params.limit.toString());
     if (params?.sortBy) queryParams.append('sortBy', params.sortBy);
@@ -274,47 +272,6 @@ export const adminProductsApi = {
   },
 };
 
-// Admin Categories API
-export const adminCategoriesApi = {
-  getAll: async (params?: { search?: string; page?: number; limit?: number }) => {
-    const queryParams = new URLSearchParams();
-    if (params?.search) queryParams.append('search', params.search);
-    if (params?.page) queryParams.append('page', params.page.toString());
-    if (params?.limit) queryParams.append('limit', params.limit.toString());
-    
-    const queryString = queryParams.toString();
-    const endpoint = `/admin/categories${queryString ? `?${queryString}` : ''}`;
-    const response = await apiFetch<{ data: any[]; pagination?: any }>(endpoint);
-    return response;
-  },
-
-  getById: async (id: string) => {
-    const response = await apiFetch<{ data: any }>(`/admin/categories/${id}`);
-    return response.data;
-  },
-
-  create: async (data: any) => {
-    const response = await apiFetch<{ data: any }>('/admin/categories', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
-    return response.data;
-  },
-
-  update: async (id: string, data: any) => {
-    const response = await apiFetch<{ data: any }>(`/admin/categories/${id}`, {
-      method: 'PATCH',
-      body: JSON.stringify(data),
-    });
-    return response.data;
-  },
-
-  delete: async (id: string) => {
-    await apiFetch<{ success: boolean; message: string }>(`/admin/categories/${id}`, {
-      method: 'DELETE',
-    });
-  },
-};
 
 // Admin Messages API
 export const adminMessagesApi = {
@@ -382,17 +339,5 @@ export const adminBrandSubmissionsApi = {
   },
 };
 
-// Public Categories API (for dropdowns, etc.)
-export const categoriesApi = {
-  getAll: async () => {
-    const response = await apiFetch<{ data: any[] }>('/categories');
-    return response.data;
-  },
-
-  getById: async (id: string) => {
-    const response = await apiFetch<{ data: any }>(`/categories/${id}`);
-    return response.data;
-  },
-};
 
 export { ApiError };

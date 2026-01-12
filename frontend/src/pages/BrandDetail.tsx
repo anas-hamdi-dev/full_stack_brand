@@ -51,9 +51,9 @@ const BrandDetail = () => {
       <Helmet>
         <title>{brand.name} - el mall</title>
         <meta name="description" content={brand.description || `Discover ${brand.name} on el mall`} />
-        <link rel="icon" type="image/png" sizes="32x32" href="/logo2.png" />
-        <link rel="icon" type="image/png" sizes="16x16" href="/logo2.png" />
-        <link rel="apple-touch-icon" sizes="180x180" href="/logo2.png" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon.png" />
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon.png" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/favicon.png" />
       </Helmet>
       
       <PageLayout>
@@ -110,12 +110,6 @@ const BrandDetail = () => {
 
               
 
-              {/* Category Badge */}
-              {brand?.category?.name && (
-                <span className="inline-block px-3 py-1 rounded-full bg-primary/20 text-primary text-sm font-medium mb-3">
-                  {brand.category.name}
-                </span>
-              )}
 
               {/* Description */}
               {brand.description && (

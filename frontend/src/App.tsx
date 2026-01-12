@@ -15,7 +15,6 @@ import ProductDetail from "./pages/ProductDetail";
 import Gallery from "./pages/Gallery";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
-import Category from "./pages/Category";
 import NotFound from "./pages/NotFound";
 import ClientFavorites from "./pages/client/Favorites";
 import CompleteBrandDetails from "./pages/brand-owner/CompleteBrandDetails";
@@ -50,8 +49,6 @@ const App = () => (
             <Route path="/gallery" element={<Gallery />} />
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />
-            <Route path="/category/:categoryName" element={<Category />} />
-            
             {/* Client Routes */}
             <Route path="/client/dashboard" element={<ProtectedRoute requireClient><ClientFavorites /></ProtectedRoute>} />
             <Route path="/client/favorites" element={<ProtectedRoute requireClient><ClientFavorites /></ProtectedRoute>} />

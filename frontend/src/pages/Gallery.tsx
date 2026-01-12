@@ -3,7 +3,6 @@ import { Helmet } from "react-helmet";
 import PageLayout from "@/components/PageLayout";
 import Footer from "@/components/Footer";
 import { useProducts } from "@/hooks/useProducts";
-import { useCategories } from "@/hooks/useCategories";
 import ProductCard from "@/components/ProductCard";
 import { Input } from "@/components/ui/input";
 import { Search, Filter } from "lucide-react";
@@ -28,7 +27,6 @@ const Gallery = () => {
   const { data, isLoading } = useProducts({
     search: searchQuery.trim() || undefined,
   });
-  const { data: categories } = useCategories();
 
   const products = data?.products || [];
 
@@ -89,9 +87,9 @@ const Gallery = () => {
       <Helmet>
         <title>Gallery - el mall | Fashion Collection</title>
         <meta name="description" content="Browse our gallery of fashion items from various Tunisian brands. Discover unique clothing and accessories." />
-        <link rel="icon" type="image/png" sizes="32x32" href="/logo2.png" />
-        <link rel="icon" type="image/png" sizes="16x16" href="/logo2.png" />
-        <link rel="apple-touch-icon" sizes="180x180" href="/logo2.png" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon.png" />
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon.png" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/favicon.png" />
       </Helmet>
       
       <PageLayout>
@@ -118,20 +116,7 @@ const Gallery = () => {
                   className="pl-10"
               />
               </div>
-              <Select value={selectedCategory} onValueChange={handleCategoryChange}>
-                <SelectTrigger className="w-full md:w-[200px]">
-                  <Filter className="w-4 h-4 mr-2" />
-                  <SelectValue placeholder="Category" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Categories</SelectItem>
-                  {categories?.map((cat) => (
-                    <SelectItem key={cat._id || cat.id} value={cat.name}>
-                      {cat.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              
             </div>
 
             {/* Results count */}

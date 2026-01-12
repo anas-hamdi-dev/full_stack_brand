@@ -13,7 +13,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useCategories } from "@/hooks/useCategories";
 import { brandsApi } from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
 import { useBrand } from "@/hooks/useBrands";
@@ -24,7 +23,6 @@ import { authApi } from "@/lib/api";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 interface BrandFormData {
-  category_id: string;
   name: string;
   description?: string;
   logo_url?: string;
@@ -36,7 +34,7 @@ interface BrandFormData {
   email?: string;
 }
 
-const TOTAL_STEPS = 5;
+const TOTAL_STEPS = 4;
 
 export default function CompleteBrandDetails() {
   const navigate = useNavigate();
@@ -53,7 +51,6 @@ export default function CompleteBrandDetails() {
   };
   const brandId = getBrandId();
   const { data: existingBrand } = useBrand(brandId || undefined);
-  const { data: categories } = useCategories();
   const queryClient = useQueryClient();
   const [currentStep, setCurrentStep] = useState(1);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
@@ -61,7 +58,6 @@ export default function CompleteBrandDetails() {
 
   const form = useForm<BrandFormData>({
     defaultValues: {
-      category_id: "",
       name: "",
       description: "",
       logo_url: "",
@@ -79,7 +75,6 @@ export default function CompleteBrandDetails() {
   useEffect(() => {
     if (existingBrand) {
       form.reset({
-        category_id: existingBrand.category_id || "",
         name: existingBrand.name || "",
         description: existingBrand.description || "",
         logo_url: existingBrand.logo_url || "",
@@ -205,13 +200,6 @@ export default function CompleteBrandDetails() {
     if (currentStep < TOTAL_STEPS) {
       // Validate current step before proceeding
       if (currentStep === 2) {
-        form.trigger("category_id");
-        if (!form.getValues("category_id")) {
-          toast.error("Please select a category");
-          return;
-        }
-      }
-      if (currentStep === 3) {
         form.trigger(["name", "logo_url"]);
         if (!form.getValues("name")) {
           toast.error("Brand name is required");
@@ -222,15 +210,15 @@ export default function CompleteBrandDetails() {
           return;
         }
       }
-      if (currentStep === 4) {
-        // Submit form on step 4 before going to step 5
+      if (currentStep === 3) {
+        // Submit form on step 3 before going to step 4
         const isValid = await form.trigger();
         if (!isValid) {
           toast.error("Please correct the errors in the form");
           return;
         }
         onSubmit(form.getValues());
-        return; // onSubmit will move to step 5 on success
+        return; // onSubmit will move to step 4 on success
       }
       setCurrentStep(currentStep + 1);
     }
@@ -282,7 +270,7 @@ export default function CompleteBrandDetails() {
     );
   }
 
-  // Step 2: Choose Category
+  // Step 2: Brand Details
   if (currentStep === 2) {
     return (
       <PageLayout>
@@ -291,64 +279,7 @@ export default function CompleteBrandDetails() {
             <div className="mb-6">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-2xl md:text-3xl font-display font-bold text-foreground">
-                  Step 2: Category
-                </h2>
-                <span className="text-sm text-muted-foreground">
-                  {currentStep} / {TOTAL_STEPS}
-                </span>
-              </div>
-              <p className="text-muted-foreground">
-                Select the category that best matches your brand.
-              </p>
-            </div>
-
-            <form className="space-y-6">
-              <div className="space-y-2">
-                <Label htmlFor="category_id" className="text-base">
-                  Category <span className="text-destructive">*</span>
-                </Label>
-                <Select
-                  value={form.watch("category_id")}
-                  onValueChange={(value) => form.setValue("category_id", value)}
-                >
-                  <SelectTrigger id="category_id">
-                    <SelectValue placeholder="Select a category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {categories?.map((category) => (
-                      <SelectItem key={category._id} value={category._id}>
-                        {category.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="flex gap-4 pt-4">
-                <Button type="button" variant="outline" onClick={prevStep} className="flex-1">
-                  <ArrowLeft className="mr-2 h-4 w-4" /> Previous
-                </Button>
-                <Button type="button" onClick={nextStep} className="flex-1">
-                  Next <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </div>
-            </form>
-          </div>
-        </div>
-      </PageLayout>
-    );
-  }
-
-  // Step 3: Shop Details
-  if (currentStep === 3) {
-    return (
-      <PageLayout>
-        <div className="container mx-auto px-4 py-12 max-w-2xl">
-          <div className="glass rounded-3xl p-8 md:p-12">
-            <div className="mb-6">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-2xl md:text-3xl font-display font-bold text-foreground">
-                  Step 3: Brand Details
+                  Step 2: Brand Details
                 </h2>
                 <span className="text-sm text-muted-foreground">
                   {currentStep} / {TOTAL_STEPS}
@@ -472,8 +403,8 @@ export default function CompleteBrandDetails() {
     );
   }
 
-  // Step 4: Shop Location
-  if (currentStep === 4) {
+  // Step 3: Location and Social Media
+  if (currentStep === 3) {
     return (
       <PageLayout>
         <div className="container mx-auto px-4 py-12 max-w-2xl">
@@ -481,7 +412,7 @@ export default function CompleteBrandDetails() {
             <div className="mb-6">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-2xl md:text-3xl font-display font-bold text-foreground">
-                  Step 4: Location and Social Media
+                  Step 3: Location and Social Media
                 </h2>
                 <span className="text-sm text-muted-foreground">
                   {currentStep} / {TOTAL_STEPS}
@@ -572,8 +503,8 @@ export default function CompleteBrandDetails() {
     );
   }
 
-  // Step 5: Congratulations / Pending Approval
-  if (currentStep === 5) {
+  // Step 4: Congratulations / Pending Approval
+  if (currentStep === 4) {
     return (
       <PageLayout>
         <div className="container mx-auto px-4 py-12 max-w-2xl">

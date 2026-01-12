@@ -3,7 +3,6 @@ import {
   LayoutDashboard, 
   Store, 
   Package, 
-  FolderOpen, 
   Mail,
   LogOut,
   ChevronLeft,
@@ -18,7 +17,6 @@ const navItems = [
   { icon: LayoutDashboard, label: "Dashboard", href: "/admin" },
   { icon: Store, label: "Brands", href: "/admin/brands" },
   { icon: Package, label: "Products", href: "/admin/products" },
-  { icon: FolderOpen, label: "Categories", href: "/admin/categories" },
   { icon: Mail, label: "Messages", href: "/admin/messages" },
 ];
   
