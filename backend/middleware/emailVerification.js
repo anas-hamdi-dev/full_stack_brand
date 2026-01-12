@@ -37,3 +37,5 @@ const requireEmailVerification = async (req, res, next) => {
 
 module.exports = requireEmailVerification;
 
+
+

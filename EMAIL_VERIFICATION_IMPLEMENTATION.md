@@ -169,3 +169,5 @@ BREVO_SENDER_NAME=Brands App
 - Verification status is included in all auth responses
 - All verification-related fields are excluded from default user queries (select: false)
 
+
+

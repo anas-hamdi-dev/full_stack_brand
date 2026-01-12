@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { AuthModalProvider } from "@/contexts/AuthModalContext";
 import ScrollToTop from "./components/ScrollToTop";
+import ScrollToTopButton from "./components/ScrollToTopButton";
 import AuthModals from "./components/modals/AuthModals";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Index from "./pages/Index";
@@ -41,6 +42,7 @@ const App = () => (
             }}
           >
             <ScrollToTop />
+            <ScrollToTopButton />
             <AuthModals />
             <Routes>
             <Route path="/" element={<Index />} />
