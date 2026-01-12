@@ -1,26 +1,26 @@
-  import { useState, useEffect } from "react";
-  import { useParams, Link } from "react-router-dom";
-  import { Helmet } from "react-helmet";
-  import Footer from "@/components/Footer";
-  import { useProduct } from "@/hooks/useProducts";
-  import { ExternalLink } from "lucide-react";
-  import BackButton from "@/components/BackButton";
-  import { Button } from "@/components/ui/button";
-  import {
-    Carousel,
-    CarouselContent,
-    CarouselItem,
-    CarouselNext,
-    CarouselPrevious,
-    type CarouselApi,
-  } from "@/components/ui/carousel";
+import { useState, useEffect, useRef } from "react";
+import { useParams, Link } from "react-router-dom";
+import { Helmet } from "react-helmet";
+import Footer from "@/components/Footer";
+import { useProduct } from "@/hooks/useProducts";
+import BackButton from "@/components/BackButton";
+import { Button } from "@/components/ui/button";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+  type CarouselApi,
+} from "@/components/ui/carousel";
 
-  const ProductDetail = () => {
-    const { productId } = useParams();
-    const [api, setApi] = useState<CarouselApi | null>(null);
-    const [current, setCurrent] = useState(0);
+const ProductDetail = () => {
+  const { productId } = useParams();
+  const [api, setApi] = useState<CarouselApi | null>(null);
+  const [current, setCurrent] = useState(0);
+  const thumbnailRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
-    const { data: product, isLoading } = useProduct(productId);
+  const { data: product, isLoading } = useProduct(productId);
 
     // Helper function to remove "'s Brand" suffix from brand name
     const cleanBrandName = (name: string | undefined): string => {
@@ -43,6 +43,17 @@
         api.off("select", onSelect);
       };
     }, [api]);
+
+    // Auto-scroll thumbnails when current changes
+    useEffect(() => {
+      if (thumbnailRefs.current[current]) {
+        thumbnailRefs.current[current]?.scrollIntoView({
+          behavior: "smooth",
+          block: "nearest",
+          inline: "center",
+        });
+      }
+    }, [current]);
 
     if (isLoading) {
       return (
@@ -81,7 +92,6 @@
       );
     }
 
-    const officialUrl = product.brand?.website;
     const images =
       product.images && product.images.length > 0
         ? product.images
@@ -89,7 +99,7 @@
     const hasMultipleImages = images.length > 1;
 
     return (
-      <div className="min-h-screen bg-background pt-20 pb-20">
+      <div className="min-h-screen bg-background pt-24 pb-20">
         <Helmet>
           <title>{product.name} - el mall</title>
           <meta
@@ -148,6 +158,9 @@
                       {images.map((image, index) => (
                         <button
                           key={index}
+                          ref={(el) => {
+                            thumbnailRefs.current[index] = el;
+                          }}
                           onClick={() => api?.scrollTo(index)}
                           className={`flex-shrink-0 w-16 h-16 md:w-20 md:h-20 rounded-lg overflow-hidden border-2 transition-all ${
                             current === index
@@ -203,35 +216,7 @@
                   {product.description || "No description available."}
                 </p>
 
-                {/* CTA Button */}
-                <div className="w-full md:w-auto mb-6 md:mb-8">
-                  {officialUrl ? (
-                    <a
-                      href={officialUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="w-full md:w-auto inline-block"
-                    >
-                      <Button
-                        variant="hero"
-                        size="lg"
-                        className="w-full md:w-auto gap-2"
-                      >
-                        <ExternalLink className="w-5 h-5" />
-                        Take Me to the Official Site
-                      </Button>
-                    </a>
-                  ) : (
-                    <Button
-                      variant="secondary"
-                      size="lg"
-                      disabled
-                      className="w-full md:w-auto"
-                    >
-                      Official Site Not Available
-                    </Button>
-                  )}
-                </div>
+              
 
                 
               </div>

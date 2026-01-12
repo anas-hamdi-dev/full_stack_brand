@@ -142,7 +142,7 @@ export default function ProductsManagement() {
   }
 
   return (
-    <div className="min-h-screen bg-background pt-20 pb-20">
+    <div className="min-h-screen bg-background pt-24 pb-20">
       <div className="container mx-auto px-4 py-12 max-w-6xl">
         <div className="mb-6">
           <BackButton to="/" label="Back to home" />

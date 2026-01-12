@@ -42,7 +42,7 @@ const BrandDetail = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background pt-20 pb-20">
+    <div className="min-h-screen bg-background pt-24 pb-20">
       <Helmet>
         <title>{brand.name} - el mall</title>
         <meta name="description" content={brand.description || `Discover ${brand.name} on el mall`} />
