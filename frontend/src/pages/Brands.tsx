@@ -8,11 +8,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 import BackButton from "@/components/BackButton";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import ComingSoon from "@/components/ComingSoon";
 
 
 const Brands = () => {
   const { data: brands, isLoading: brandsLoading } = useBrands();
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("men");
 
   const filteredBrands = brands?.filter((brand) => {
     const matchesSearch = brand.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -35,6 +38,17 @@ const Brands = () => {
             </h1>
           </div>
 
+          {/* Category Tabs */}
+          <div className="mb-8">
+            <Tabs value={selectedCategory} onValueChange={setSelectedCategory}>
+              <TabsList className="grid w-full grid-cols-3 max-w-md">
+                <TabsTrigger value="men">Men</TabsTrigger>
+                <TabsTrigger value="women">Women</TabsTrigger>
+                <TabsTrigger value="kids">Kids</TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </div>
+
           {/* Filters */}
           <div className="flex flex-col md:flex-row gap-4 mb-8">
             <div className="relative flex-1 max-w-md">
@@ -44,46 +58,115 @@ const Brands = () => {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10"
+                disabled={selectedCategory !== "men"}
               />
             </div>
           </div>
 
-          {/* Results count */}
-          <p className="text-sm text-muted-foreground mb-6">
-            {filteredBrands?.length || 0} brands found
-          </p>
-
-          {/* Brands Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
-            {brandsLoading ? (
-              Array.from({ length: 6 }).map((_, i) => (
-                <Skeleton key={i} className="h-80 rounded-3xl" />
-              ))
-            ) : filteredBrands?.length === 0 ? (
-              <div className="col-span-full text-center py-12">
-                <p className="text-muted-foreground">No brands found matching your criteria.</p>
-                <Button 
-                  variant="outline" 
-                  className="mt-4"
-                  onClick={() => { setSearchQuery(""); }}
-                >
-                  Clear Filters
-                </Button>
-              </div>
-            ) : (
-              filteredBrands?.map((brand, index) => (
-                <BrandCard
-                  key={brand.id}
-                  id={brand.id}
-                  name={brand.name}
-                  location={brand.location || "Tunisia"}
-                  description={brand.description || "Tunisian fashion brand"}
-                  logoUrl={brand.logo_url}
-                  featured={brand.is_featured || false}
+          {/* Category Content */}
+          <Tabs value={selectedCategory} onValueChange={setSelectedCategory}>
+            {/* Men Category - Show all brands */}
+            <TabsContent value="men" className="mt-0">
+              <div className="relative rounded-3xl overflow-hidden mb-8">
+                <div 
+                  className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+                  style={{
+                    backgroundImage: "url(https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1920&q=80)",
+                  }}
                 />
-              ))
-            )}
-          </div>
+                <div className="absolute inset-0 bg-gradient-to-b from-background/80 via-background/60 to-background" />
+                <div className="relative px-8 py-12 text-center">
+                  <h2 className="text-3xl md:text-4xl font-display font-bold text-foreground mb-2">
+                    Men's Collection
+                  </h2>
+                  <p className="text-muted-foreground">
+                    Discover premium men's fashion brands
+                  </p>
+                </div>
+              </div>
+
+              {/* Results count */}
+              <p className="text-sm text-muted-foreground mb-6">
+                {filteredBrands?.length || 0} brands found
+              </p>
+
+              {/* Brands Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
+                {brandsLoading ? (
+                  Array.from({ length: 6 }).map((_, i) => (
+                    <Skeleton key={i} className="h-80 rounded-3xl" />
+                  ))
+                ) : filteredBrands?.length === 0 ? (
+                  <div className="col-span-full text-center py-12">
+                    <p className="text-muted-foreground">No brands found matching your criteria.</p>
+                    <Button 
+                      variant="outline" 
+                      className="mt-4"
+                      onClick={() => { setSearchQuery(""); }}
+                    >
+                      Clear Filters
+                    </Button>
+                  </div>
+                ) : (
+                  filteredBrands?.map((brand, index) => (
+                    <BrandCard
+                      key={brand.id}
+                      id={brand.id}
+                      name={brand.name}
+                      location={brand.location || "Tunisia"}
+                      description={brand.description || "Tunisian fashion brand"}
+                      logoUrl={brand.logo_url}
+                      featured={brand.is_featured || false}
+                    />
+                  ))
+                )}
+              </div>
+            </TabsContent>
+
+            {/* Women Category - Coming Soon */}
+            <TabsContent value="women" className="mt-0">
+              <div className="relative rounded-3xl overflow-hidden mb-8">
+                <div 
+                  className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+                  style={{
+                    backgroundImage: "url(https://images.unsplash.com/photo-1483985988355-763728e1935b?w=1920&q=80)",
+                  }}
+                />
+                <div className="absolute inset-0 bg-gradient-to-b from-background/80 via-background/60 to-background" />
+                <div className="relative px-8 py-12 text-center">
+                  <h2 className="text-3xl md:text-4xl font-display font-bold text-foreground mb-2">
+                    Women's Collection
+                  </h2>
+                  <p className="text-muted-foreground">
+                    Elegant women's fashion coming soon
+                  </p>
+                </div>
+              </div>
+              <ComingSoon category="Women" />
+            </TabsContent>
+
+            {/* Kids Category - Coming Soon */}
+            <TabsContent value="kids" className="mt-0">
+              <div className="relative rounded-3xl overflow-hidden mb-8">
+                <div 
+                  className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+                  style={{
+                    backgroundImage: "url(https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?w=1920&q=80)",
+                  }}
+                />
+                <div className="absolute inset-0 bg-gradient-to-b from-background/80 via-background/60 to-background" />
+                <div className="relative px-8 py-12 text-center">
+                  <h2 className="text-3xl md:text-4xl font-display font-bold text-foreground mb-2">
+                    Kids' Collection
+                  </h2>
+                  <p className="text-muted-foreground">
+                    Fun and stylish kids' fashion coming soon
+                  </p>
+                </div>
+              </div>
+              <ComingSoon category="Kids" />
+            </TabsContent>
+          </Tabs>
         </div>
       </main>
       <Footer />
