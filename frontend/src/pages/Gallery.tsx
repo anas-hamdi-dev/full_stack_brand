@@ -78,7 +78,7 @@ const Gallery = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pt-24 pb-20">
       <Helmet>
         <title>Gallery - el mall | Fashion Collection</title>
         <meta name="description" content="Browse our gallery of fashion items from various Tunisian brands. Discover unique clothing and accessories." />
@@ -87,8 +87,7 @@ const Gallery = () => {
         <link rel="apple-touch-icon" sizes="180x180" href="/favicon.png" />
       </Helmet>
       
-      <div className="min-h-screen bg-background pt-20 pb-20">
-        <main className="pb-16">
+      <main className="pb-16">
         <div className="container mx-auto px-4">
             {/* Header */}
           <div className="mb-12">
@@ -242,7 +241,6 @@ const Gallery = () => {
         </div>
       </main>
       <Footer />
-      </div>
     </div>
   );
 };

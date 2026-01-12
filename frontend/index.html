@@ -1,6 +1,6 @@
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 
   <!-- Favicon -->
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon.png" />
@@ -21,8 +21,25 @@
   <meta name="twitter:site" content="@Lovable" />
   <meta name="twitter:image" content="/logo.png" />
   
-  <!-- Prevent white background on overscroll -->
-  
+  <!-- Prevent white background on overscroll - iOS Safari fix -->
+  <style>
+    html, body {
+      background-color: hsl(270 50% 3%);
+      background: radial-gradient(ellipse at 50% 0%, hsl(270 70% 55% / 0.2), transparent 60%), hsl(270 50% 3%);
+      overscroll-behavior: none;
+      -webkit-overflow-scrolling: touch;
+      /* Prevent white flash on overscroll */
+      overscroll-behavior-y: none;
+      overscroll-behavior-x: none;
+    }
+    #root {
+      min-height: 100vh;
+      min-height: 100dvh;
+      background-color: hsl(270 50% 3%);
+      background: radial-gradient(ellipse at 50% 0%, hsl(270 70% 55% / 0.2), transparent 60%), hsl(270 50% 3%);
+      overscroll-behavior: none;
+    }
+  </style>
 </head>
 <body>
   <div id="root"></div>

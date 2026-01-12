@@ -16,7 +16,7 @@ const BrandDetail = () => {
 
   if (brandLoading) {
     return (
-      <div className="min-h-screen bg-background pt-20 pb-20">
+      <div className="min-h-screen bg-background pt-24 pb-20">
         <div className="pb-20 container mx-auto px-4">
           <div className="animate-pulse space-y-8">
             <div className="h-64 bg-muted rounded-3xl" />
@@ -31,7 +31,7 @@ const BrandDetail = () => {
 
   if (!brand) {
     return (
-      <div className="min-h-screen bg-background pt-20 pb-20">
+      <div className="min-h-screen bg-background pt-24 pb-20">
         <div className="pb-20 container mx-auto px-4 text-center">
           <h1 className="text-3xl font-display font-bold text-foreground mb-4">Brand Not Found</h1>
           <BackButton to="/brands" label="Back to Brands" />

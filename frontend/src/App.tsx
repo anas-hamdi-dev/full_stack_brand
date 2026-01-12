@@ -35,6 +35,15 @@ const App = () => {
   useMobileInputFocus();
   
   return (
+    <div 
+      className="min-h-screen bg-background" 
+      style={{ 
+        background: 'var(--gradient-dark)', 
+        backgroundColor: 'hsl(var(--background))',
+        minHeight: '100vh',
+        overscrollBehavior: 'none'
+      }}
+    >
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <AuthModalProvider>
@@ -90,6 +99,7 @@ const App = () => {
         </AuthModalProvider>
       </AuthProvider>
     </QueryClientProvider>
+    </div>
   );
 };
 

@@ -125,7 +125,7 @@ export default function ProductsManagement() {
 
   if (!brandId) {
     return (
-      <div className="min-h-screen bg-background pt-20 pb-20">
+      <div className="min-h-screen bg-background pt-24 pb-20">
         <div className="container mx-auto px-4 py-12">
           <div className="glass rounded-3xl p-8 md:p-12 text-center max-w-2xl mx-auto">
             <Package className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
