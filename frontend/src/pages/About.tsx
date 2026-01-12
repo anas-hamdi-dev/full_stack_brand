@@ -1,5 +1,4 @@
 import { Link } from "react-router-dom";
-import PageLayout from "@/components/PageLayout";
 import Footer from "@/components/Footer";
 import { Users, Target, Heart, Globe } from "lucide-react";
 import BackButton from "@/components/BackButton";
@@ -14,8 +13,7 @@ const About = () => {
         <link rel="icon" type="image/png" sizes="16x16" href="/favicon.png" />
         <link rel="apple-touch-icon" sizes="180x180" href="/favicon.png" />
       </Helmet>
-      <div className="min-h-screen bg-background">
-        <PageLayout>
+      <div className="min-h-screen bg-background pt-20 pb-20 mt-20">
         <main className="pb-16">
           <div className="container mx-auto px-4">
             
@@ -96,8 +94,7 @@ const About = () => {
           </div>
         </main>
         <Footer />
-      </PageLayout>
-    </div>
+      </div>
     </>
   );
 };

@@ -1,5 +1,4 @@
 import { useState } from "react";
-import PageLayout from "@/components/PageLayout";
 import Footer from "@/components/Footer";
 import BrandCard from "@/components/BrandCard";
 import { useBrands } from "@/hooks/useBrands";
@@ -24,8 +23,7 @@ const Brands = () => {
   });
 
   return (
-    <div className="min-h-screen bg-background">
-      <PageLayout>
+    <div className="min-h-screen bg-background pt-20 pb-20 mt-20">
       <main className="pb-16">
         <div className="container mx-auto px-4">
           {/* Header */}
@@ -79,9 +77,7 @@ const Brands = () => {
                   <h2 className="text-3xl md:text-4xl font-display font-bold text-foreground mb-2">
                     Men's Collection
                   </h2>
-                  <p className="text-muted-foreground">
-                    Discover premium men's fashion brands
-                  </p>
+                  
                 </div>
               </div>
 
@@ -137,9 +133,7 @@ const Brands = () => {
                   <h2 className="text-3xl md:text-4xl font-display font-bold text-foreground mb-2">
                     Women's Collection
                   </h2>
-                  <p className="text-muted-foreground">
-                    Elegant women's fashion coming soon
-                  </p>
+                  
                 </div>
               </div>
               <ComingSoon category="Women" />
@@ -156,12 +150,10 @@ const Brands = () => {
                 />
                 <div className="absolute inset-0 bg-gradient-to-b from-background/80 via-background/60 to-background" />
                 <div className="relative px-8 py-12 text-center">
-                  <h2 className="text-3xl md:text-4xl font-display font-bold text-foreground mb-2">
-                    Kids' Collection
+                <h2 className="text-3xl md:text-4xl font-display font-bold text-foreground mb-2">
+                    Kids's Collection
                   </h2>
-                  <p className="text-muted-foreground">
-                    Fun and stylish kids' fashion coming soon
-                  </p>
+                  
                 </div>
               </div>
               <ComingSoon category="Kids" />
@@ -170,7 +162,6 @@ const Brands = () => {
         </div>
       </main>
       <Footer />
-      </PageLayout>
     </div>
   );
 };

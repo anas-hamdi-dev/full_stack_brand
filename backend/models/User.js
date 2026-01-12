@@ -62,34 +62,6 @@ const userSchema = new mongoose.Schema({
       },
       message: 'Brand ID must be null for clients and admins'
     }
-  },
-  // Email verification fields
-  isEmailVerified: {
-    type: Boolean,
-    default: false
-  },
-  emailVerificationCode: {
-    type: String,
-    select: false // Don't return verification code by default
-  },
-  emailVerificationExpiresAt: {
-    type: Date,
-    select: false
-  },
-  emailVerificationAttempts: {
-    type: Number,
-    default: 0,
-    select: false
-  },
-  emailVerificationBlockedUntil: {
-    type: Date,
-    default: null,
-    select: false
-  },
-  emailVerificationLastSentAt: {
-    type: Date,
-    default: null,
-    select: false
   }
 }, {
   timestamps: true, // Automatically adds createdAt and updatedAt

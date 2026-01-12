@@ -1,7 +1,6 @@
   import { useState, useEffect } from "react";
   import { useParams, Link } from "react-router-dom";
   import { Helmet } from "react-helmet";
-  import PageLayout from "@/components/PageLayout";
   import Footer from "@/components/Footer";
   import { useProduct } from "@/hooks/useProducts";
   import { ExternalLink } from "lucide-react";
@@ -47,8 +46,7 @@
 
     if (isLoading) {
       return (
-        <div className="min-h-screen bg-background">
-          <PageLayout>
+        <div className="min-h-screen bg-background pt-20 pb-20 mt-20">
           <div className="pb-16 md:pb-20 container mx-auto px-4 max-w-7xl">
             <div className="animate-pulse grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 items-start">
               <div className="w-full max-w-full md:max-w-[50%] mx-auto md:mx-0">
@@ -65,15 +63,13 @@
             </div>
           </div>
           <Footer />
-          </PageLayout>
         </div>
       );
     }
 
     if (!product) {
       return (
-        <div className="min-h-screen bg-background">
-          <PageLayout>
+        <div className="min-h-screen bg-background pt-20 pb-20 mt-20">
           <div className="pb-20 container mx-auto px-4 text-center">
             <h1 className="text-3xl font-display font-bold text-foreground mb-4">
               Product Not Found
@@ -81,7 +77,6 @@
             <BackButton to="/gallery" label="Back to Gallery" />
           </div>
           <Footer />
-          </PageLayout>
         </div>
       );
     }
@@ -94,7 +89,7 @@
     const hasMultipleImages = images.length > 1;
 
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-background pt-20 pb-20">
         <Helmet>
           <title>{product.name} - el mall</title>
           <meta
@@ -106,7 +101,6 @@
           <link rel="apple-touch-icon" sizes="180x180" href="/favicon.png" />
         </Helmet>
 
-        <PageLayout>
         <main className="pb-16 md:pb-20">
           <div className="container mx-auto px-4 max-w-7xl">
             <div className="mb-6">
@@ -245,7 +239,6 @@
           </div>
           </main>
         <Footer />
-        </PageLayout>
       </div>
     );
   };

@@ -17,7 +17,6 @@
   import { useMyBrand } from "@/hooks/useBrands";
   import { toast } from "sonner";
   import { Store, Upload, X, MapPin, Save, Loader2 } from "lucide-react";
-  import PageLayout from "@/components/PageLayout";
   import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
   import { Badge } from "@/components/ui/badge";
   import BackButton from "@/components/BackButton";
@@ -268,7 +267,7 @@
 
     if (brandLoading) {
       return (
-        <PageLayout>
+        <div className="min-h-screen bg-background pt-20 pb-20 mt-20">
           <div className="container mx-auto px-4 py-12">
             <div className="flex items-center justify-center min-h-[400px]">
               <div className="text-center">
@@ -277,13 +276,13 @@
               </div>
             </div>
           </div>
-        </PageLayout>
+        </div>
       );
     }
 
     if (!brandId || !brand) {
       return (
-        <PageLayout>
+        <div className="min-h-screen bg-background pt-20 pb-20 mt-20">
           <div className="container mx-auto px-4 py-12">
             <div className="glass rounded-3xl p-8 md:p-12 text-center max-w-2xl mx-auto">
               <Store className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
@@ -295,7 +294,7 @@
               </p>
             </div>
           </div>
-        </PageLayout>
+        </div>
       );
     }
 
@@ -337,7 +336,7 @@
     const isFormModified = hasFormChanged();
 
     return (
-      <PageLayout>
+      <div className="min-h-screen bg-background pt-20 pb-20">
         <div className="container mx-auto px-4 py-12 max-w-4xl">
           <div className="mb-6">
           <BackButton to="/" label="Back to home" />
@@ -615,7 +614,7 @@
             </form>
           </div>
         </div>
-      </PageLayout>
+      </div>
     );
   }
 

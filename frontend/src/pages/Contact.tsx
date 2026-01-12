@@ -1,6 +1,5 @@
-import PageLayout from "@/components/PageLayout";
 import Footer from "@/components/Footer";
-import { Mail, Phone, MapPin, Send } from "lucide-react";
+import { Mail, Phone, MapPin, Send, MessageCircle, Instagram } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -57,8 +56,7 @@ const Contact = () => {
         <link rel="icon" type="image/png" sizes="16x16" href="/favicon.png" />
         <link rel="apple-touch-icon" sizes="180x180" href="/favicon.png" />
       </Helmet>
-      <div className="min-h-screen bg-background">
-        <PageLayout>
+      <div className="min-h-screen bg-background pt-20 pb-20 mt-20">
         <main className="pb-16">
           <div className="container mx-auto px-4">
             {/* Header */}
@@ -174,6 +172,34 @@ const Contact = () => {
                       value="Bizerte, Tunisia"
                       gradient="bg-gradient-secondary"
                     />
+                    <a
+                      href="https://wa.me/21699797459"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block"
+                    >
+                      <ContactItem
+                        icon={<MessageCircle className="w-6 h-6 text-white" />}
+                        title="WhatsApp"
+                        value="+216 99 797 459"
+                        gradient="bg-gradient-primary"
+                        clickable
+                      />
+                    </a>
+                    <a
+                      href="https://instagram.com/elmall.tn"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block"
+                    >
+                      <ContactItem
+                        icon={<Instagram className="w-6 h-6 text-white" />}
+                        title="Instagram"
+                        value="@elmall.tn"
+                        gradient="bg-gradient-secondary"
+                        clickable
+                      />
+                    </a>
                   </div>
                 </div>
               </div>
@@ -181,8 +207,7 @@ const Contact = () => {
           </div>
         </main>
         <Footer />
-      </PageLayout>
-    </div>
+      </div>
     </>
   );
 };
@@ -192,13 +217,15 @@ const ContactItem = ({
   title,
   value,
   gradient,
+  clickable = false,
 }: {
   icon: React.ReactNode;
   title: string;
   value: string;
   gradient: string;
+  clickable?: boolean;
 }) => (
-  <div className="flex items-start gap-4">
+  <div className={`flex items-start gap-4 ${clickable ? "hover:opacity-80 transition-opacity cursor-pointer" : ""}`}>
     <div className={`w-12 h-12 rounded-xl ${gradient} flex items-center justify-center flex-shrink-0`}>
       {icon}
     </div>

@@ -1,13 +1,14 @@
 import { Link } from "react-router-dom";
-import { Facebook, Instagram } from "lucide-react";
+import { Facebook, Instagram, MessageCircle } from "lucide-react";
 import logo from "@/assets/logo2.png";
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
 
   const socialLinks = [
+    { icon: MessageCircle, href: "https://wa.me/21699797459", label: "WhatsApp" },
+    { icon: Instagram, href: "https://instagram.com/elmall.tn", label: "Instagram" },
     { icon: Facebook, href: "https://facebook.com", label: "Facebook" },
-    { icon: Instagram, href: "https://instagram.com", label: "Instagram" },
   ];
 
   return (
@@ -33,7 +34,7 @@ const Footer = () => {
               </p>
               <p className="flex items-center gap-2">
                 <span className="font-medium">Phone:</span>
-                <span>+216 12 345 678</span>
+                <span>+216 99 797 459 </span>
               </p>
             </div>
           </div>

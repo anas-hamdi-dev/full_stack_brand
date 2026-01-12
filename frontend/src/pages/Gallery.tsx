@@ -1,6 +1,5 @@
 import { useState, useMemo } from "react";
 import { Helmet } from "react-helmet";
-import PageLayout from "@/components/PageLayout";
 import Footer from "@/components/Footer";
 import { useProducts } from "@/hooks/useProducts";
 import ProductCard from "@/components/ProductCard";
@@ -79,7 +78,7 @@ const Gallery = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background mt-20">
       <Helmet>
         <title>Gallery - el mall | Fashion Collection</title>
         <meta name="description" content="Browse our gallery of fashion items from various Tunisian brands. Discover unique clothing and accessories." />
@@ -88,7 +87,7 @@ const Gallery = () => {
         <link rel="apple-touch-icon" sizes="180x180" href="/favicon.png" />
       </Helmet>
       
-      <PageLayout>
+      <div className="min-h-screen bg-background pt-20 pb-20">
         <main className="pb-16">
         <div className="container mx-auto px-4">
             {/* Header */}
@@ -128,9 +127,7 @@ const Gallery = () => {
                   <h2 className="text-3xl md:text-4xl font-display font-bold text-foreground mb-2">
                     Men's Collection
                   </h2>
-                  <p className="text-muted-foreground">
-                    Discover premium men's fashion products
-                  </p>
+                  
                 </div>
               </div>
 
@@ -216,9 +213,7 @@ const Gallery = () => {
                   <h2 className="text-3xl md:text-4xl font-display font-bold text-foreground mb-2">
                     Women's Collection
                   </h2>
-                  <p className="text-muted-foreground">
-                    Elegant women's fashion coming soon
-                  </p>
+
                 </div>
               </div>
               <ComingSoon category="Women" />
@@ -238,9 +233,7 @@ const Gallery = () => {
                   <h2 className="text-3xl md:text-4xl font-display font-bold text-foreground mb-2">
                     Kids' Collection
                   </h2>
-                  <p className="text-muted-foreground">
-                    Fun and stylish kids' fashion coming soon
-                  </p>
+                  
                 </div>
               </div>
               <ComingSoon category="Kids" />
@@ -249,7 +242,7 @@ const Gallery = () => {
         </div>
       </main>
       <Footer />
-      </PageLayout>
+      </div>
     </div>
   );
 };

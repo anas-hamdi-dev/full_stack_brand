@@ -9,6 +9,9 @@ import ScrollToTop from "./components/ScrollToTop";
 import ScrollToTopButton from "./components/ScrollToTopButton";
 import AuthModals from "./components/modals/AuthModals";
 import ProtectedRoute from "./components/ProtectedRoute";
+import Navbar from "./components/Navbar";
+import BrandOwnerWarningBanner from "./components/BrandOwnerWarningBanner";
+import useMobileInputFocus from "./hooks/useMobileInputFocus";
 import Index from "./pages/Index";
 import Brands from "./pages/Brands";
 import BrandDetail from "./pages/BrandDetail";
@@ -28,23 +31,38 @@ import { BRAND_DETAILS_ROUTE } from "./components/BrandOwnerWarningBanner";
 
 const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <AuthModalProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter
-            future={{
-              v7_startTransition: true,
-              v7_relativeSplatPath: true,
-            }}
-          >
-            <ScrollToTop />
-            <ScrollToTopButton />
-            <AuthModals />
-            <Routes>
+const App = () => {
+  useMobileInputFocus();
+  
+  return (
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <AuthModalProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter
+              future={{
+                v7_startTransition: true,
+                v7_relativeSplatPath: true,
+              }}
+            >
+              <ScrollToTop />
+              <ScrollToTopButton />
+              <Navbar />
+              <BrandOwnerWarningBanner />
+              <AuthModals />
+              {/* Global Background */}
+              <div className="fixed inset-0 -z-10 pointer-events-none">
+                <div
+                  className="absolute inset-0"
+                  style={{ background: "var(--gradient-hero)" }}
+                />
+                <div className="absolute inset-0 grid-pattern opacity-20" />
+                <div className="absolute top-0 left-1/4 w-64 h-64 bg-primary/10 rounded-full blur-[100px]" />
+                <div className="absolute top-0 right-1/4 w-48 h-48 bg-secondary/8 rounded-full blur-[80px]" />
+              </div>
+              <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/brands" element={<Brands />} />
             <Route path="/brand/:brandId" element={<BrandDetail />} />
@@ -66,13 +84,14 @@ const App = () => (
             <Route path="/brand-owner/products" element={<ProtectedRoute requireBrandOwner requireBrandApproved><ProductsManagement /></ProtectedRoute>} />
             
             <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
-        </TooltipProvider>
-      </AuthModalProvider>
-    </AuthProvider>
-  </QueryClientProvider>
-);
+              </Routes>
+            </BrowserRouter>
+          </TooltipProvider>
+        </AuthModalProvider>
+      </AuthProvider>
+    </QueryClientProvider>
+  );
+};
 
 export default App;
 

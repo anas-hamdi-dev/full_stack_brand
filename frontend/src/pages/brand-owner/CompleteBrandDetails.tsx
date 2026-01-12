@@ -18,7 +18,6 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useBrand } from "@/hooks/useBrands";
 import { toast } from "sonner";
 import { CheckCircle2, ArrowRight, ArrowLeft, Store, MapPin, Upload, X } from "lucide-react";
-import PageLayout from "@/components/PageLayout";
 import { authApi } from "@/lib/api";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
@@ -186,7 +185,7 @@ export default function CompleteBrandDetails() {
       queryClient.invalidateQueries({ queryKey: ["featured-brands"] });
       
       // Refresh user data to get updated brand_id if brand was just created
-      // This will update the AuthContext and cause BrandOwnerWarningBanner in PageLayout to hide
+      // This will update the AuthContext and cause BrandOwnerWarningBanner to hide
       try {
         await refreshUser();
       } catch (error) {
@@ -252,7 +251,7 @@ export default function CompleteBrandDetails() {
   // Step 1: Welcome
   if (currentStep === 1) {
     return (
-      <PageLayout>
+      <div className="min-h-screen bg-background pt-20 pb-20 mt-20">
         <div className="container mx-auto px-4 py-12 max-w-2xl">
           <div className="glass rounded-3xl p-8 md:p-12 text-center">
             <div className="mb-6">
@@ -275,14 +274,14 @@ export default function CompleteBrandDetails() {
             </div>
           </div>
         </div>
-      </PageLayout>
+      </div>
     );
   }
 
   // Step 2: Brand Details
   if (currentStep === 2) {
     return (
-      <PageLayout>
+      <div className="min-h-screen bg-background pt-20 pb-20 mt-20">
         <div className="container mx-auto px-4 py-12 max-w-2xl">
           <div className="glass rounded-3xl p-8 md:p-12">
             <div className="mb-6">
@@ -384,9 +383,9 @@ export default function CompleteBrandDetails() {
                   <div className="flex items-center px-3 h-10 rounded-md border border-input bg-muted text-sm text-muted-foreground whitespace-nowrap">
                     +216
                   </div>
-                  <Input
-                    id="phone"
-                    {...form.register("phone")}
+                <Input
+                  id="phone"
+                  {...form.register("phone")}
                     type="tel"
                     placeholder="XX XXX XXX"
                     onChange={(e) => {
@@ -398,7 +397,7 @@ export default function CompleteBrandDetails() {
                     maxLength={8}
                     pattern="[2-9]\d{7}"
                     title="Enter 8 digits starting with 2, 4, 5, or 9"
-                  />
+                />
                 </div>
               </div>
 
@@ -423,14 +422,14 @@ export default function CompleteBrandDetails() {
             </form>
           </div>
         </div>
-      </PageLayout>
+      </div>
     );
   }
 
   // Step 3: Location and Social Media
   if (currentStep === 3) {
     return (
-      <PageLayout>
+      <div className="min-h-screen bg-background pt-20 pb-20 mt-20">
         <div className="container mx-auto px-4 py-12 max-w-2xl">
           <div className="glass rounded-3xl p-8 md:p-12">
             <div className="mb-6">
@@ -483,7 +482,7 @@ export default function CompleteBrandDetails() {
                     placeholder="username"
                     onChange={(e) => {
                       // Remove @ if user types it, we add it automatically
-                      let value = e.target.value.replace(/^@+/, "").replace(/[^a-zA-Z0-9._]/g, "");
+                      const value = e.target.value.replace(/^@+/, "").replace(/[^a-zA-Z0-9._]/g, "");
                       form.setValue("instagram", value, { shouldValidate: true });
                     }}
                     className="bg-background flex-1"
@@ -523,14 +522,14 @@ export default function CompleteBrandDetails() {
             </form>
           </div>
         </div>
-      </PageLayout>
+      </div>
     );
   }
 
   // Step 4: Congratulations / Pending Approval
   if (currentStep === 4) {
     return (
-      <PageLayout>
+      <div className="min-h-screen bg-background pt-20 pb-20 mt-20">
         <div className="container mx-auto px-4 py-12 max-w-2xl">
           <div className="glass rounded-3xl p-8 md:p-12 text-center">
             <div className="mb-6">
@@ -554,7 +553,7 @@ export default function CompleteBrandDetails() {
             </Button>
           </div>
         </div>
-      </PageLayout>
+      </div>
     );
   }
 

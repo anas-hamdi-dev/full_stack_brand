@@ -1,5 +1,4 @@
 import { Helmet } from "react-helmet";
-import PageLayout from "@/components/PageLayout";
 import HeroSection from "@/components/HeroSection";
 import PartnerBrandsCarousel from "@/components/PartnerBrandsCarousel";
 import FeaturesSection from "@/components/FeaturesSection";
@@ -21,8 +20,7 @@ const Index = () => {
         <link rel="apple-touch-icon" sizes="180x180" href="/favicon.png" />
       </Helmet>
 
-      <div className="min-h-screen noise">
-        <PageLayout>
+      <div className="min-h-screen noise pt-20 pb-20 mt-20">
         <main className="relative">
           <HeroSection />
           <PartnerBrandsCarousel />
@@ -30,7 +28,6 @@ const Index = () => {
           <CTASection />
         </main>
         <Footer />
-        </PageLayout>
       </div>
     </>
   );

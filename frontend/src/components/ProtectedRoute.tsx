@@ -4,8 +4,7 @@ import { useAuthModal } from "@/contexts/AuthModalContext";
 import { useMyBrand } from "@/hooks/useBrands";
 import { Loader2 } from "lucide-react";
 import { useEffect } from "react";
-import { toast } from "sonner";
-
+import { toast } from "sonner"; 
 interface ProtectedRouteProps {
   children: React.ReactNode;
   requireClient?: boolean;

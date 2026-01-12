@@ -6,7 +6,6 @@ import { useMyProducts } from "@/hooks/useBrands";
 import { productsApi } from "@/lib/api";
 import { toast } from "sonner";
 import { Plus, Edit, Trash2, Package, Loader2 } from "lucide-react";
-import PageLayout from "@/components/PageLayout";
 import ProductManagementModal from "@/components/modals/ProductManagementModal";
 import BackButton from "@/components/BackButton";
 import {
@@ -126,7 +125,7 @@ export default function ProductsManagement() {
 
   if (!brandId) {
     return (
-      <PageLayout>
+      <div className="min-h-screen bg-background pt-20 pb-20 mt-20">
         <div className="container mx-auto px-4 py-12">
           <div className="glass rounded-3xl p-8 md:p-12 text-center max-w-2xl mx-auto">
             <Package className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
@@ -138,12 +137,12 @@ export default function ProductsManagement() {
             </p>
           </div>
         </div>
-      </PageLayout>
+      </div>
     );
   }
 
   return (
-    <PageLayout>
+    <div className="min-h-screen bg-background pt-20 pb-20">
       <div className="container mx-auto px-4 py-12 max-w-6xl">
         <div className="mb-6">
           <BackButton to="/" label="Back to home" />
@@ -305,7 +304,7 @@ export default function ProductsManagement() {
           </AlertDialogContent>
         </AlertDialog>
       </div>
-    </PageLayout>
+    </div>
   );
 }
 

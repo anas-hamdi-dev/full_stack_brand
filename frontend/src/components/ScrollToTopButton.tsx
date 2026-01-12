@@ -33,7 +33,7 @@ export default function ScrollToTopButton() {
       onClick={handleClick}
       size="icon"
       className={cn(
-        "fixed bottom-8 right-8 z-50 rounded-full shadow-lg transition-all duration-300",
+        "fixed bottom-24 right-8 z-40 rounded-full shadow-lg transition-all duration-300",
         "hover:shadow-xl hover:-translate-y-1",
         "bg-primary text-primary-foreground hover:bg-primary/90",
         isVisible
@@ -46,4 +46,5 @@ export default function ScrollToTopButton() {
     </Button>
   );
 }
+
 
