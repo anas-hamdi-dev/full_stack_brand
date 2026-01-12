@@ -18,6 +18,7 @@ interface ProductData {
   description?: string | null;
   price: number; // Required field
   images: string[]; 
+  purchaseLink?: string | null;
   brand_id?: string | null;
   id?: string;
   created_at?: string;
@@ -44,6 +45,7 @@ export default function ProductManagementModal({
     description: "",
     price: "",
     images: [] as string[],
+    purchaseLink: "",
   });
   const [imageFiles, setImageFiles] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
@@ -58,6 +60,7 @@ export default function ProductManagementModal({
           description: editingProduct.description || "",
           price: editingProduct.price?.toString() || "",
           images: editingProduct.images || [],
+          purchaseLink: editingProduct.purchaseLink || "",
         });
         setImagePreviews(editingProduct.images || []);
         setImageFiles([]);
@@ -67,6 +70,7 @@ export default function ProductManagementModal({
           description: "",
           price: "",
           images: [],
+          purchaseLink: "",
         });
         setImagePreviews([]);
         setImageFiles([]);
@@ -221,6 +225,17 @@ export default function ProductManagementModal({
         return;
       }
 
+      // Validate purchase link - required
+      if (!formData.purchaseLink.trim()) {
+        toast.error("Purchase link is required");
+        return;
+      }
+
+      if (!/^https?:\/\/.+/.test(formData.purchaseLink.trim())) {
+        toast.error("Purchase link must be a valid URL starting with http:// or https://");
+        return;
+      }
+
       // Clear any previous errors
       setImageError("");
       setPriceError("");
@@ -230,6 +245,7 @@ export default function ProductManagementModal({
       description: formData.description.trim() || null,
         price: priceNum,
       images: allImages,
+      purchaseLink: formData.purchaseLink.trim(),
     });
   };
 
@@ -243,87 +259,7 @@ export default function ProductManagementModal({
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Product Name */}
-          <div className="space-y-2">
-            <Label htmlFor="productName">
-              Product Name <span className="text-destructive">*</span>
-            </Label>
-            <Input
-              id="productName"
-              placeholder="e.g., Elegant Summer Dress"
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              required
-              disabled={isLoading}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="productPrice">
-              Price (TND) <span className="text-destructive">*</span>
-            </Label>
-            <div className="flex items-center gap-2">
-              <Input
-                id="productPrice"
-                type="number"
-                step="0.01"
-                min="0"
-                placeholder="0.00"
-                value={formData.price}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  setFormData({ ...formData, price: value });
-                  // Clear error on input if value is valid
-                  if (value.trim() && !isNaN(parseFloat(value)) && parseFloat(value) >= 0) {
-                    setPriceError("");
-                  }
-                }}
-                onBlur={() => {
-                  // Validate on blur
-                  const priceValue = formData.price?.trim() || '';
-                  if (!priceValue) {
-                    setPriceError("Price is required");
-                  } else {
-                    const priceNum = parseFloat(priceValue);
-                    if (isNaN(priceNum)) {
-                      setPriceError("Price must be a valid number");
-                    } else if (priceNum < 0) {
-                      setPriceError("Price must be greater than or equal to 0");
-                    } else {
-                      setPriceError("");
-                    }
-                  }
-                }}
-                disabled={isLoading}
-                className={`flex-1 ${priceError ? "border-destructive" : ""}`}
-                required
-              />
-              <div className="flex items-center px-3 h-10 rounded-md border border-input bg-muted text-sm text-muted-foreground whitespace-nowrap">
-                TND
-              </div>
-            </div>
-            {priceError && (
-              <p className="text-sm text-destructive mt-1">
-                {priceError}
-              </p>
-            )}
-          </div>
-          {/* Description */}
-          <div className="space-y-2">
-            <Label htmlFor="productDescription">Description</Label>
-            <Textarea
-              id="productDescription"
-              placeholder="Describe your product..."
-              value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              rows={4}
-              disabled={isLoading}
-            />
-          </div>
-
-          {/* Price */}
-            
-
-            {/* Images */}
+          {/* Images */}
           <div className="space-y-2">
               <Label htmlFor="productImages">
                 Product Images <span className="text-destructive">*</span>
@@ -388,6 +324,103 @@ export default function ProductManagementModal({
               </div>
           </div>
 
+          {/* Product Name */}
+          <div className="space-y-2">
+            <Label htmlFor="productName">
+              Product Name <span className="text-destructive">*</span>
+            </Label>
+            <Input
+              id="productName"
+              placeholder="e.g., Elegant Summer Dress"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              required
+              disabled={isLoading}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="productPrice">
+              Price (TND) <span className="text-destructive">*</span>
+            </Label>
+            <div className="flex items-center gap-2">
+              <Input
+                id="productPrice"
+                type="number"
+                step="0.01"
+                min="0"
+                placeholder="0.00"
+                value={formData.price}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setFormData({ ...formData, price: value });
+                  // Clear error on input if value is valid
+                  if (value.trim() && !isNaN(parseFloat(value)) && parseFloat(value) >= 0) {
+                    setPriceError("");
+                  }
+                }}
+                onBlur={() => {
+                  // Validate on blur
+                  const priceValue = formData.price?.trim() || '';
+                  if (!priceValue) {
+                    setPriceError("Price is required");
+                  } else {
+                    const priceNum = parseFloat(priceValue);
+                    if (isNaN(priceNum)) {
+                      setPriceError("Price must be a valid number");
+                    } else if (priceNum < 0) {
+                      setPriceError("Price must be greater than or equal to 0");
+                    } else {
+                      setPriceError("");
+                    }
+                  }
+                }}
+                disabled={isLoading}
+                className={`flex-1 ${priceError ? "border-destructive" : ""}`}
+                required
+              />
+              <div className="flex items-center px-3 h-10 rounded-md border border-input bg-muted text-sm text-muted-foreground whitespace-nowrap">
+                TND
+              </div>
+            </div>
+            {priceError && (
+              <p className="text-sm text-destructive mt-1">
+                {priceError}
+              </p>
+            )}
+          </div>
+
+          {/* Purchase Link */}
+          <div className="space-y-2">
+            <Label htmlFor="purchaseLink">
+              Purchase Link <span className="text-destructive">*</span>
+            </Label>
+            <Input
+              id="purchaseLink"
+              type="url"
+              placeholder="https://example.com/product"
+              value={formData.purchaseLink}
+              onChange={(e) => setFormData({ ...formData, purchaseLink: e.target.value })}
+              disabled={isLoading}
+              required
+            />
+            <p className="text-xs text-muted-foreground">
+              URL where customers can purchase this product.
+            </p>
+          </div>
+
+          {/* Description */}
+          <div className="space-y-2">
+            <Label htmlFor="productDescription">Description</Label>
+            <Textarea
+              id="productDescription"
+              placeholder="Describe your product..."
+              value={formData.description}
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              rows={4}
+              disabled={isLoading}
+            />
+          </div>
+
           <DialogFooter>
             <Button
               type="button"
@@ -407,6 +440,8 @@ export default function ProductManagementModal({
                   formData.price.trim() === '' ||
                   isNaN(parseFloat(formData.price)) ||
                   parseFloat(formData.price) < 0 ||
+                  !formData.purchaseLink.trim() ||
+                  !/^https?:\/\/.+/.test(formData.purchaseLink.trim()) ||
                   imagePreviews.length === 0 ||
                   !!priceError
                 }

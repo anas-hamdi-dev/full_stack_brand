@@ -1,5 +1,5 @@
 import Footer from "@/components/Footer";
-import { Mail, Phone, MapPin, Send, MessageCircle, Instagram } from "lucide-react";
+import { Mail, Phone, MapPin, Send, Instagram } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -172,20 +172,6 @@ const Contact = () => {
                       value="Bizerte, Tunisia"
                       gradient="bg-gradient-secondary"
                     />
-                    <a
-                      href="https://wa.me/21699797459"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="block"
-                    >
-                      <ContactItem
-                        icon={<MessageCircle className="w-6 h-6 text-white" />}
-                        title="WhatsApp"
-                        value="+216 99 797 459"
-                        gradient="bg-gradient-primary"
-                        clickable
-                      />
-                    </a>
                     <a
                       href="https://instagram.com/elmall.tn"
                       target="_blank"

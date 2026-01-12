@@ -1,12 +1,11 @@
 import { Link } from "react-router-dom";
-import { Facebook, Instagram, MessageCircle } from "lucide-react";
+import { Facebook, Instagram } from "lucide-react";
 import logo from "@/assets/logo2.png";
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
 
   const socialLinks = [
-    { icon: MessageCircle, href: "https://wa.me/21699797459", label: "WhatsApp" },
     { icon: Instagram, href: "https://instagram.com/elmall.tn", label: "Instagram" },
     { icon: Facebook, href: "https://facebook.com", label: "Facebook" },
   ];

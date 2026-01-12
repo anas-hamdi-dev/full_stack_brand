@@ -16,6 +16,7 @@ export interface Product {
   } | null;
   price?: number | null;
   images: string[];
+  purchaseLink?: string | null;
   createdAt?: string;
   created_at?: string; // For backward compatibility
 }

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { useParams, Link } from "react-router-dom";
+  import { useParams, Link } from "react-router-dom";
 import { Helmet } from "react-helmet";
 import Footer from "@/components/Footer";
 import { useProduct } from "@/hooks/useProducts";
@@ -216,9 +216,24 @@ const ProductDetail = () => {
                   {product.description || "No description available."}
                 </p>
 
-              
-
-                
+                {/* Buy Now Button */}
+                {product.purchaseLink && (
+                  <div className="w-full md:w-auto">
+                    <Button
+                      asChild
+                      size="lg"
+                      className="w-full md:w-auto"
+                    >
+                      <a
+                        href={product.purchaseLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        Buy Now
+                      </a>
+                    </Button>
+                  </div>
+                )}
               </div>
             </div>
           </div>

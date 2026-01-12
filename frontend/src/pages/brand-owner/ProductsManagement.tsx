@@ -28,6 +28,7 @@ interface Product {
   description?: string | null;
   price?: number | null;
   images: string[];
+  purchaseLink?: string | null;
   brand_id?: string | null;
   createdAt?: string;
 }
@@ -42,7 +43,7 @@ export default function ProductsManagement() {
   const [deletingProductId, setDeletingProductId] = useState<string | null>(null);
 
   const createProduct = useMutation({
-    mutationFn: async (data: { name: string; description?: string | null; price?: number | null; images: string[] }) => {
+    mutationFn: async (data: { name: string; description?: string | null; price?: number | null; images: string[]; purchaseLink?: string | null }) => {
       const response = await productsApi.create(data);
       if (response.error) {
         throw new Error(response.error.message || "Failed to create product");
@@ -62,7 +63,7 @@ export default function ProductsManagement() {
   });
 
   const updateProduct = useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: { name?: string; description?: string | null; price: number; images?: string[] } }) => {
+    mutationFn: async ({ id, data }: { id: string; data: { name?: string; description?: string | null; price: number; images?: string[]; purchaseLink?: string | null } }) => {
       const response = await productsApi.update(id, data);
       if (response.error) {
         throw new Error(response.error.message || "Failed to update product");
@@ -100,7 +101,7 @@ export default function ProductsManagement() {
     },
   });
 
-  const handleSubmit = (productData: { name: string; description?: string | null; price: number; images: string[] }) => {
+  const handleSubmit = (productData: { name: string; description?: string | null; price: number; images: string[]; purchaseLink?: string | null }) => {
     if (editingProduct) {
       updateProduct.mutate({ id: editingProduct._id, data: productData });
     } else {
@@ -276,6 +277,7 @@ export default function ProductsManagement() {
             description: editingProduct.description || "",
             price: editingProduct.price ?? 0,
             images: editingProduct.images || [],
+            purchaseLink: editingProduct.purchaseLink || "",
             brand_id: editingProduct.brand_id || null,
             created_at: editingProduct.createdAt || "",
           } : null}

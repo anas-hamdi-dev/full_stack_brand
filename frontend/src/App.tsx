@@ -7,6 +7,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { AuthModalProvider } from "@/contexts/AuthModalContext";
 import ScrollToTop from "./components/ScrollToTop";
 import ScrollToTopButton from "./components/ScrollToTopButton";
+import WhatsAppButton from "./components/WhatsAppButton";
 import AuthModals from "./components/modals/AuthModals";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Navbar from "./components/Navbar";
@@ -58,6 +59,7 @@ const App = () => {
             >
               <ScrollToTop />
               <ScrollToTopButton />
+              <WhatsAppButton />
               <Navbar />
               <BrandOwnerWarningBanner />
               <AuthModals />
