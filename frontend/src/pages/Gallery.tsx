@@ -78,7 +78,7 @@ const Gallery = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background mt-20">
+    <div className="min-h-screen bg-background">
       <Helmet>
         <title>Gallery - el mall | Fashion Collection</title>
         <meta name="description" content="Browse our gallery of fashion items from various Tunisian brands. Discover unique clothing and accessories." />

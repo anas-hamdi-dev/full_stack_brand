@@ -13,7 +13,7 @@ const About = () => {
         <link rel="icon" type="image/png" sizes="16x16" href="/favicon.png" />
         <link rel="apple-touch-icon" sizes="180x180" href="/favicon.png" />
       </Helmet>
-      <div className="min-h-screen bg-background pt-20 pb-20 mt-20">
+      <div className="min-h-screen bg-background pt-20 pb-20">
         <main className="pb-16">
           <div className="container mx-auto px-4">
             

@@ -46,7 +46,7 @@
 
     if (isLoading) {
       return (
-        <div className="min-h-screen bg-background pt-20 pb-20 mt-20">
+        <div className="min-h-screen bg-background pt-20 pb-20">
           <div className="pb-16 md:pb-20 container mx-auto px-4 max-w-7xl">
             <div className="animate-pulse grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 items-start">
               <div className="w-full max-w-full md:max-w-[50%] mx-auto md:mx-0">
@@ -69,7 +69,7 @@
 
     if (!product) {
       return (
-        <div className="min-h-screen bg-background pt-20 pb-20 mt-20">
+        <div className="min-h-screen bg-background pt-20 pb-20">
           <div className="pb-20 container mx-auto px-4 text-center">
             <h1 className="text-3xl font-display font-bold text-foreground mb-4">
               Product Not Found

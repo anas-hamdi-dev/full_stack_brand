@@ -153,7 +153,7 @@ export default function EmailVerification() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background px-4 py-12 pt-24 pb-24 mt-20">
+    <div className="min-h-screen flex items-center justify-center bg-background px-4 py-12 pt-24 pb-24">
       <div className="w-full max-w-md">
         <div className="glass rounded-3xl p-8 space-y-6">
           {/* Back Button */}

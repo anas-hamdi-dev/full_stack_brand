@@ -251,7 +251,7 @@ export default function CompleteBrandDetails() {
   // Step 1: Welcome
   if (currentStep === 1) {
     return (
-      <div className="min-h-screen bg-background pt-20 pb-20 mt-20">
+      <div className="min-h-screen bg-background pt-20 pb-20">
         <div className="container mx-auto px-4 py-12 max-w-2xl">
           <div className="glass rounded-3xl p-8 md:p-12 text-center">
             <div className="mb-6">
@@ -281,7 +281,7 @@ export default function CompleteBrandDetails() {
   // Step 2: Brand Details
   if (currentStep === 2) {
     return (
-      <div className="min-h-screen bg-background pt-20 pb-20 mt-20">
+      <div className="min-h-screen bg-background pt-20 pb-20">
         <div className="container mx-auto px-4 py-12 max-w-2xl">
           <div className="glass rounded-3xl p-8 md:p-12">
             <div className="mb-6">
@@ -429,7 +429,7 @@ export default function CompleteBrandDetails() {
   // Step 3: Location and Social Media
   if (currentStep === 3) {
     return (
-      <div className="min-h-screen bg-background pt-20 pb-20 mt-20">
+      <div className="min-h-screen bg-background pt-20 pb-20">
         <div className="container mx-auto px-4 py-12 max-w-2xl">
           <div className="glass rounded-3xl p-8 md:p-12">
             <div className="mb-6">
@@ -529,7 +529,7 @@ export default function CompleteBrandDetails() {
   // Step 4: Congratulations / Pending Approval
   if (currentStep === 4) {
     return (
-      <div className="min-h-screen bg-background pt-20 pb-20 mt-20">
+      <div className="min-h-screen bg-background pt-20 pb-20">
         <div className="container mx-auto px-4 py-12 max-w-2xl">
           <div className="glass rounded-3xl p-8 md:p-12 text-center">
             <div className="mb-6">

@@ -60,7 +60,7 @@ const Navbar = () => {
   }, [isOpen]);
 
   return (
-    <nav className="relative w-full px-4 py-4">
+    <nav className="fixed top-0 left-0 right-0 z-50 w-full px-4 py-4">
       <div className="container mx-auto">
         <div className="glass rounded-2xl px-6 py-4 flex items-center justify-between relative border border-primary/30">
 

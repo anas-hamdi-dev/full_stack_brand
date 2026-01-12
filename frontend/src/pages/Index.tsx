@@ -20,7 +20,7 @@ const Index = () => {
         <link rel="apple-touch-icon" sizes="180x180" href="/favicon.png" />
       </Helmet>
 
-      <div className="min-h-screen noise pt-20 pb-20 mt-20">
+      <div className="min-h-screen noise pt-20 pb-20">
         <main className="relative">
           <HeroSection />
           <PartnerBrandsCarousel />

@@ -38,7 +38,7 @@ export default function BrandOwnerWarningBanner() {
           <div className="flex items-center gap-3 flex-1">
             <AlertTriangle className="h-5 w-5 text-yellow-600 dark:text-yellow-400 flex-shrink-0" />
             <p className="text-sm text-foreground">
-              <span className="font-medium">Incomplete Brand  Details</span>
+              <span className="font-medium">Incomplete Details</span>
             </p>
           </div>
           <div className="flex items-center gap-2 flex-shrink-0">
