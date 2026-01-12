@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -31,11 +31,23 @@ export default function LoginModal({ open, onOpenChange, onSwitchToSignUp }: Log
   const [isLoading, setIsLoading] = useState(false);
   const { signIn, user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   // Handle redirect after login based on user status
   useEffect(() => {
     if (user && open) {
       onOpenChange(false);
+      
+      // Check email verification first (except for admins)
+      if (user.role !== "admin" && !user.isEmailVerified) {
+        navigate("/verify-email", { 
+          state: { 
+            email: user.email,
+            from: location 
+          } 
+        });
+        return;
+      }
       
       // Redirect based on role
       if (user.role === "client") {

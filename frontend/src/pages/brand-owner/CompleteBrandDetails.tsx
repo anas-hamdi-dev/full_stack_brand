@@ -74,6 +74,11 @@ export default function CompleteBrandDetails() {
   // Pre-fill form with existing brand data when it loads
   useEffect(() => {
     if (existingBrand) {
+      // Extract phone number digits (remove +216 prefix if present)
+      const phoneNumber = existingBrand.phone 
+        ? existingBrand.phone.replace(/^\+216/, "").replace(/\D/g, "").slice(0, 8)
+        : "";
+      
       form.reset({
         name: existingBrand.name || "",
         description: existingBrand.description || "",
@@ -84,7 +89,7 @@ export default function CompleteBrandDetails() {
           ? existingBrand.instagram.replace(/^https?:\/\/.*instagram\.com\//, "").replace(/^@/, "") 
           : "",
         facebook: existingBrand.facebook || "",
-        phone: existingBrand.phone || "",
+        phone: phoneNumber,
         email: existingBrand.email || "",
       });
       // Sync avatar preview
@@ -138,9 +143,11 @@ export default function CompleteBrandDetails() {
           throw new Error("Error: Invalid brand ID. Please sign in again.");
         }
         // Format Instagram username - remove @ prefix if present
+        // Format phone number - add +216 prefix if phone is provided
         const formattedData = {
           ...data,
           instagram: data.instagram?.trim() ? data.instagram.trim().replace(/^@+/, "") : "",
+          phone: data.phone?.trim() ? `+216${data.phone.trim()}` : "",
         };
         // Update existing brand - preserve existing status, don't send status field
         const brandData = {
@@ -153,9 +160,11 @@ export default function CompleteBrandDetails() {
         return response.data;
       } else {
         // Format Instagram username - remove @ prefix if present
+        // Format phone number - add +216 prefix if phone is provided
         const formattedData = {
           ...data,
           instagram: data.instagram?.trim() ? data.instagram.trim().replace(/^@+/, "") : "",
+          phone: data.phone?.trim() ? `+216${data.phone.trim()}` : "",
         };
         // Create new brand - set status to pending for new brands
         const brandData = {
@@ -371,11 +380,26 @@ export default function CompleteBrandDetails() {
 
               <div className="space-y-2">
                 <Label htmlFor="phone">Phone</Label>
-                <Input
-                  id="phone"
-                  {...form.register("phone")}
-                  placeholder="+33 6 12 34 56 78"
-                />
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center px-3 h-10 rounded-md border border-input bg-muted text-sm text-muted-foreground whitespace-nowrap">
+                    +216
+                  </div>
+                  <Input
+                    id="phone"
+                    {...form.register("phone")}
+                    type="tel"
+                    placeholder="XX XXX XXX"
+                    onChange={(e) => {
+                      // Only allow digits and limit to 8 digits
+                      const value = e.target.value.replace(/\D/g, '').slice(0, 8);
+                      form.setValue("phone", value, { shouldValidate: true });
+                    }}
+                    className="bg-background flex-1"
+                    maxLength={8}
+                    pattern="[2-9]\d{7}"
+                    title="Enter 8 digits starting with 2, 4, 5, or 9"
+                  />
+                </div>
               </div>
 
               <div className="space-y-2">

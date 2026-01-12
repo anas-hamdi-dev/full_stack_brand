@@ -22,6 +22,7 @@ import BrandOwnerProfile from "./pages/brand-owner/BrandOwnerProfile";
 import BrandDetails from "./pages/brand-owner/BrandDetails";
 import ProductsManagement from "./pages/brand-owner/ProductsManagement";
 import PendingApproval from "./pages/brand-owner/PendingApproval";
+import EmailVerification from "./pages/EmailVerification";
 import { BRAND_DETAILS_ROUTE } from "./components/BrandOwnerWarningBanner";
 
 const queryClient = new QueryClient();
@@ -49,6 +50,8 @@ const App = () => (
             <Route path="/gallery" element={<Gallery />} />
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />
+            {/* Email Verification */}
+            <Route path="/verify-email" element={<EmailVerification />} />
             {/* Client Routes */}
             <Route path="/client/dashboard" element={<ProtectedRoute requireClient><ClientFavorites /></ProtectedRoute>} />
             <Route path="/client/favorites" element={<ProtectedRoute requireClient><ClientFavorites /></ProtectedRoute>} />
@@ -56,7 +59,7 @@ const App = () => (
             {/* Brand Owner Routes */}
             <Route path={BRAND_DETAILS_ROUTE} element={<ProtectedRoute requireBrandOwner><CompleteBrandDetails /></ProtectedRoute>} />
             <Route path="/brand-owner/pending-approval" element={<ProtectedRoute requireBrandOwner><PendingApproval /></ProtectedRoute>} />
-            <Route path="/brand-owner/profile" element={<ProtectedRoute requireBrandOwner requireBrandApproved><BrandOwnerProfile /></ProtectedRoute>} />
+            <Route path="/brand-owner/profile" element={<ProtectedRoute requireBrandOwner ><BrandOwnerProfile /></ProtectedRoute>} />
             <Route path="/brand-owner/brand" element={<ProtectedRoute requireBrandOwner requireBrandApproved><BrandDetails /></ProtectedRoute>} />
             <Route path="/brand-owner/products" element={<ProtectedRoute requireBrandOwner requireBrandApproved><ProductsManagement /></ProtectedRoute>} />
             

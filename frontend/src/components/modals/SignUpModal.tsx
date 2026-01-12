@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAuthModal } from "@/contexts/AuthModalContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -49,6 +49,7 @@ export default function SignUpModal({ open, onOpenChange, onSwitchToLogin }: Sig
   const [isLoading, setIsLoading] = useState(false);
   const { signUp } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   // Update role when modal opens and defaultSignUpRole changes
   useEffect(() => {
@@ -93,16 +94,14 @@ export default function SignUpModal({ open, onOpenChange, onSwitchToLogin }: Sig
     // Close signup modal
     onOpenChange(false);
     
-    // Handle post-signup flow based on role
-    if (formData.role === "brand_owner") {
-      toast.success("Account created successfully! You can now create your brand from your profile.");
-      // Brand owners can create their brand later from their profile
-      navigate("/");
-    } else {
-      // For clients, redirect to dashboard
-      toast.success("Account created successfully!");
-      navigate("/client/dashboard");
-    }
+    // Redirect to email verification page
+    toast.success("Account created successfully! Please verify your email.");
+    navigate("/verify-email", { 
+      state: { 
+        email: formData.email,
+        from: location 
+      } 
+    });
     
     // Reset form
     setFormData({
