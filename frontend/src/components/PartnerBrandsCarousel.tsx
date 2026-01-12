@@ -30,14 +30,9 @@ const PartnerBrandsCarousel = () => {
 
   return (
     <section className="py-16 md:py-20 relative overflow-hidden">
-      {/* Background Effects */}
-      <div className="absolute inset-0 grid-pattern opacity-20" />
-      <div className="absolute top-1/2 left-1/4 w-72 h-72 bg-primary/10 rounded-full blur-[120px] animate-pulse-slow -translate-y-1/2" />
-      <div className="absolute top-1/2 right-1/4 w-64 h-64 bg-secondary/8 rounded-full blur-[100px] animate-pulse-slow -translate-y-1/2" style={{ animationDelay: '2s' }} />
 
-      {/* Gradient overlays */}
-      <div className="absolute left-0 top-0 bottom-0 w-40 bg-gradient-to-r from-background via-background/90 to-transparent z-10 pointer-events-none" />
-      <div className="absolute right-0 top-0 bottom-0 w-40 bg-gradient-to-l from-background via-background/90 to-transparent z-10 pointer-events-none" />
+
+
 
       <div className="container mx-auto px-6 md:px-8 relative z-10">
         {/* Section Title */}

@@ -171,7 +171,6 @@ export const authApi = {
     role: 'client' | 'brand_owner';
     brandData?: {
       name?: string;
-      category_id?: string;
       description?: string;
       location?: string;
       website?: string;
@@ -196,15 +195,9 @@ export const authApi = {
   },
 };
 
-// Categories API
-export const categoriesApi = {
-  getAll: () => apiClient.get<unknown[]>('/categories'),
-  getById: (id: string) => apiClient.get<unknown>(`/categories/${id}`),
-};
-
 // Brands API
 export const brandsApi = {
-  getAll: (params?: { category_id?: string; featured?: boolean; search?: string; limit?: number }) =>
+  getAll: (params?: { featured?: boolean; search?: string; limit?: number }) =>
     apiClient.get<{ data: unknown[] }>('/brands', params),
   getFeatured: () => apiClient.get<{ data: unknown[] }>('/brands/featured'),
   getById: (id: string) => apiClient.get<{ data: unknown }>(`/brands/${id}`),
@@ -217,7 +210,7 @@ export const brandsApi = {
 
 // Products API
 export const productsApi = {
-  getAll: (params?: { brand_id?: string; category_id?: string; search?: string; limit?: number }) =>
+  getAll: (params?: { brand_id?: string; search?: string; limit?: number }) =>
     apiClient.get<{ data: unknown[] }>('/products', params),
   getById: (id: string) => apiClient.get<{ data: unknown }>(`/products/${id}`),
   create: (data: { name: string; description?: string; price?: number; images: string[] }) => 

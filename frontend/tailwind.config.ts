@@ -1,3 +1,4 @@
+// @ts-ignore
 import type { Config } from "tailwindcss";
 
 export default {
@@ -81,6 +82,30 @@ export default {
           from: { backgroundPosition: "200% 0" },
           to: { backgroundPosition: "-200% 0" },
         },
+        "move-around": {
+          "0%, 100%": { transform: "translate(0, 0) rotate(0deg)" },
+          "25%": { transform: "translate(20px, 40px) rotate(5deg)" },
+          "50%": { transform: "translate(0, 60px) rotate(0deg)" },
+          "75%": { transform: "translate(-20px, 40px) rotate(-5deg)" },
+        },
+        "move-around-2": {
+          "0%, 100%": { transform: "translate(0, 0) rotate(0deg)" },
+          "25%": { transform: "translate(-30px, 20px) rotate(-3deg)" },
+          "50%": { transform: "translate(-60px, 0) rotate(0deg)" },
+          "75%": { transform: "translate(-30px, -20px) rotate(3deg)" },
+        },
+        "move-around-3": {
+          "0%, 100%": { transform: "translate(0, 0) rotate(0deg)" },
+          "25%": { transform: "translate(40px, -20px) rotate(4deg)" },
+          "50%": { transform: "translate(0, -40px) rotate(0deg)" },
+          "75%": { transform: "translate(-40px, -20px) rotate(-4deg)" },
+        },
+        "move-around-4": {
+          "0%, 100%": { transform: "translate(0, 0) rotate(0deg)" },
+          "25%": { transform: "translate(-20px, 30px) rotate(-2deg)" },
+          "50%": { transform: "translate(0, 0) rotate(0deg)" },
+          "75%": { transform: "translate(20px, 30px) rotate(2deg)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -88,6 +113,10 @@ export default {
         "fade-in": "fade-in 0.5s ease-out",
         "scale-in": "scale-in 0.3s ease-out",
         "shimmer": "shimmer 8s linear infinite",
+        "move-around-1": "move-around 25s ease-in-out infinite",
+        "move-around-2": "move-around-2 30s ease-in-out infinite",
+        "move-around-3": "move-around-3 35s ease-in-out infinite",
+        "move-around-4": "move-around-4 28s ease-in-out infinite",
       },
       backgroundImage: {
         "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
@@ -95,5 +124,6 @@ export default {
       },
     },
   },
+  // @ts-ignore
   plugins: [require("tailwindcss-animate")],
 } satisfies Config;

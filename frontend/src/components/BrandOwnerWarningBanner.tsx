@@ -28,7 +28,7 @@ export default function BrandOwnerWarningBanner() {
     return null;
   }
 
-  const message = "Your brand details are incomplete. Please complete your brand information to access all features.";
+  const message = ". Please complete your brand information to access all features.";
   const buttonText = "Complete Details";
 
   return (

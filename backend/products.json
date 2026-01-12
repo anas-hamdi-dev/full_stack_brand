@@ -1,0 +1,237 @@
+[
+  {
+    "name": "Classic White Sneakers",
+    "description": "Timeless white sneakers with cushioned insoles. Perfect for everyday wear and street style.",
+    "brand_id": "REPLACE_WITH_URBANSTEPS_BRAND_ID",
+    "price": 89.99,
+    "images": [
+      "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800&h=800&fit=crop",
+      "https://images.unsplash.com/photo-1460353581641-37baddab0fa2?w=800&h=800&fit=crop",
+      "https://images.unsplash.com/photo-1549298916-b41d501d3772?w=800&h=800&fit=crop"
+    ]
+  },
+  {
+    "name": "Retro High-Top Sneakers",
+    "description": "Vintage-inspired high-top sneakers with premium leather. Make a bold statement.",
+    "brand_id": "REPLACE_WITH_URBANSTEPS_BRAND_ID",
+    "price": 119.99,
+    "images": [
+      "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=800&h=800&fit=crop",
+      "https://images.unsplash.com/photo-1544966503-7cc5ac882d5f?w=800&h=800&fit=crop"
+    ]
+  },
+  {
+    "name": "Casual Running Shoes",
+    "description": "Lightweight running shoes with breathable mesh upper. Comfortable for long walks and runs.",
+    "brand_id": "REPLACE_WITH_URBANSTEPS_BRAND_ID",
+    "price": 79.99,
+    "images": [
+      "https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?w=800&h=800&fit=crop",
+      "https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?w=800&h=800&fit=crop"
+    ]
+  },
+  {
+    "name": "Vintage Rock Tee",
+    "description": "Classic vintage-style rock band t-shirt. Soft cotton blend with retro graphics.",
+    "brand_id": "REPLACE_WITH_TEEVIBES_BRAND_ID",
+    "price": 29.99,
+    "images": [
+      "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=800&h=800&fit=crop",
+      "https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?w=800&h=800&fit=crop"
+    ]
+  },
+  {
+    "name": "Minimalist Logo Tee",
+    "description": "Clean and simple logo t-shirt. Perfect for layering or wearing alone. Premium cotton.",
+    "brand_id": "REPLACE_WITH_TEEVIBES_BRAND_ID",
+    "price": 24.99,
+    "images": [
+      "https://images.unsplash.com/photo-1523381294911-8d3cead13475?w=800&h=800&fit=crop",
+      "https://images.unsplash.com/photo-1503341504253-dff4815485f1?w=800&h=800&fit=crop"
+    ]
+  },
+  {
+    "name": "Graphic Print Tee",
+    "description": "Bold graphic print t-shirt with unique artwork. Stand out from the crowd.",
+    "brand_id": "REPLACE_WITH_TEEVIBES_BRAND_ID",
+    "price": 34.99,
+    "images": [
+      "https://images.unsplash.com/photo-1586790170083-2f9ceadc732d?w=800&h=800&fit=crop",
+      "https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?w=800&h=800&fit=crop"
+    ]
+  },
+  {
+    "name": "Classic Blue Jeans",
+    "description": "Iconic blue denim jeans with perfect fit. Durable and stylish for any occasion.",
+    "brand_id": "REPLACE_WITH_DENIMCRAFT_BRAND_ID",
+    "price": 89.99,
+    "images": [
+      "https://images.unsplash.com/photo-1542272604-787c3835535d?w=800&h=800&fit=crop",
+      "https://images.unsplash.com/photo-1576995853123-5a10305d93c0?w=800&h=800&fit=crop"
+    ]
+  },
+  {
+    "name": "Black Slim Fit Trousers",
+    "description": "Elegant black slim-fit trousers. Perfect for business casual or smart casual looks.",
+    "brand_id": "REPLACE_WITH_DENIMCRAFT_BRAND_ID",
+    "price": 99.99,
+    "images": [
+      "https://images.unsplash.com/photo-1558769132-cb1aea458c5e?w=800&h=800&fit=crop",
+      "https://images.unsplash.com/photo-1624378515195-6bbdb73ac953?w=800&h=800&fit=crop"
+    ]
+  },
+  {
+    "name": "Summer Floral Dress",
+    "description": "Beautiful floral summer dress with flowy fabric. Perfect for sunny days and garden parties.",
+    "brand_id": "REPLACE_WITH_ELEGANCEDRESS_BRAND_ID",
+    "price": 79.99,
+    "images": [
+      "https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=800&h=800&fit=crop",
+      "https://images.unsplash.com/photo-1594633313593-bab3825d0caf?w=800&h=800&fit=crop",
+      "https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?w=800&h=800&fit=crop"
+    ]
+  },
+  {
+    "name": "Elegant Evening Gown",
+    "description": "Stunning floor-length evening gown with delicate details. Make an entrance at any formal event.",
+    "brand_id": "REPLACE_WITH_ELEGANCEDRESS_BRAND_ID",
+    "price": 249.99,
+    "images": [
+      "https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=800&h=800&fit=crop",
+      "https://images.unsplash.com/photo-1585487000130-712b7c79dc39?w=800&h=800&fit=crop"
+    ]
+  },
+  {
+    "name": "Casual Midi Dress",
+    "description": "Comfortable midi dress perfect for daily wear. Chic and effortless style.",
+    "brand_id": "REPLACE_WITH_ELEGANCEDRESS_BRAND_ID",
+    "price": 59.99,
+    "images": [
+      "https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=800&h=800&fit=crop",
+      "https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=800&h=800&fit=crop"
+    ]
+  },
+  {
+    "name": "Leather Jacket",
+    "description": "Classic black leather jacket with premium quality. Timeless style that never goes out of fashion.",
+    "brand_id": "REPLACE_WITH_OUTERWEAR_BRAND_ID",
+    "price": 199.99,
+    "images": [
+      "https://images.unsplash.com/photo-1551028719-00167b16eac5?w=800&h=800&fit=crop",
+      "https://images.unsplash.com/photo-1544966503-7cc5ac882d5f?w=800&h=800&fit=crop"
+    ]
+  },
+  {
+    "name": "Winter Parka",
+    "description": "Warm and waterproof winter parka. Stay cozy during cold weather with style.",
+    "brand_id": "REPLACE_WITH_OUTERWEAR_BRAND_ID",
+    "price": 149.99,
+    "images": [
+      "https://images.unsplash.com/photo-1551028719-00167b16eac5?w=800&h=800&fit=crop",
+      "https://images.unsplash.com/photo-1551488831-00ddcb6c6bd3?w=800&h=800&fit=crop"
+    ]
+  },
+  {
+    "name": "Designer Handbag",
+    "description": "Luxurious designer handbag with elegant design. Perfect accessory for any outfit.",
+    "brand_id": "REPLACE_WITH_STYLEACCESSORIES_BRAND_ID",
+    "price": 179.99,
+    "images": [
+      "https://images.unsplash.com/photo-1590874103328-eac38a683ce7?w=800&h=800&fit=crop",
+      "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=800&h=800&fit=crop"
+    ]
+  },
+  {
+    "name": "Wool Fedora Hat",
+    "description": "Classic wool fedora hat. Add sophistication to your look with this timeless accessory.",
+    "brand_id": "REPLACE_WITH_STYLEACCESSORIES_BRAND_ID",
+    "price": 49.99,
+    "images": [
+      "https://images.unsplash.com/photo-1534215754734-18e55d13e346?w=800&h=800&fit=crop",
+      "https://images.unsplash.com/photo-1588850561407-ed78c282e89b?w=800&h=800&fit=crop"
+    ]
+  },
+  {
+    "name": "Cable Knit Sweater",
+    "description": "Cozy cable knit sweater with classic design. Warm and comfortable for autumn and winter.",
+    "brand_id": "REPLACE_WITH_COZYKNIT_BRAND_ID",
+    "price": 79.99,
+    "images": [
+      "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=800&h=800&fit=crop",
+      "https://images.unsplash.com/photo-1434389677669-e08b4cac3105?w=800&h=800&fit=crop"
+    ]
+  },
+  {
+    "name": "Cardigan Sweater",
+    "description": "Versatile cardigan sweater perfect for layering. Soft and stylish for any season.",
+    "brand_id": "REPLACE_WITH_COZYKNIT_BRAND_ID",
+    "price": 69.99,
+    "images": [
+      "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=800&h=800&fit=crop",
+      "https://images.unsplash.com/photo-1434389677669-e08b4cac3105?w=800&h=800&fit=crop"
+    ]
+  },
+  {
+    "name": "Yoga Leggings",
+    "description": "High-performance yoga leggings with moisture-wicking fabric. Flexible and comfortable for any workout.",
+    "brand_id": "REPLACE_WITH_SPORTFIT_BRAND_ID",
+    "price": 54.99,
+    "images": [
+      "https://images.unsplash.com/photo-1585004275751-b5d8f59c07c2?w=800&h=800&fit=crop",
+      "https://images.unsplash.com/photo-1544966503-7cc5ac882d5f?w=800&h=800&fit=crop"
+    ]
+  },
+  {
+    "name": "Sports Bra",
+    "description": "High-support sports bra for intense workouts. Maximum comfort and support.",
+    "brand_id": "REPLACE_WITH_SPORTFIT_BRAND_ID",
+    "price": 39.99,
+    "images": [
+      "https://images.unsplash.com/photo-1585004275751-b5d8f59c07c2?w=800&h=800&fit=crop",
+      "https://images.unsplash.com/photo-1544966503-7cc5ac882d5f?w=800&h=800&fit=crop"
+    ]
+  },
+  {
+    "name": "Bikini Set",
+    "description": "Stylish bikini set with trendy prints. Perfect for beach vacations and pool parties.",
+    "brand_id": "REPLACE_WITH_BEACHWAVES_BRAND_ID",
+    "price": 64.99,
+    "images": [
+      "https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=800&h=800&fit=crop",
+      "https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=800&h=800&fit=crop"
+    ]
+  },
+  {
+    "name": "Swim Trunks",
+    "description": "Comfortable and stylish swim trunks. Quick-dry fabric perfect for active water sports.",
+    "brand_id": "REPLACE_WITH_BEACHWAVES_BRAND_ID",
+    "price": 49.99,
+    "images": [
+      "https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=800&h=800&fit=crop",
+      "https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=800&h=800&fit=crop"
+    ]
+  },
+  {
+    "name": "Premium Boxer Briefs 3-Pack",
+    "description": "Premium cotton boxer briefs in a 3-pack. Ultra-soft and comfortable for all-day wear.",
+    "brand_id": "REPLACE_WITH_LUXEUNDERWEAR_BRAND_ID",
+    "price": 34.99,
+    "images": [
+      "https://images.unsplash.com/photo-1506629082955-511b1aa562c8?w=800&h=800&fit=crop",
+      "https://images.unsplash.com/photo-1526279991095-859cf3d5630d?w=800&h=800&fit=crop"
+    ]
+  },
+  {
+    "name": "Silk Underwear Set",
+    "description": "Luxurious silk underwear set. Indulgent comfort with elegant design.",
+    "brand_id": "REPLACE_WITH_LUXEUNDERWEAR_BRAND_ID",
+    "price": 79.99,
+    "images": [
+      "https://images.unsplash.com/photo-1506629082955-511b1aa562c8?w=800&h=800&fit=crop",
+      "https://images.unsplash.com/photo-1585487000130-712b7c79dc39?w=800&h=800&fit=crop"
+    ]
+  }
+]
+
+
+

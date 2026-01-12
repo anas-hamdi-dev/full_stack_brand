@@ -72,12 +72,54 @@
 
   html {
     scroll-behavior: smooth;
+    overflow-x: hidden;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  
+  html::-webkit-scrollbar {
+    display: none;
+  }
+
+  html, body {
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Custom scroll animation for better control */
+  * {
+    scroll-behavior: smooth !important;
+  }
+
+  /* Enhanced scroll animation with easing */
+  .scroll-smooth {
+    scroll-behavior: smooth;
+    scroll-behavior: smooth !important;
+  }
+
+  .scroll-smooth:target {
+    scroll-margin-top: 100px;
+  }
+
+  /* Custom scroll easing using cubic-bezier */
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* For elements that need custom scroll behavior */
+  .scroll-auto {
+    scroll-behavior: auto;
   }
 
   body {
     @apply bg-background text-foreground antialiased;
     font-family: var(--font-body);
     background: var(--gradient-dark);
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  
+  body::-webkit-scrollbar {
+    display: none;
   }
 
   h1, h2, h3, h4, h5, h6 {
@@ -158,6 +200,72 @@
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
+  
+  /* Hide scrollbars for all scrollable elements */
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  
+  /* Ensure forms and form elements have no scrollbars */
+  textarea,
+  select,
+  input[type="text"],
+  input[type="password"],
+  input[type="email"],
+  input[type="number"],
+  input[type="search"],
+  input[type="tel"],
+  input[type="url"],
+  input[type="date"],
+  input[type="datetime-local"],
+  input[type="month"],
+  input[type="week"],
+  input[type="time"] {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  textarea::-webkit-scrollbar,
+  select::-webkit-scrollbar,
+  input[type="text"]::-webkit-scrollbar,
+  input[type="password"]::-webkit-scrollbar,
+  input[type="email"]::-webkit-scrollbar,
+  input[type="number"]::-webkit-scrollbar,
+  input[type="search"]::-webkit-scrollbar,
+  input[type="tel"]::-webkit-scrollbar,
+  input[type="url"]::-webkit-scrollbar,
+  input[type="date"]::-webkit-scrollbar,
+  input[type="datetime-local"]::-webkit-scrollbar,
+  input[type="month"]::-webkit-scrollbar,
+  input[type="week"]::-webkit-scrollbar,
+  input[type="time"]::-webkit-scrollbar {
+    display: none;
+  }
+  
+  /* Hide scrollbars in modal dialogs and containers */
+  [data-radix-scroll-area-viewport],
+  .radix-scroll-area-viewport,
+  .scrollbar-none,
+  .scrollbar-hidden,
+  .overflow-y-auto,
+  .overflow-y-scroll {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  [data-radix-scroll-area-viewport]::-webkit-scrollbar,
+  .radix-scroll-area-viewport::-webkit-scrollbar,
+  .scrollbar-none::-webkit-scrollbar,
+  .scrollbar-hidden::-webkit-scrollbar,
+  .overflow-y-auto::-webkit-scrollbar,
+  .overflow-y-scroll::-webkit-scrollbar {
+    display: none;
+  }
 
   .noise {
     position: relative;
@@ -233,4 +341,30 @@
 .animate-slide-up-delay-4 {
   animation: slide-up 0.6s ease-out 0.4s forwards;
   opacity: 0;
+}
+
+@keyframes pepperFloat {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+    text-shadow: 2px 4px 6px rgba(0,0,0,0.3),
+                 0 0 20px rgba(255, 100, 0, 0.4),
+                 0 0 30px rgba(255, 50, 0, 0.3);
+  }
+  50% {
+    transform: translateY(-15px) rotate(5deg);
+    text-shadow: 4px 8px 12px rgba(0,0,0,0.4),
+                 0 0 30px rgba(255, 100, 0, 0.6),
+                 0 0 40px rgba(255, 50, 0, 0.5);
+  }
+}
+
+.pepper-3d {
+  display: inline-block;
+  position: relative;
+  transition: transform 0.2s ease;
+}
+
+.pepper-3d:hover {
+  transform: scale(1.2);
+  animation: none;
 }

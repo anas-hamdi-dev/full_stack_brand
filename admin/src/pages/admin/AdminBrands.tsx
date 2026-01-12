@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { brandsService, categoriesService } from "@/services/apiService";
+import { brandsService } from "@/services/apiService";
 import type { StaticBrand } from "@/data/staticData";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { Button } from "@/components/ui/button";
@@ -37,17 +37,15 @@ import { Badge } from "@/components/ui/badge";
 export default function AdminBrands() {
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingBrand, setEditingBrand] = useState<StaticBrand & { categories?: { id: string; name: string } | null; owner?: { id: string; full_name: string; email: string } | null } | null>(null);
+  const [editingBrand, setEditingBrand] = useState<StaticBrand & { owner?: { id: string; full_name: string; email: string } | null } | null>(null);
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState({
     name: "",
     description: "",
-    category_id: "",
     ownerId: "",
     location: "",
     website: "",
@@ -61,21 +59,14 @@ export default function AdminBrands() {
   });
 
   const { data: brands, isLoading } = useQuery({
-    queryKey: ["admin-brands", search, categoryFilter, statusFilter],
+    queryKey: ["admin-brands", search, statusFilter],
     queryFn: async () => {
-      const brandsData = await brandsService.getAll(search, categoryFilter !== "all" ? categoryFilter : undefined);
+      const brandsData = await brandsService.getAll(search);
       // Filter by status on the frontend since backend doesn't support status filter yet
       if (statusFilter !== "all") {
         return brandsData.filter((brand: any) => brand.status === statusFilter);
       }
       return brandsData;
-    },
-  });
-
-  const { data: categories } = useQuery({
-    queryKey: ["admin-categories"],
-    queryFn: async () => {
-      return await categoriesService.getAll();
     },
   });
 
@@ -112,7 +103,6 @@ export default function AdminBrands() {
       // Don't allow changing ownerId - admin can only edit brand details, not ownership
       return await brandsService.update(id, {
         name: data.name,
-        category_id: data.category_id || null,
         description: data.description || null,
         location: data.location || null,
         website: data.website || null,
@@ -168,7 +158,6 @@ export default function AdminBrands() {
     setFormData({
       name: "",
       description: "",
-      category_id: "",
       ownerId: "",
       location: "",
       website: "",
@@ -188,12 +177,11 @@ export default function AdminBrands() {
     }
   };
 
-  const handleEdit = (brand: StaticBrand & { categories?: { id: string; name: string } | null; owner?: { id: string; full_name: string; email: string } | null; status?: "pending" | "approved" | "rejected" }) => {
+  const handleEdit = (brand: StaticBrand & { owner?: { id: string; full_name: string; email: string } | null; status?: "pending" | "approved" | "rejected" }) => {
     setEditingBrand(brand);
     setFormData({
       name: brand.name || "",
       description: brand.description || "",
-      category_id: brand.category_id || "",
       ownerId: (brand as any).ownerId || "",
       location: brand.location || "",
       website: brand.website || "",
@@ -271,17 +259,6 @@ export default function AdminBrands() {
             className="pl-9"
           />
           </div>
-          <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-            <SelectTrigger className="w-40">
-              <SelectValue placeholder="Filter by category" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Categories</SelectItem>
-              {categories?.map((cat) => (
-                <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
           <Select value={statusFilter} onValueChange={setStatusFilter}>
             <SelectTrigger className="w-40">
               <SelectValue placeholder="Filter by status" />
@@ -306,7 +283,6 @@ export default function AdminBrands() {
               <DialogTitle>Edit Brand</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4 mt-4">
-              <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="name">Name *</Label>
                   <Input
@@ -315,23 +291,6 @@ export default function AdminBrands() {
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     required
                   />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="category">Category</Label>
-                  <Select
-                    value={formData.category_id}
-                    onValueChange={(value) => setFormData({ ...formData, category_id: value })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select category" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {categories?.map((cat) => (
-                        <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
               </div>
 
               <div className="space-y-2">
@@ -510,7 +469,6 @@ export default function AdminBrands() {
             <TableRow>
               <TableHead>Brand</TableHead>
               <TableHead>Owner</TableHead>
-              <TableHead>Category</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Location</TableHead>
               <TableHead>Featured</TableHead>
@@ -521,7 +479,7 @@ export default function AdminBrands() {
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={8} className="text-center py-8">
+                <TableCell colSpan={7} className="text-center py-8">
                   Loading...
                 </TableCell>
               </TableRow>
@@ -565,7 +523,6 @@ export default function AdminBrands() {
                       "-"
                     )}
                   </TableCell>
-                  <TableCell>{brand.categories?.name || "-"}</TableCell>
                   <TableCell>
                     {brand.status && (
                       <Badge

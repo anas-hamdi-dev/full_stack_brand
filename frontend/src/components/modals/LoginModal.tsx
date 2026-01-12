@@ -89,7 +89,7 @@ export default function LoginModal({ open, onOpenChange, onSwitchToSignUp }: Log
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md no-scrollbar">
         <DialogHeader>
           <DialogTitle className="text-2xl font-display font-bold text-foreground text-center">
             Sign In

@@ -7,14 +7,11 @@ const { isBrandOwner, isBrandOwnerApproved, checkBrandOwnership } = require('../
 // GET /api/brands
 router.get('/', async (req, res) => {
   try {
-    const { category_id, featured, search, limit } = req.query;
+    const { featured, search, limit } = req.query;
     
     // Build query - only show approved brands
     const query = { status: 'approved' };
 
-    if (category_id) {
-      query.category_id = category_id;
-    }
     if (featured === 'true') {
       query.is_featured = true;
     }
@@ -25,7 +22,6 @@ router.get('/', async (req, res) => {
     const limitNum = parseInt(limit) || 50; // MVP: simple limit, no pagination
 
     const brands = await Brand.find(query)
-      .populate('category_id')
       .sort({ createdAt: -1 })
       .limit(limitNum);
 
@@ -42,7 +38,6 @@ router.get('/featured', async (req, res) => {
       is_featured: true,
       status: 'approved' // Only show approved brands
     })
-      .populate('category_id')
       .sort({ createdAt: -1 });
     res.json({ data: brands });
   } catch (error) {
@@ -60,8 +55,7 @@ router.get('/me', authenticate, isBrandOwner, async (req, res) => {
       return res.status(404).json({ error: 'Brand not found' });
     }
 
-    const brand = await Brand.findById(user.brand_id)
-      .populate('category_id');
+    const brand = await Brand.findById(user.brand_id);
     
     if (!brand) {
       return res.status(404).json({ error: 'Brand not found' });
@@ -95,8 +89,7 @@ router.get('/me/products', authenticate, isBrandOwner, async (req, res) => {
 // GET /api/brands/:id
 router.get('/:id', async (req, res) => {
   try {
-    const brand = await Brand.findById(req.params.id)
-      .populate('category_id');
+    const brand = await Brand.findById(req.params.id);
     if (!brand) {
       return res.status(404).json({ error: 'Brand not found' });
     }
@@ -152,7 +145,6 @@ router.post('/', authenticate, isBrandOwner, async (req, res) => {
 
     const {
       name,
-      category_id,
       description,
       logo_url,
       location,
@@ -171,7 +163,6 @@ router.post('/', authenticate, isBrandOwner, async (req, res) => {
     const brand = await Brand.create({
       name: name.trim(),
       ownerId: user._id,
-      category_id: category_id || null,
       description: description?.trim() || null,
       logo_url: logo_url || null,
       location: location?.trim() || null,
@@ -188,9 +179,7 @@ router.post('/', authenticate, isBrandOwner, async (req, res) => {
     user.brand_id = brand._id;
     await user.save();
 
-    const populatedBrand = await Brand.findById(brand._id).populate('category_id');
-
-    res.status(201).json({ data: populatedBrand });
+    res.status(201).json({ data: brand });
   } catch (error) {
     if (error.code === 11000) {
       return res.status(409).json({ error: 'Brand name already exists' });
@@ -204,7 +193,6 @@ router.patch('/:id', authenticate, isBrandOwner, checkBrandOwnership, async (req
   try {
     const {
       name,
-      category_id,
       description,
       logo_url,
       location,
@@ -230,7 +218,6 @@ router.patch('/:id', authenticate, isBrandOwner, checkBrandOwnership, async (req
 
     const updateData = {};
     if (name !== undefined) updateData.name = name;
-    if (category_id !== undefined) updateData.category_id = category_id;
     if (description !== undefined) updateData.description = description;
     if (logo_url !== undefined) updateData.logo_url = logo_url;
     if (location !== undefined) updateData.location = location;
@@ -245,7 +232,7 @@ router.patch('/:id', authenticate, isBrandOwner, checkBrandOwnership, async (req
       req.params.id,
       { $set: updateData },
       { new: true, runValidators: true }
-    ).populate('category_id');
+    );
 
     if (!brand) {
       return res.status(404).json({ error: 'Brand not found' });
