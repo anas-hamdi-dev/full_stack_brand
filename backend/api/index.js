@@ -16,10 +16,10 @@ const corsOptions = {
     if (!origin) return callback(null, true);
     
     const allowedOrigins = [
-      process.env.FRONTEND_URL,
-      'http://localhost:8080',
-      'http://localhost:5173',
-      'http://localhost:3000',
+      process.env.FRONTEND_URL ,
+      'https://www.el-mall.tn',
+      'https://el-mall.tn',
+     
     ].filter(Boolean); // Remove undefined values
     
     // In development, allow all origins if FRONTEND_URL is not set

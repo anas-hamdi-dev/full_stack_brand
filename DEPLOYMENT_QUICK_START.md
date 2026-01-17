@@ -47,7 +47,7 @@ Frontend → Environment Variables → VITE_API_URL = your-backend-url/api
 ### Backend
 - `MONGODB_URI` - MongoDB Atlas connection string
 - `JWT_SECRET` - Strong random secret (32+ chars)
-- `FRONTEND_URL` - Your frontend Vercel URL
+- `FRONTEND_URL` - Your frontend URL (defaults to `https://www.el-mall.tn` if not set)
 - `NODE_ENV` - `production`
 
 ### Frontend

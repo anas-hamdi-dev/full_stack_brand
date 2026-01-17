@@ -42,7 +42,7 @@ Set these in **Vercel Dashboard → Your Backend Project → Settings → Enviro
 |----------|-------------|---------|----------|
 | `MONGODB_URI` | MongoDB connection string | `mongodb+srv://user:pass@cluster.mongodb.net/dbname` | ✅ Yes |
 | `JWT_SECRET` | Secret key for JWT tokens | `your-super-secret-key-change-in-production` | ✅ Yes |
-| `FRONTEND_URL` | Your frontend URL | `https://your-app.vercel.app` | ✅ Yes |
+| `FRONTEND_URL` | Your frontend URL | `https://www.el-mall.tn` | ✅ Yes (Note: Defaults to `https://www.el-mall.tn` if not set) |
 | `NODE_ENV` | Environment mode | `production` | ✅ Yes |
 | `BREVO_API_KEY` | Email service API key (if using) | `your-brevo-api-key` | Optional |
 
@@ -227,7 +227,7 @@ After deploying, you'll get URLs like:
 **Update these environment variables:**
 
 **Backend:**
-- `FRONTEND_URL` → `https://brands-app.vercel.app`
+- `FRONTEND_URL` → `https://www.el-mall.tn` (or set to your actual frontend domain)
 
 **Frontend:**
 - `VITE_API_URL` → `https://brands-app-backend.vercel.app/api`
