@@ -24,6 +24,7 @@ const Gallery = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("men");
   const [itemsToShow, setItemsToShow] = useState(ITEMS_PER_LOAD);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
 
   const { data, isLoading } = useProducts({
     search: searchQuery.trim() || undefined,
@@ -74,7 +75,12 @@ const Gallery = () => {
   };
 
   const handleLoadMore = () => {
+    setIsLoadingMore(true);
+    // Simulate loading delay for better UX
+    setTimeout(() => {
     setItemsToShow(prev => prev + ITEMS_PER_LOAD);
+      setIsLoadingMore(false);
+    }, 300);
   };
 
   return (
@@ -152,7 +158,21 @@ const Gallery = () => {
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
                 {isLoading ? (
                   Array.from({ length: 12 }).map((_, i) => (
-                  <Skeleton key={i} className="h-[280px] rounded-2xl" />
+                    <div key={i} className="group glass rounded-3xl overflow-hidden">
+                      {/* Image Skeleton */}
+                      <div className="aspect-square overflow-hidden relative">
+                        <Skeleton className="w-full h-full" />
+                        {/* Favorite Button Skeleton */}
+                        <div className="absolute top-3 right-3 z-10">
+                          <Skeleton className="h-8 w-8 rounded-full" />
+                        </div>
+                      </div>
+                      {/* Product Info Skeleton */}
+                      <div className="p-4 space-y-2">
+                        <Skeleton className="h-4 w-3/4 rounded-md" />
+                        <Skeleton className="h-4 w-1/2 rounded-md" />
+                      </div>
+                    </div>
                   ))
             ) : displayedProducts.length > 0 ? (
                   displayedProducts.map((product) => (
@@ -183,17 +203,42 @@ const Gallery = () => {
                 )}
               </div>
 
-              {/* Load More Button */}
+              {/* Load More Button with Skeleton */}
               {!isLoading && displayedProducts.length > 0 && hasMore && (
-                  <div className="flex justify-center mt-8">
+                <div className="mt-8">
+                  <div className="flex justify-center mb-4">
                     <Button
                       variant="outline"
                       size="lg"
                       onClick={handleLoadMore}
                       className="min-w-[200px]"
+                      disabled={isLoadingMore}
                     >
-                    Load More
+                      {isLoadingMore ? "Loading..." : "Load More"}
                     </Button>
+                  </div>
+                  {/* Show skeleton loaders while loading more items */}
+                  {isLoadingMore && (
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+                      {Array.from({ length: Math.min(ITEMS_PER_LOAD, filteredProducts.length - displayedProducts.length) }).map((_, i) => (
+                        <div key={`loading-more-${i}`} className="group glass rounded-3xl overflow-hidden">
+                          {/* Image Skeleton */}
+                          <div className="aspect-square overflow-hidden relative">
+                            <Skeleton className="w-full h-full" />
+                            {/* Favorite Button Skeleton */}
+                            <div className="absolute top-3 right-3 z-10">
+                              <Skeleton className="h-8 w-8 rounded-full" />
+                            </div>
+                          </div>
+                          {/* Product Info Skeleton */}
+                          <div className="p-4 space-y-2">
+                            <Skeleton className="h-4 w-3/4 rounded-md" />
+                            <Skeleton className="h-4 w-1/2 rounded-md" />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
             </TabsContent>

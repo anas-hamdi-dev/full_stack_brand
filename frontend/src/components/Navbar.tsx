@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
   Menu,
@@ -28,6 +28,7 @@ const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const mobileMenuRef = useRef(null);
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, isClient, isBrandOwner, signOut } = useAuth();
   const { openLogin, openSignUp } = useAuthModal();
 
@@ -76,15 +77,22 @@ const Navbar = () => {
 
           {/* DESKTOP NAV */}
           <div className="hidden md:flex items-center gap-8">
-            {navLinks.map((link) => (
+            {navLinks.map((link) => {
+              const isActive = location.pathname === link.href;
+              return (
               <Link
                 key={link.name}
                 to={link.href}
-                className="text-muted-foreground hover:text-foreground transition-colors font-medium"
+                  className={`transition-colors font-medium ${
+                    isActive
+                      ? "text-foreground"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
               >
                 {link.name}
               </Link>
-            ))}
+              );
+            })}
           </div>
 
           {/* ACTIONS */}
@@ -158,16 +166,23 @@ const Navbar = () => {
           <div className="md:hidden fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-start justify-center pt-16 w-full h-screen" onClick={() => setIsOpen(false)}>
             <div ref={mobileMenuRef} className="glass rounded-2xl p-6 w-full max-w-md mx-4 mt-2" onClick={(e) => e.stopPropagation()}>
               <div className="flex flex-col gap-4">
-                {navLinks.map((link) => (
+                {navLinks.map((link) => {
+                  const isActive = location.pathname === link.href;
+                  return (
                   <Link
                     key={link.name}
                     to={link.href}
                     onClick={() => setIsOpen(false)}
-                    className="text-muted-foreground hover:text-foreground font-medium py-2 border-b border-border/30 last:border-b-0"
+                      className={`font-medium py-2 border-b border-border/30 last:border-b-0 ${
+                        isActive
+                          ? "text-foreground"
+                          : "text-muted-foreground hover:text-foreground"
+                      }`}
                   >
                     {link.name}
                   </Link>
-                ))}
+                  );
+                })}
                 {!user && (
                   <div className="flex flex-col gap-3 pt-4">
                     <Button variant="outline" className="w-full" onClick={() => { openLogin(); setIsOpen(false); }}>

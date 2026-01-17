@@ -44,26 +44,27 @@ const About = () => {
               <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
                
               {[
-  { 
-    icon: Heart, 
-    title: "Passion", 
-    description: "We love consuming 100% Tounsi." 
+  {
+    icon: Heart,
+    title: "Passion",
+    description: "Driven by our love for authentic 100% Tunisian brands."
   },
-  { 
-    icon: Users, 
-    title: "Community", 
-    description: "Connecting brands and fans." 
+  {
+    icon: Users,
+    title: "Community",
+    description: "Building a strong connection between brands and their audience."
   },
-  { 
-    icon: Target, 
-    title: "Support", 
-    description: "Helping local brands grow." 
+  {
+    icon: Target,
+    title: "Empowerment",
+    description: "Supporting local brands to grow, scale, and succeed."
   },
-  { 
-    icon: Globe, 
-    title: "Reach", 
-    description: "Showcasing Tunisian brands  everywhere." 
-  },
+  {
+    icon: Globe,
+    title: "Global Reach",
+    description: "Showcasing Tunisian creativity to the world."
+  }
+  
 ].map((value) => (
                   <div key={value.title} className="glass rounded-2xl p-6 text-center hover-lift">
                     <div className="w-14 h-14 rounded-xl bg-gradient-primary flex items-center justify-center mx-auto mb-4">

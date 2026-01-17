@@ -90,7 +90,14 @@ const Brands = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
                 {brandsLoading ? (
                   Array.from({ length: 6 }).map((_, i) => (
-                    <Skeleton key={i} className="h-80 rounded-3xl" />
+                    <div key={i} className="glass rounded-3xl border border-border/30 w-full max-w-[14rem] md:max-w-[16rem] mx-auto">
+                      <div className="p-6 md:p-8 flex flex-col items-center justify-center text-center">
+                        {/* Avatar Skeleton */}
+                        <Skeleton className="w-28 h-28 md:w-32 md:h-32 rounded-full mb-4" />
+                        {/* Brand Name Skeleton */}
+                        <Skeleton className="h-5 w-24 md:w-32 rounded-md" />
+                      </div>
+                    </div>
                   ))
                 ) : filteredBrands?.length === 0 ? (
                   <div className="col-span-full text-center py-12">

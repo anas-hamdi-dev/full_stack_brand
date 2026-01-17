@@ -13,8 +13,9 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Loader2, User, Store } from "lucide-react";
+import { Loader2, User, Store, Eye, EyeOff } from "lucide-react";
 import { z } from "zod";
+import logo from "@/assets/logo2.png";
 
 const signUpSchema = z.object({
   email: z.string().email("Please enter a valid email"),
@@ -47,6 +48,7 @@ export default function SignUpModal({ open, onOpenChange, onSwitchToLogin }: Sig
     acceptTerms: false,
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const { signUp } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -118,6 +120,13 @@ export default function SignUpModal({ open, onOpenChange, onSwitchToLogin }: Sig
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto no-scrollbar">
         <DialogHeader>
+          <div className="flex justify-center mb-4">
+            <img
+              src={logo}
+              alt="el mall logo"
+              className="h-12 w-auto object-contain"
+            />
+          </div>
           <DialogTitle className="text-3xl font-display font-bold text-foreground text-center">
             Create New Account
           </DialogTitle>
@@ -239,15 +248,29 @@ export default function SignUpModal({ open, onOpenChange, onSwitchToLogin }: Sig
             {/* Password */}
             <div className="space-y-2">
               <Label htmlFor="password">Password (minimum 8 characters) <span className="text-destructive">*</span></Label>
+              <div className="relative">
               <Input
                 id="password"
-                type="password"
+                  type={showPassword ? "text" : "password"}
                 placeholder="Password"
                 value={formData.password}
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 required
-                className="bg-background"
+                  className="bg-background pr-10"
               />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
+                </button>
+              </div>
             </div>
 
             {/* Terms and Conditions */}

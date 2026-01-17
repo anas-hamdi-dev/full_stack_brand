@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Loader2, Mail, ArrowLeft } from "lucide-react";
 import { z } from "zod";
+import BackButton from "@/components/BackButton";
 
 const verificationSchema = z.object({
   code: z.string().length(6, "Verification code must be 6 digits").regex(/^\d+$/, "Code must contain only numbers"),
@@ -153,18 +154,14 @@ export default function EmailVerification() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background px-4 py-12 pt-24 pb-20">
-      <div className="w-full max-w-md">
+    <div className="min-h-screen bg-background pt-24 pb-20">
+      <div className="container mx-auto px-4">
+        <div className="flex items-center justify-center min-h-[calc(100vh-6rem)] py-12">
+          <div className="w-full max-w-lg">
+            <div className="mb-6">
+              <BackButton to="/" label="Back to Home" />
+            </div>
         <div className="glass rounded-3xl p-8 space-y-6">
-          {/* Back Button */}
-          <button
-            onClick={() => navigate(-1)}
-            className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            <span className="text-sm">Back</span>
-          </button>
-
           {/* Header */}
           <div className="text-center space-y-2">
             <div className="flex justify-center">
@@ -244,6 +241,8 @@ export default function EmailVerification() {
             <p className="text-xs text-muted-foreground">
               The code will expire in 10 minutes. Check your spam folder if you don't see it.
             </p>
+              </div>
+            </div>
           </div>
         </div>
       </div>

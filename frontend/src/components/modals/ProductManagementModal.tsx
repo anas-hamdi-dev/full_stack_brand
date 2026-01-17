@@ -51,6 +51,8 @@ export default function ProductManagementModal({
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
     const [imageError, setImageError] = useState<string>("");
     const [priceError, setPriceError] = useState<string>("");
+    const [nameError, setNameError] = useState<string>("");
+    const [purchaseLinkError, setPurchaseLinkError] = useState<string>("");
 
   useEffect(() => {
     if (open) {
@@ -72,11 +74,13 @@ export default function ProductManagementModal({
           images: [],
           purchaseLink: "",
         });
-        setImagePreviews([]);
-        setImageFiles([]);
+      setImagePreviews([]);
+      setImageFiles([]);
       }
       setImageError("");
       setPriceError("");
+      setNameError("");
+      setPurchaseLinkError("");
     }
   }, [open, editingProduct]);
 
@@ -191,6 +195,13 @@ export default function ProductManagementModal({
       // Validate product name
     if (!formData.name.trim()) {
       toast.error("Product name is required");
+      setNameError("Product name is required");
+      return;
+    }
+
+    if (formData.name.trim().length < 2) {
+      toast.error("Product name must be at least 2 characters");
+      setNameError("Product name must be at least 2 characters");
       return;
     }
 
@@ -228,17 +239,21 @@ export default function ProductManagementModal({
       // Validate purchase link - required
       if (!formData.purchaseLink.trim()) {
         toast.error("Purchase link is required");
+        setPurchaseLinkError("Purchase link is required");
         return;
       }
 
       if (!/^https?:\/\/.+/.test(formData.purchaseLink.trim())) {
         toast.error("Purchase link must be a valid URL starting with http:// or https://");
+        setPurchaseLinkError("Purchase link must be a valid URL starting with http:// or https://");
         return;
       }
 
       // Clear any previous errors
       setImageError("");
       setPriceError("");
+      setNameError("");
+      setPurchaseLinkError("");
 
     onSubmit({
       name: formData.name.trim(),
@@ -318,7 +333,7 @@ export default function ProductManagementModal({
                 )}
                 {!imageError && imagePreviews.length === 0 && (
                   <p className="text-xs text-muted-foreground">
-                    Supported formats: JPG, PNG, WebP. Max size: 5MB per image. At least one image is required.
+                    At least one image is required.
                   </p>
                 )}
               </div>
@@ -333,10 +348,34 @@ export default function ProductManagementModal({
               id="productName"
               placeholder="e.g., Elegant Summer Dress"
               value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              onChange={(e) => {
+                const value = e.target.value;
+                setFormData({ ...formData, name: value });
+                // Clear error on input if value is valid
+                if (value.trim().length >= 2) {
+                  setNameError("");
+                }
+              }}
+              onBlur={() => {
+                // Validate on blur
+                const nameValue = formData.name.trim();
+                if (!nameValue) {
+                  setNameError("Product name is required");
+                } else if (nameValue.length < 2) {
+                  setNameError("Product name must be at least 2 characters");
+                } else {
+                  setNameError("");
+                }
+              }}
               required
               disabled={isLoading}
+              className={nameError ? "border-destructive" : ""}
             />
+            {nameError && (
+              <p className="text-sm text-destructive mt-1">
+                {nameError}
+              </p>
+            )}
           </div>
           <div className="space-y-2">
             <Label htmlFor="productPrice">
@@ -399,13 +438,39 @@ export default function ProductManagementModal({
               type="url"
               placeholder="https://example.com/product"
               value={formData.purchaseLink}
-              onChange={(e) => setFormData({ ...formData, purchaseLink: e.target.value })}
+              onChange={(e) => {
+                const value = e.target.value;
+                setFormData({ ...formData, purchaseLink: value });
+                // Clear error on input if value is valid
+                if (value.trim() && /^https?:\/\/.+/.test(value.trim())) {
+                  setPurchaseLinkError("");
+                }
+              }}
+              onBlur={() => {
+                // Validate on blur
+                const linkValue = formData.purchaseLink.trim();
+                if (!linkValue) {
+                  setPurchaseLinkError("Purchase link is required");
+                } else if (!/^https?:\/\/.+/.test(linkValue)) {
+                  setPurchaseLinkError("Purchase link must be a valid URL starting with http:// or https://");
+                } else {
+                  setPurchaseLinkError("");
+                }
+              }}
               disabled={isLoading}
               required
+              className={purchaseLinkError ? "border-destructive" : ""}
             />
-            <p className="text-xs text-muted-foreground">
-              URL where customers can purchase this product.
-            </p>
+            {purchaseLinkError && (
+              <p className="text-sm text-destructive mt-1">
+                {purchaseLinkError}
+              </p>
+            )}
+            {!purchaseLinkError && (
+              <p className="text-xs text-muted-foreground">
+                URL where customers can purchase this product.
+              </p>
+            )}
           </div>
 
           {/* Description */}
@@ -436,6 +501,7 @@ export default function ProductManagementModal({
                 disabled={
                   isLoading || 
                   !formData.name.trim() || 
+                  formData.name.trim().length < 2 ||
                   !formData.price || 
                   formData.price.trim() === '' ||
                   isNaN(parseFloat(formData.price)) ||
@@ -443,7 +509,9 @@ export default function ProductManagementModal({
                   !formData.purchaseLink.trim() ||
                   !/^https?:\/\/.+/.test(formData.purchaseLink.trim()) ||
                   imagePreviews.length === 0 ||
-                  !!priceError
+                  !!priceError ||
+                  !!nameError ||
+                  !!purchaseLinkError
                 }
             >
               {isLoading ? (

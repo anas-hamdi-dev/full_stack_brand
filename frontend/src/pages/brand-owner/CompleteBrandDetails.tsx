@@ -454,7 +454,7 @@ export default function CompleteBrandDetails() {
                   <Input
                     id="location"
                     {...form.register("location")}
-                    placeholder="Ex: Paris, France"
+                    placeholder="Ex: Zarzouna , Bizerte"
                   />
                 </div>
               </div>
