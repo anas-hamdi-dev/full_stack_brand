@@ -29,9 +29,9 @@ const CTASection = () => {
             </p>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-slide-up-delay-3">
-              <Button variant="glass" className="bg-gradient-primary text-primary-foreground hover:bg-gradient-primary/90 group" size="xl" onClick={openSignUpAsBrandOwner}>
+              <Button variant="glass" className="bg-gradient-primary text-primary-foreground hover:bg-gradient-primary/90 group hover:scale-105 transition-all duration-300 hover:shadow-lg hover:shadow-primary/20" size="xl" onClick={openSignUpAsBrandOwner}>
               Boost your brand's visibility now
-              <TrendingUp className="w-5 h-5 ml-2 transition-transform group-hover:scale-110" />
+              <TrendingUp className="w-5 h-5 ml-2 transition-transform group-hover:scale-110 group-hover:rotate-12" />
               </Button>
             </div>
 

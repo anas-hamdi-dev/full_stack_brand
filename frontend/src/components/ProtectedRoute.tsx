@@ -55,6 +55,12 @@ export default function ProtectedRoute({
     return <Navigate to="/" state={{ from: location }} replace />;
   }
 
+  // Check email verification for authenticated users (except admins)
+  // Admin users don't need email verification
+  if (user && user.role !== 'admin' && !user.isEmailVerified && (requireAuth || requireClient || requireBrandOwner)) {
+    return <Navigate to="/verify-email" state={{ from: location, email: user.email }} replace />;
+  }
+
   if (requireClient && !isClient) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">

@@ -75,6 +75,17 @@
     overflow-x: hidden;
     scrollbar-width: none;
     -ms-overflow-style: none;
+    /* Dark background for overscroll on iOS */
+    background-color: hsl(var(--background));
+    background: var(--gradient-dark);
+    /* Prevent white flash on overscroll */
+    overscroll-behavior-y: none;
+    overscroll-behavior-x: none;
+    /* iOS safe area support */
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
   }
   
   html::-webkit-scrollbar {
@@ -83,6 +94,11 @@
 
   html, body {
     -webkit-overflow-scrolling: touch;
+    /* Ensure dark background extends beyond viewport */
+    background-color: hsl(var(--background));
+    background: var(--gradient-dark);
+    /* Prevent white background bleed */
+    overscroll-behavior: none;
   }
 
   /* Custom scroll animation for better control */
@@ -100,9 +116,19 @@
     scroll-margin-top: 100px;
   }
 
-  /* Custom scroll easing using cubic-bezier */
-  html {
-    scroll-behavior: smooth;
+  /* Root element styling for dark overscroll */
+  #root {
+    min-height: 100vh;
+    min-height: 100dvh;
+    background-color: hsl(var(--background));
+    background: var(--gradient-dark);
+    /* Prevent white background on overscroll */
+    overscroll-behavior: none;
+    /* iOS safe area support */
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
   }
 
   /* For elements that need custom scroll behavior */
@@ -114,8 +140,22 @@
     @apply bg-background text-foreground antialiased;
     font-family: var(--font-body);
     background: var(--gradient-dark);
+    background-color: hsl(var(--background));
     scrollbar-width: none;
     -ms-overflow-style: none;
+    /* Ensure body fills viewport and prevents white overscroll */
+    min-height: 100vh;
+    min-height: 100dvh;
+    /* iOS safe area support */
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+    /* Prevent overscroll bounce showing white */
+    overscroll-behavior-y: none;
+    overscroll-behavior-x: none;
+    /* Prevent background color change on scroll */
+    -webkit-tap-highlight-color: transparent;
   }
   
   body::-webkit-scrollbar {
@@ -278,6 +318,43 @@
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
     opacity: 0.03;
     pointer-events: none;
+  }
+
+  /* iOS Safe Area Utilities */
+  .safe-area-top {
+    padding-top: env(safe-area-inset-top);
+  }
+
+  .safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .safe-area-left {
+    padding-left: env(safe-area-inset-left);
+  }
+
+  .safe-area-right {
+    padding-right: env(safe-area-inset-right);
+  }
+
+  .safe-area-inset {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+
+  /* Ensure all scrollable containers have dark background */
+  * {
+    overscroll-behavior: inherit;
+  }
+
+  /* Prevent white background on modal/dialog overscroll */
+  [role="dialog"],
+  [data-radix-portal],
+  [data-radix-dialog-content] {
+    overscroll-behavior: none;
+    background-color: hsl(var(--background));
   }
 }
 

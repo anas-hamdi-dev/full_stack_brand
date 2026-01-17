@@ -6,8 +6,13 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { AuthModalProvider } from "@/contexts/AuthModalContext";
 import ScrollToTop from "./components/ScrollToTop";
+import ScrollToTopButton from "./components/ScrollToTopButton";
+import WhatsAppButton from "./components/WhatsAppButton";
 import AuthModals from "./components/modals/AuthModals";
 import ProtectedRoute from "./components/ProtectedRoute";
+import Navbar from "./components/Navbar";
+import BrandOwnerWarningBanner from "./components/BrandOwnerWarningBanner";
+import useMobileInputFocus from "./hooks/useMobileInputFocus";
 import Index from "./pages/Index";
 import Brands from "./pages/Brands";
 import BrandDetail from "./pages/BrandDetail";
@@ -22,26 +27,53 @@ import BrandOwnerProfile from "./pages/brand-owner/BrandOwnerProfile";
 import BrandDetails from "./pages/brand-owner/BrandDetails";
 import ProductsManagement from "./pages/brand-owner/ProductsManagement";
 import PendingApproval from "./pages/brand-owner/PendingApproval";
+import EmailVerification from "./pages/EmailVerification";
 import { BRAND_DETAILS_ROUTE } from "./components/BrandOwnerWarningBanner";
 
 const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <AuthModalProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter
-            future={{
-              v7_startTransition: true,
-              v7_relativeSplatPath: true,
-            }}
-          >
-            <ScrollToTop />
-            <AuthModals />
-            <Routes>
+const App = () => {
+  useMobileInputFocus();
+  
+  return (
+    <div 
+      className="min-h-screen bg-background" 
+      style={{ 
+        background: 'var(--gradient-dark)', 
+        backgroundColor: 'hsl(var(--background))',
+        minHeight: '100vh',
+        overscrollBehavior: 'none'
+      }}
+    >
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <AuthModalProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter
+              future={{
+                v7_startTransition: true,
+                v7_relativeSplatPath: true,
+              }}
+            >
+              <ScrollToTop />
+              <ScrollToTopButton />
+              <WhatsAppButton />
+              <Navbar />
+              <BrandOwnerWarningBanner />
+              <AuthModals />
+              {/* Global Background */}
+              <div className="fixed inset-0 -z-10 pointer-events-none">
+                <div
+                  className="absolute inset-0"
+                  style={{ background: "var(--gradient-hero)" }}
+                />
+                <div className="absolute inset-0 grid-pattern opacity-20" />
+                <div className="absolute top-0 left-1/4 w-64 h-64 bg-primary/10 rounded-full blur-[100px]" />
+                <div className="absolute top-0 right-1/4 w-48 h-48 bg-secondary/8 rounded-full blur-[80px]" />
+              </div>
+              <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/brands" element={<Brands />} />
             <Route path="/brand/:brandId" element={<BrandDetail />} />
@@ -49,7 +81,8 @@ const App = () => (
             <Route path="/gallery" element={<Gallery />} />
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />
-            
+            {/* Email Verification */}
+            <Route path="/verify-email" element={<EmailVerification />} />
             {/* Client Routes */}
             <Route path="/client/dashboard" element={<ProtectedRoute requireClient><ClientFavorites /></ProtectedRoute>} />
             <Route path="/client/favorites" element={<ProtectedRoute requireClient><ClientFavorites /></ProtectedRoute>} />
@@ -57,18 +90,20 @@ const App = () => (
             {/* Brand Owner Routes */}
             <Route path={BRAND_DETAILS_ROUTE} element={<ProtectedRoute requireBrandOwner><CompleteBrandDetails /></ProtectedRoute>} />
             <Route path="/brand-owner/pending-approval" element={<ProtectedRoute requireBrandOwner><PendingApproval /></ProtectedRoute>} />
-            <Route path="/brand-owner/profile" element={<ProtectedRoute requireBrandOwner requireBrandApproved><BrandOwnerProfile /></ProtectedRoute>} />
+            <Route path="/brand-owner/profile" element={<ProtectedRoute requireBrandOwner ><BrandOwnerProfile /></ProtectedRoute>} />
             <Route path="/brand-owner/brand" element={<ProtectedRoute requireBrandOwner requireBrandApproved><BrandDetails /></ProtectedRoute>} />
             <Route path="/brand-owner/products" element={<ProtectedRoute requireBrandOwner requireBrandApproved><ProductsManagement /></ProtectedRoute>} />
             
             <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
-        </TooltipProvider>
-      </AuthModalProvider>
-    </AuthProvider>
-  </QueryClientProvider>
-);
+              </Routes>
+            </BrowserRouter>
+          </TooltipProvider>
+        </AuthModalProvider>
+      </AuthProvider>
+    </QueryClientProvider>
+    </div>
+  );
+};
 
 export default App;
 

@@ -46,6 +46,7 @@ export default function AdminProducts() {
     brand_id: "",
     price: "",
     images: [] as string[],
+    purchaseLink: "",
   });
 
   const { data: products, isLoading } = useQuery({
@@ -100,6 +101,7 @@ export default function AdminProducts() {
         description: data.description || null,
         price: data.price ? parseFloat(data.price) : null,
         images: data.images.length > 0 ? data.images : [],
+        purchaseLink: data.purchaseLink.trim() || undefined,
       });
     },
     onSuccess: () => {
@@ -121,6 +123,7 @@ export default function AdminProducts() {
         brand_id: data.brand_id || null,
         price: data.price ? parseFloat(data.price) : null,
         images: data.images.length > 0 ? data.images : [],
+        purchaseLink: data.purchaseLink.trim() || undefined,
       });
     },
     onSuccess: () => {
@@ -156,6 +159,7 @@ export default function AdminProducts() {
       brand_id: "",
       price: "",
       images: [],
+      purchaseLink: "",
     });
     setImagePreviews([]);
     setEditingProduct(null);
@@ -172,6 +176,7 @@ export default function AdminProducts() {
       brand_id: product.brand_id || "",
       price: product.price?.toString() || "",
       images: product.images || [],
+      purchaseLink: (product as any).purchaseLink || "",
     });
     setImagePreviews(product.images || []);
     if (fileInputRef.current) {
@@ -213,6 +218,12 @@ export default function AdminProducts() {
     // Validate that at least one image is provided
     if (formData.images.length === 0) {
       toast.error("Please upload at least one image");
+      return;
+    }
+    
+    // Validate purchase link URL if provided
+    if (formData.purchaseLink.trim() && !/^https?:\/\/.+/.test(formData.purchaseLink.trim())) {
+      toast.error("Purchase link must be a valid URL starting with http:// or https://");
       return;
     }
     
@@ -298,6 +309,20 @@ export default function AdminProducts() {
                   value={formData.price}
                   onChange={(e) => setFormData({ ...formData, price: e.target.value })}
                 />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="purchaseLink">Purchase Link</Label>
+                <Input
+                  id="purchaseLink"
+                  type="url"
+                  placeholder="https://example.com/product"
+                  value={formData.purchaseLink}
+                  onChange={(e) => setFormData({ ...formData, purchaseLink: e.target.value })}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Optional. URL where customers can purchase this product.
+                </p>
               </div>
 
               <div className="space-y-2">

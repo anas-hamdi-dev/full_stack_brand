@@ -32,6 +32,18 @@ const productSchema = new mongoose.Schema({
       },
       message: 'At least one valid image URL (HTTP/HTTPS or data URL) is required'
     }
+  },
+  purchaseLink: {
+    type: String,
+    trim: true,
+    validate: {
+      validator: function(v) {
+        // Allow empty string or valid URL
+        if (!v || v === '') return true;
+        return /^https?:\/\/.+/.test(v);
+      },
+      message: 'Purchase link must be a valid URL'
+    }
   }
 }, {
   timestamps: true

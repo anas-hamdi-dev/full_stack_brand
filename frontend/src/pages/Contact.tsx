@@ -1,6 +1,5 @@
-import PageLayout from "@/components/PageLayout";
 import Footer from "@/components/Footer";
-import { Mail, Phone, MapPin, Send } from "lucide-react";
+import { Mail, Phone, MapPin, Send, Instagram } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,8 +7,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
 import { contactMessagesApi } from "@/lib/api";
 import BackButton from "@/components/BackButton";
+import { Helmet } from "react-helmet";
+import useMobileInputFocus from "@/hooks/useMobileInputFocus";
 
 const Contact = () => {
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -21,23 +23,24 @@ const Contact = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    
+
     try {
       const response = await contactMessagesApi.create(formData);
-      if (response.error) {
-        throw new Error(response.error.message);
-      }
-      
+      if (response.error) throw new Error(response.error.message);
+
       toast({
         title: "Message Sent!",
         description: "We'll get back to you as soon as possible.",
       });
-      
+
       setFormData({ name: "", email: "", subject: "", message: "" });
     } catch (error) {
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to send message. Please try again.",
+        description:
+          error instanceof Error
+            ? error.message
+            : "Failed to send message. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -46,119 +49,177 @@ const Contact = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <PageLayout>
-      <main className="pb-16">
-        <div className="container mx-auto px-4">
-          {/* Header */}
-          <div className="mb-8">
-            <div className="mb-6">
+    <>
+      <Helmet>
+        <title>Contact - el mall - Discover All Tunisian Brands</title>
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon.png" />
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon.png" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/favicon.png" />
+      </Helmet>
+      <div className="min-h-screen bg-background pt-24 pb-20">
+        <main className="pb-16">
+          <div className="container mx-auto px-4">
+            {/* Header */}
+            <div className="mb-8">
               <BackButton to="/" label="Back to Home" />
+              <h1 className="font-display text-4xl md:text-5xl font-bold text-foreground mt-4">
+                Get in <span className="text-gradient-primary">Touch</span>
+              </h1>
+              <p className="mt-2 text-muted-foreground max-w-xl">
+                We'd love to hear from you! Fill out the form or reach us directly through our contact info.
+              </p>
             </div>
-            <h1 className="font-display text-4xl md:text-5xl font-bold text-foreground mb-4">
-              Get in <span className="text-gradient-primary">Touch</span>
-            </h1>
-          </div>
 
+            <div className="grid lg:grid-cols-2 gap-12">
+              {/* Contact Form */}
+              <div className="glass rounded-3xl p-8 shadow-lg hover:shadow-xl transition-shadow duration-300">
+                <h2 className="font-display text-2xl font-bold text-foreground mb-6">
+                  Send a Message
+                </h2>
+                <form onSubmit={handleSubmit} className="space-y-5">
+                  <div className="grid sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-sm font-medium text-foreground mb-1 block">
+                        Name
+                      </label>
+                      <Input
+                        placeholder="Your Name"
+                        value={formData.name}
+                        onChange={(e) =>
+                          setFormData({ ...formData, name: e.target.value })
+                        }
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-foreground mb-1 block">
+                        Email
+                      </label>
+                      <Input
+                        type="email"
+                        placeholder="you@example.com"
+                        value={formData.email}
+                        onChange={(e) =>
+                          setFormData({ ...formData, email: e.target.value })
+                        }
+                        required
+                      />
+                    </div>
+                  </div>
 
-          <div className="grid lg:grid-cols-2 gap-12">
-            {/* Contact Form */}
-            <div className="glass rounded-3xl p-8">
-              <h2 className="font-display text-2xl font-bold text-foreground mb-6">Send a Message</h2>
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="grid sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="text-sm font-medium text-foreground mb-2 block">Name</label>
+                    <label className="text-sm font-medium text-foreground mb-1 block">
+                      Subject
+                    </label>
                     <Input
-                      value={formData.name}
-                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      placeholder="Message Subject"
+                      value={formData.subject}
+                      onChange={(e) =>
+                        setFormData({ ...formData, subject: e.target.value })
+                      }
                       required
                     />
                   </div>
+
                   <div>
-                    <label className="text-sm font-medium text-foreground mb-2 block">Email</label>
-                    <Input
-                      type="email"
-                      value={formData.email}
-                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    <label className="text-sm font-medium text-foreground mb-1 block">
+                      Message
+                    </label>
+                    <Textarea
+                      rows={5}
+                      placeholder="Write your message..."
+                      value={formData.message}
+                      onChange={(e) =>
+                        setFormData({ ...formData, message: e.target.value })
+                      }
                       required
                     />
                   </div>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-foreground mb-2 block">Subject</label>
-                  <Input
-                    value={formData.subject}
-                    onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-foreground mb-2 block">Message</label>
-                  <Textarea
-                    rows={5}
-                    value={formData.message}
-                    onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                    required
-                  />
-                </div>
-                <Button type="submit" className="w-full" disabled={isSubmitting}>
-                  {isSubmitting ? "Sending..." : (
-                    <>
-                      Send Message
-                      <Send className="w-4 h-4 ml-2" />
-                    </>
-                  )}
-                </Button>
-              </form>
-            </div>
 
-            {/* Contact Info */}
-            <div className="space-y-8">
-              <div className="glass rounded-3xl p-8">
-                <h2 className="font-display text-2xl font-bold text-foreground mb-6">Contact Information</h2>
-                <div className="space-y-6">
-                  <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 rounded-xl bg-gradient-primary flex items-center justify-center flex-shrink-0">
-                      <Mail className="w-6 h-6 text-primary-foreground" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-foreground">Email</h3>
-                      <p className="text-muted-foreground">contact@elmall.tn</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 rounded-xl bg-gradient-secondary flex items-center justify-center flex-shrink-0">
-                      <Phone className="w-6 h-6 text-primary-foreground" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-foreground">Phone</h3>
-                      <p className="text-muted-foreground">+216 99 797 459</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-4">
-                    {/* <div className="w-12 h-12 rounded-xl bg-muted flex items-center justify-center flex-shrink-0">
-                    </div> */}
-                    <div className="w-12 h-12 rounded-xl bg-gradient-secondary flex items-center justify-center flex-shrink-0">
-                    <MapPin className="w-6 h-6 text-primary-foreground" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-foreground">Location</h3>
-                      <p className="text-muted-foreground">Bizerte, Tunisia</p>
-                    </div>
+                  <Button
+                    type="submit"
+                    className="w-full flex items-center justify-center gap-2"
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? "Sending..." : "Send Message"}
+                    {!isSubmitting && <Send className="w-4 h-4" />}
+                  </Button>
+                </form>
+              </div>
+
+              {/* Contact Info */}
+              <div className="space-y-6">
+                <div className="glass rounded-3xl p-8 shadow-lg hover:shadow-xl transition-shadow duration-300">
+                  <h2 className="font-display text-2xl font-bold text-foreground mb-6">
+                    Contact Information
+                  </h2>
+                  <div className="space-y-5">
+                    <ContactItem
+                      icon={<Mail className="w-6 h-6 text-white" />}
+                      title="Email"
+                      value="contact@elmall.tn"
+                      gradient="bg-gradient-primary"
+                    />
+                    <ContactItem
+                      icon={<Phone className="w-6 h-6 text-white" />}
+                      title="Phone"
+                      value="+216 99 797 459"
+                      gradient="bg-gradient-secondary"
+                    />
+                    <ContactItem
+                      icon={<MapPin className="w-6 h-6 text-white" />}
+                      title="Location"
+                      value="Bizerte, Tunisia"
+                      gradient="bg-gradient-secondary"
+                    />
+                    <a
+                      href="https://instagram.com/elmall.tn"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block"
+                    >
+                      <ContactItem
+                        icon={<Instagram className="w-6 h-6 text-white" />}
+                        title="Instagram"
+                        value="@elmall.tn"
+                        gradient="bg-gradient-secondary"
+                        clickable
+                      />
+                    </a>
                   </div>
                 </div>
               </div>
-
-            
             </div>
           </div>
-        </div>
-      </main>
-      <Footer />
-      </PageLayout>
-    </div>
+        </main>
+        <Footer />
+      </div>
+    </>
   );
-};  
+};
+
+const ContactItem = ({
+  icon,
+  title,
+  value,
+  gradient,
+  clickable = false,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  value: string;
+  gradient: string;
+  clickable?: boolean;
+}) => (
+  <div className={`flex items-start gap-4 ${clickable ? "hover:opacity-80 transition-opacity cursor-pointer" : ""}`}>
+    <div className={`w-12 h-12 rounded-xl ${gradient} flex items-center justify-center flex-shrink-0`}>
+      {icon}
+    </div>
+    <div>
+      <h3 className="font-semibold text-foreground">{title}</h3>
+      <p className="text-muted-foreground">{value}</p>
+    </div>
+  </div>
+);
 
 export default Contact;

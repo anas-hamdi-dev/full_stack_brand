@@ -6,7 +6,6 @@ import { useMyProducts } from "@/hooks/useBrands";
 import { productsApi } from "@/lib/api";
 import { toast } from "sonner";
 import { Plus, Edit, Trash2, Package, Loader2 } from "lucide-react";
-import PageLayout from "@/components/PageLayout";
 import ProductManagementModal from "@/components/modals/ProductManagementModal";
 import BackButton from "@/components/BackButton";
 import {
@@ -29,6 +28,7 @@ interface Product {
   description?: string | null;
   price?: number | null;
   images: string[];
+  purchaseLink?: string | null;
   brand_id?: string | null;
   createdAt?: string;
 }
@@ -43,7 +43,7 @@ export default function ProductsManagement() {
   const [deletingProductId, setDeletingProductId] = useState<string | null>(null);
 
   const createProduct = useMutation({
-    mutationFn: async (data: { name: string; description?: string | null; price?: number | null; images: string[] }) => {
+    mutationFn: async (data: { name: string; description?: string | null; price?: number | null; images: string[]; purchaseLink?: string | null }) => {
       const response = await productsApi.create(data);
       if (response.error) {
         throw new Error(response.error.message || "Failed to create product");
@@ -63,7 +63,7 @@ export default function ProductsManagement() {
   });
 
   const updateProduct = useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: { name?: string; description?: string | null; price: number; images?: string[] } }) => {
+    mutationFn: async ({ id, data }: { id: string; data: { name?: string; description?: string | null; price: number; images?: string[]; purchaseLink?: string | null } }) => {
       const response = await productsApi.update(id, data);
       if (response.error) {
         throw new Error(response.error.message || "Failed to update product");
@@ -101,7 +101,7 @@ export default function ProductsManagement() {
     },
   });
 
-  const handleSubmit = (productData: { name: string; description?: string | null; price: number; images: string[] }) => {
+  const handleSubmit = (productData: { name: string; description?: string | null; price: number; images: string[]; purchaseLink?: string | null }) => {
     if (editingProduct) {
       updateProduct.mutate({ id: editingProduct._id, data: productData });
     } else {
@@ -126,7 +126,7 @@ export default function ProductsManagement() {
 
   if (!brandId) {
     return (
-      <PageLayout>
+      <div className="min-h-screen bg-background pt-24 pb-20">
         <div className="container mx-auto px-4 py-12">
           <div className="glass rounded-3xl p-8 md:p-12 text-center max-w-2xl mx-auto">
             <Package className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
@@ -138,12 +138,12 @@ export default function ProductsManagement() {
             </p>
           </div>
         </div>
-      </PageLayout>
+      </div>
     );
   }
 
   return (
-    <PageLayout>
+    <div className="min-h-screen bg-background pt-24 pb-20">
       <div className="container mx-auto px-4 py-12 max-w-6xl">
         <div className="mb-6">
           <BackButton to="/" label="Back to home" />
@@ -277,6 +277,7 @@ export default function ProductsManagement() {
             description: editingProduct.description || "",
             price: editingProduct.price ?? 0,
             images: editingProduct.images || [],
+            purchaseLink: editingProduct.purchaseLink || "",
             brand_id: editingProduct.brand_id || null,
             created_at: editingProduct.createdAt || "",
           } : null}
@@ -305,7 +306,7 @@ export default function ProductsManagement() {
           </AlertDialogContent>
         </AlertDialog>
       </div>
-    </PageLayout>
+    </div>
   );
 }
 

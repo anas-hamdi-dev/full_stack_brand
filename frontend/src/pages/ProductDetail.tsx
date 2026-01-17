@@ -1,27 +1,26 @@
-  import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
   import { useParams, Link } from "react-router-dom";
-  import { Helmet } from "react-helmet";
-  import PageLayout from "@/components/PageLayout";
-  import Footer from "@/components/Footer";
-  import { useProduct } from "@/hooks/useProducts";
-  import { ExternalLink } from "lucide-react";
-  import BackButton from "@/components/BackButton";
-  import { Button } from "@/components/ui/button";
-  import {
-    Carousel,
-    CarouselContent,
-    CarouselItem,
-    CarouselNext,
-    CarouselPrevious,
-    type CarouselApi,
-  } from "@/components/ui/carousel";
+import { Helmet } from "react-helmet";
+import Footer from "@/components/Footer";
+import { useProduct } from "@/hooks/useProducts";
+import BackButton from "@/components/BackButton";
+import { Button } from "@/components/ui/button";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+  type CarouselApi,
+} from "@/components/ui/carousel";
 
-  const ProductDetail = () => {
-    const { productId } = useParams();
-    const [api, setApi] = useState<CarouselApi | null>(null);
-    const [current, setCurrent] = useState(0);
+const ProductDetail = () => {
+  const { productId } = useParams();
+  const [api, setApi] = useState<CarouselApi | null>(null);
+  const [current, setCurrent] = useState(0);
+  const thumbnailRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
-    const { data: product, isLoading } = useProduct(productId);
+  const { data: product, isLoading } = useProduct(productId);
 
     // Helper function to remove "'s Brand" suffix from brand name
     const cleanBrandName = (name: string | undefined): string => {
@@ -45,10 +44,20 @@
       };
     }, [api]);
 
+    // Auto-scroll thumbnails when current changes
+    useEffect(() => {
+      if (thumbnailRefs.current[current]) {
+        thumbnailRefs.current[current]?.scrollIntoView({
+          behavior: "smooth",
+          block: "nearest",
+          inline: "center",
+        });
+      }
+    }, [current]);
+
     if (isLoading) {
       return (
-        <div className="min-h-screen bg-background">
-          <PageLayout>
+        <div className="min-h-screen bg-background pt-24 pb-20">
           <div className="pb-16 md:pb-20 container mx-auto px-4 max-w-7xl">
             <div className="animate-pulse grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 items-start">
               <div className="w-full max-w-full md:max-w-[50%] mx-auto md:mx-0">
@@ -65,15 +74,13 @@
             </div>
           </div>
           <Footer />
-          </PageLayout>
         </div>
       );
     }
 
     if (!product) {
       return (
-        <div className="min-h-screen bg-background">
-          <PageLayout>
+        <div className="min-h-screen bg-background pt-24 pb-20">
           <div className="pb-20 container mx-auto px-4 text-center">
             <h1 className="text-3xl font-display font-bold text-foreground mb-4">
               Product Not Found
@@ -81,12 +88,10 @@
             <BackButton to="/gallery" label="Back to Gallery" />
           </div>
           <Footer />
-          </PageLayout>
         </div>
       );
     }
 
-    const officialUrl = product.brand?.website;
     const images =
       product.images && product.images.length > 0
         ? product.images
@@ -94,16 +99,18 @@
     const hasMultipleImages = images.length > 1;
 
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-background pt-24 pb-20">
         <Helmet>
           <title>{product.name} - el mall</title>
           <meta
             name="description"
             content={product.description || `Shop ${product.name} on el mall`}
           />
+          <link rel="icon" type="image/png" sizes="32x32" href="/favicon.png" />
+          <link rel="icon" type="image/png" sizes="16x16" href="/favicon.png" />
+          <link rel="apple-touch-icon" sizes="180x180" href="/favicon.png" />
         </Helmet>
 
-        <PageLayout>
         <main className="pb-16 md:pb-20">
           <div className="container mx-auto px-4 max-w-7xl">
             <div className="mb-6">
@@ -151,6 +158,9 @@
                       {images.map((image, index) => (
                         <button
                           key={index}
+                          ref={(el) => {
+                            thumbnailRefs.current[index] = el;
+                          }}
                           onClick={() => api?.scrollTo(index)}
                           className={`flex-shrink-0 w-16 h-16 md:w-20 md:h-20 rounded-lg overflow-hidden border-2 transition-all ${
                             current === index
@@ -206,43 +216,29 @@
                   {product.description || "No description available."}
                 </p>
 
-                {/* CTA Button */}
-                <div className="w-full md:w-auto mb-6 md:mb-8">
-                  {officialUrl ? (
-                    <a
-                      href={officialUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="w-full md:w-auto inline-block"
-                    >
-                      <Button
-                        variant="hero"
-                        size="lg"
-                        className="w-full md:w-auto gap-2"
-                      >
-                        <ExternalLink className="w-5 h-5" />
-                        Take Me to the Official Site
-                      </Button>
-                    </a>
-                  ) : (
+                {/* Buy Now Button */}
+                {product.purchaseLink && (
+                  <div className="w-full md:w-auto">
                     <Button
-                      variant="secondary"
+                      asChild
                       size="lg"
-                      disabled
                       className="w-full md:w-auto"
                     >
-                      Official Site Not Available
+                      <a
+                        href={product.purchaseLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        Buy Now
+                      </a>
                     </Button>
-                  )}
-                </div>
-
-                
+                  </div>
+                )}
               </div>
             </div>
           </div>
           </main>
         <Footer />
-        </PageLayout>
       </div>
     );
   };

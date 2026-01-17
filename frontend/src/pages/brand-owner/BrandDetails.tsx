@@ -12,19 +12,16 @@
     SelectTrigger,
     SelectValue,
   } from "@/components/ui/select";
-  import { useCategories } from "@/hooks/useCategories";
   import { brandsApi } from "@/lib/api";
   import { useAuth } from "@/contexts/AuthContext";
   import { useMyBrand } from "@/hooks/useBrands";
   import { toast } from "sonner";
   import { Store, Upload, X, MapPin, Save, Loader2 } from "lucide-react";
-  import PageLayout from "@/components/PageLayout";
   import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
   import { Badge } from "@/components/ui/badge";
   import BackButton from "@/components/BackButton";
 
   interface BrandFormData {
-    category_id: string;
     name: string;
     description?: string;
     logo_url?: string;
@@ -50,7 +47,6 @@
     };
     const brandId = getBrandId();
     const { data: brand, isLoading: brandLoading } = useMyBrand();
-    const { data: categories } = useCategories();
     const queryClient = useQueryClient();
     const [avatarFile, setAvatarFile] = useState<File | null>(null);
     const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
@@ -58,7 +54,6 @@
 
     const form = useForm<BrandFormData>({
       defaultValues: {
-        category_id: "",
         name: "",
         description: "",
         logo_url: "",
@@ -76,18 +71,6 @@
     // Pre-fill form with existing brand data
     useEffect(() => {
       if (brand) {
-        // Handle category_id - check populated category first, then category_id
-        let categoryId = "";
-        if (brand.category && brand.category._id) {
-          categoryId = brand.category._id;
-        } else if (brand.category_id) {
-          if (typeof brand.category_id === 'string') {
-            categoryId = brand.category_id;
-          } else if (typeof brand.category_id === 'object' && brand.category_id !== null && '_id' in brand.category_id) {
-            categoryId = (brand.category_id as { _id: string })._id;
-          }
-        }
-
         // Extract phone number - if it has +216 prefix, remove it to show only 8 digits
         let phoneSuffix = "";
         if (brand.phone) {
@@ -120,7 +103,6 @@
         }
 
         const formValues = {
-          category_id: categoryId,
           name: brand.name || "",
           description: brand.description || "",
           logo_url: brand.logo_url || "",
@@ -141,51 +123,12 @@
         // Store initial form values for comparison
         setInitialFormValues({ ...formValues });
         
-        // Explicitly set category_id after a brief delay to ensure Select component picks it up
-        // This handles cases where categories might not be loaded yet
-        if (categoryId) {
-          // Use setTimeout to ensure this runs after React has updated
-          setTimeout(() => {
-            form.setValue("category_id", categoryId, { 
-              shouldValidate: false,
-              shouldDirty: false,
-            });
-          }, 0);
-        }
-        
         if (brand.logo_url) {
           setAvatarPreview(brand.logo_url);
         }
       }
     }, [brand, form]);
 
-    // Ensure category is set when categories are loaded (in case categories load after brand)
-    useEffect(() => {
-      if (brand && categories && categories.length > 0) {
-        // Handle category_id - check populated category first, then category_id
-        let categoryId = "";
-        if (brand.category && brand.category._id) {
-          categoryId = brand.category._id;
-        } else if (brand.category_id) {
-          if (typeof brand.category_id === 'string') {
-            categoryId = brand.category_id;
-          } else if (typeof brand.category_id === 'object' && brand.category_id !== null && '_id' in brand.category_id) {
-            categoryId = (brand.category_id as { _id: string })._id;
-          }
-        }
-
-        // Only update if category exists in the categories list and is different from current value
-        if (categoryId && categories.some(cat => cat._id === categoryId)) {
-          const currentCategoryId = form.getValues("category_id");
-          if (currentCategoryId !== categoryId) {
-            form.setValue("category_id", categoryId, { 
-              shouldValidate: false,
-              shouldDirty: false,
-            });
-          }
-        }
-      }
-    }, [brand, categories, form]);
 
     // Handle avatar file upload
     const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -229,9 +172,6 @@
         // Validate required fields
         if (!data.name || !data.name.trim()) {
           throw new Error("Brand name is required");
-        }
-        if (!data.category_id || !data.category_id.trim()) {
-          throw new Error("Category is required");
         }
         
         // Prepare update payload - don't change status, preserve existing status
@@ -302,15 +242,6 @@
         return;
       }
 
-      if (!data.category_id || !data.category_id.trim()) {
-        toast.error("Category is required");
-        form.setError("category_id", { 
-          type: "manual", 
-          message: "Category is required" 
-        });
-        return;
-      }
-
       // Prepare data for API - combine +216 prefix with phone suffix if phone is provided
       const phoneValue = data.phone?.trim() || "";
       const fullPhoneNumber = phoneValue ? `+216${phoneValue.replace(/\D/g, '')}` : "";
@@ -320,7 +251,6 @@
       const formattedInstagram = instagramUsername ? instagramUsername.replace(/^@+/, "") : "";
 
       const submitData: BrandFormData = {
-        category_id: data.category_id.trim(),
         name: data.name.trim(),
         description: data.description?.trim() || "",
         logo_url: logoUrl,
@@ -337,7 +267,7 @@
 
     if (brandLoading) {
       return (
-        <PageLayout>
+        <div className="min-h-screen bg-background pt-24 pb-20">
           <div className="container mx-auto px-4 py-12">
             <div className="flex items-center justify-center min-h-[400px]">
               <div className="text-center">
@@ -346,13 +276,13 @@
               </div>
             </div>
           </div>
-        </PageLayout>
+        </div>
       );
     }
 
     if (!brandId || !brand) {
       return (
-        <PageLayout>
+        <div className="min-h-screen bg-background pt-24 pb-20">
           <div className="container mx-auto px-4 py-12">
             <div className="glass rounded-3xl p-8 md:p-12 text-center max-w-2xl mx-auto">
               <Store className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
@@ -364,7 +294,7 @@
               </p>
             </div>
           </div>
-        </PageLayout>
+        </div>
       );
     }
 
@@ -380,7 +310,6 @@
 
       // Compare all form fields
       const fieldsToCompare: (keyof BrandFormData)[] = [
-        'category_id',
         'name',
         'description',
         'logo_url',
@@ -407,7 +336,7 @@
     const isFormModified = hasFormChanged();
 
     return (
-      <PageLayout>
+      <div className="min-h-screen bg-background pt-24 pb-20">
         <div className="container mx-auto px-4 py-12 max-w-4xl">
           <div className="mb-6">
           <BackButton to="/" label="Back to home" />
@@ -518,37 +447,6 @@
                     )}
                   </div>
                 </div>
-              </div>
-
-              {/* Category */}
-              <div className="space-y-2">
-                <Label htmlFor="category_id" className="text-base">
-                  Category <span className="text-destructive">*</span>
-                </Label>
-                <Select
-                  value={form.watch("category_id") || ""}
-                  onValueChange={(value) => {
-                    form.setValue("category_id", value, { shouldValidate: true });
-                    form.clearErrors("category_id");
-                  }}
-                  disabled={isFormDisabled || !categories || categories.length === 0}
-                >
-                  <SelectTrigger id="category_id">
-                    <SelectValue placeholder="Select a category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {categories?.map((category) => (
-                      <SelectItem key={category._id} value={category._id}>
-                        {category.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {form.formState.errors.category_id && (
-                  <p className="text-sm text-destructive mt-1">
-                    {form.formState.errors.category_id.message}
-                  </p>
-                )}
               </div>
 
               {/* Brand Name */}
@@ -716,7 +614,7 @@
             </form>
           </div>
         </div>
-      </PageLayout>
+      </div>
     );
   }
 

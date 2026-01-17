@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const connectDB = async () => {
   try {
-    const mongoURI = process.env.MONGODB_URI|| "mongodb://localhost:27017/brands_app"   ;
+    const mongoURI = process.env.MONGODB_URI;
     
     if (!mongoURI) {
       console.error('Error: MONGODB_URI is not defined in environment variables');

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,8 +11,9 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
+import { Loader2, Eye, EyeOff } from "lucide-react";
 import { z } from "zod";
+import logo from "@/assets/logo2.png";
 
 const loginSchema = z.object({
   email: z.string().email("Please enter a valid email"),
@@ -28,14 +29,27 @@ interface LoginModalProps {
 export default function LoginModal({ open, onOpenChange, onSwitchToSignUp }: LoginModalProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { signIn, user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   // Handle redirect after login based on user status
   useEffect(() => {
     if (user && open) {
       onOpenChange(false);
+      
+      // Check email verification first (except for admins)
+      if (user.role !== "admin" && !user.isEmailVerified) {
+        navigate("/verify-email", { 
+          state: { 
+            email: user.email,
+            from: location 
+          } 
+        });
+        return;
+      }
       
       // Redirect based on role
       if (user.role === "client") {
@@ -91,6 +105,13 @@ export default function LoginModal({ open, onOpenChange, onSwitchToSignUp }: Log
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md no-scrollbar">
         <DialogHeader>
+          <div className="flex justify-center mb-4">
+            <img
+              src={logo}
+              alt="el mall logo"
+              className="h-12 w-auto object-contain"
+            />
+          </div>
           <DialogTitle className="text-2xl font-display font-bold text-foreground text-center">
             Sign In
           </DialogTitle>
@@ -118,15 +139,29 @@ export default function LoginModal({ open, onOpenChange, onSwitchToSignUp }: Log
 
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
+              <div className="relative">
               <Input
                 id="password"
-                type="password"
+                  type={showPassword ? "text" : "password"}
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="bg-background"
+                  className="bg-background pr-10"
               />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
+                </button>
+              </div>
             </div>
 
             <Button type="submit" className="w-full" disabled={isLoading}>

@@ -193,7 +193,21 @@ export const authApi = {
   getCurrentUser: async () => {
     return apiClient.get<{ user: unknown }>('/auth/me');
   },
+
+  verifyEmail: async (email: string, verificationCode: string) => {
+    return apiClient.post<{ success: boolean; message: string; user: unknown }>('/auth/verify-email', {
+      email,
+      verificationCode,
+    });
+  },
+
+  resendVerificationCode: async (email: string) => {
+    return apiClient.post<{ success: boolean; message: string }>('/auth/resend-verification', {
+      email,
+    });
+  },
 };
+
 
 // Brands API
 export const brandsApi = {

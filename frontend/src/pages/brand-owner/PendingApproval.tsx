@@ -1,7 +1,6 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { useMyBrand } from "@/hooks/useBrands";
 import { Loader2, Clock, AlertCircle, CheckCircle2, XCircle } from "lucide-react";
-import PageLayout from "@/components/PageLayout";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
@@ -13,7 +12,7 @@ export default function PendingApproval() {
 
   if (!isBrandOwner) {
     return (
-      <PageLayout>
+      <div className="min-h-screen bg-background pt-24 pb-20">
         <div className="container mx-auto px-4 py-12">
           <div className="glass rounded-3xl p-8 md:p-12 text-center max-w-2xl mx-auto">
             <AlertCircle className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
@@ -26,13 +25,13 @@ export default function PendingApproval() {
           </div>
         </div>
         <Footer />
-      </PageLayout>
+      </div>
     );
   }
 
   if (isLoading) {
     return (
-      <PageLayout>
+      <div className="min-h-screen bg-background pt-24 pb-20">
         <div className="container mx-auto px-4 py-12">
           <div className="flex items-center justify-center min-h-[400px]">
             <div className="text-center">
@@ -42,7 +41,7 @@ export default function PendingApproval() {
           </div>
         </div>
         <Footer />
-      </PageLayout>
+      </div>
     );
   }
 
@@ -58,7 +57,7 @@ export default function PendingApproval() {
   }
 
   return (
-    <PageLayout>
+    <div className="min-h-screen bg-background pt-20 pb-20">
       <div className="container mx-auto px-4 py-12 max-w-3xl">
         <div className="glass rounded-3xl p-8 md:p-12">
           <div className="text-center mb-8">
@@ -107,7 +106,7 @@ export default function PendingApproval() {
         </div>
       </div>
       <Footer />
-    </PageLayout>
+    </div>
   );
 }
 

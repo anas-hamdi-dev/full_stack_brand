@@ -9,6 +9,7 @@ interface User {
   phone?: string | null;
   role: "client" | "brand_owner" | "admin";
   brand_id?: string | null;
+  isEmailVerified?: boolean;
 }
 
 interface AuthContextType {

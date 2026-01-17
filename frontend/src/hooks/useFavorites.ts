@@ -178,6 +178,10 @@ export function useFavorites() {
       toast.error("Vous devez être connecté en tant que client pour ajouter aux favoris");
       return;
     }
+    if (!user?.isEmailVerified) {
+      toast.error("Please verify your email address before adding favorites");
+      return;
+    }
     addFavoriteMutation.mutate(productId);
   };
 

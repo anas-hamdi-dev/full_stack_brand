@@ -9,8 +9,7 @@ const brandSchema = new mongoose.Schema({
   ownerId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    required: true,
-    unique: true // One brand per owner
+    required: true
   },
   category_id: {
     type: mongoose.Schema.Types.ObjectId,
@@ -96,7 +95,7 @@ const brandSchema = new mongoose.Schema({
 
 // Indexes
 brandSchema.index({ name: 1 }, { unique: true });
-brandSchema.index({ ownerId: 1 }); // For finding brands by owner
+brandSchema.index({ ownerId: 1 }, { unique: true }); // For finding brands by owner - one brand per owner
 brandSchema.index({ category_id: 1 });
 brandSchema.index({ is_featured: 1 });
 brandSchema.index({ createdAt: -1 }); // For sorting by newest

@@ -316,7 +316,7 @@
 
   ---
 
-  ## Tailwind Integration
+    ## Tailwind Integration
 
   Colors are accessed in Tailwind using the following pattern:
 

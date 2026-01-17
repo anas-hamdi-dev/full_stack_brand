@@ -1,13 +1,19 @@
 import { Link } from "react-router-dom";
-import PageLayout from "@/components/PageLayout";
 import Footer from "@/components/Footer";
 import { Users, Target, Heart, Globe } from "lucide-react";
 import BackButton from "@/components/BackButton";
+import { Helmet } from "react-helmet";
 
 const About = () => {
   return (
-    <div className="min-h-screen bg-background">
-      <PageLayout>
+    <>
+      <Helmet>
+        <title>About - el mall - Discover All Tunisian Brands</title>
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon.png" />
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon.png" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/favicon.png" />
+      </Helmet>
+      <div className="min-h-screen bg-background pt-24 pb-20">
         <main className="pb-16">
           <div className="container mx-auto px-4">
             
@@ -27,7 +33,7 @@ const About = () => {
             {/* What We Do */}
             <div className="mb-20">
               <h2 className="font-display text-3xl font-bold text-foreground mb-6">Our Mission</h2>
-              <p className="text-muted-foreground max-w-2xl">
+              <p className="text-muted-foreground max-w-2xl text-lg">
                 We make discovering Tunisian brands simple. Whether you're a fashion lover or a brand owner, Elmall connects you with the best of Tunisian style.
               </p>
             </div>
@@ -36,12 +42,30 @@ const About = () => {
             <div className="mb-20">
               <h2 className="font-display text-3xl font-bold text-foreground mb-12 text-center">Our Values</h2>
               <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {[
-                  { icon: Heart, title: "Passion", description: "Love for Tunisian fashion and culture" },
-                  { icon: Users, title: "Community", description: "Connecting brands and fashion lovers" },
-                  { icon: Target, title: "Quality", description: "Only verified, quality brands" },
-                  { icon: Globe, title: "Visibility", description: "Showcasing Tunisian fashion globally" },
-                ].map((value) => (
+               
+              {[
+  {
+    icon: Heart,
+    title: "Passion",
+    description: "Driven by our love for authentic 100% Tunisian brands."
+  },
+  {
+    icon: Users,
+    title: "Community",
+    description: "Building a strong connection between brands and their audience."
+  },
+  {
+    icon: Target,
+    title: "Empowerment",
+    description: "Supporting local brands to grow, scale, and succeed."
+  },
+  {
+    icon: Globe,
+    title: "Global Reach",
+    description: "Showcasing Tunisian creativity to the world."
+  }
+  
+].map((value) => (
                   <div key={value.title} className="glass rounded-2xl p-6 text-center hover-lift">
                     <div className="w-14 h-14 rounded-xl bg-gradient-primary flex items-center justify-center mx-auto mb-4">
                       <value.icon className="w-7 h-7 text-primary-foreground" />
@@ -71,8 +95,8 @@ const About = () => {
           </div>
         </main>
         <Footer />
-      </PageLayout>
-    </div>
+      </div>
+    </>
   );
 };
 

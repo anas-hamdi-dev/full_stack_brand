@@ -13,18 +13,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useCategories } from "@/hooks/useCategories";
 import { brandsApi } from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
 import { useBrand } from "@/hooks/useBrands";
 import { toast } from "sonner";
 import { CheckCircle2, ArrowRight, ArrowLeft, Store, MapPin, Upload, X } from "lucide-react";
-import PageLayout from "@/components/PageLayout";
 import { authApi } from "@/lib/api";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 interface BrandFormData {
-  category_id: string;
   name: string;
   description?: string;
   logo_url?: string;
@@ -36,7 +33,7 @@ interface BrandFormData {
   email?: string;
 }
 
-const TOTAL_STEPS = 5;
+const TOTAL_STEPS = 4;
 
 export default function CompleteBrandDetails() {
   const navigate = useNavigate();
@@ -53,7 +50,6 @@ export default function CompleteBrandDetails() {
   };
   const brandId = getBrandId();
   const { data: existingBrand } = useBrand(brandId || undefined);
-  const { data: categories } = useCategories();
   const queryClient = useQueryClient();
   const [currentStep, setCurrentStep] = useState(1);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
@@ -61,7 +57,6 @@ export default function CompleteBrandDetails() {
 
   const form = useForm<BrandFormData>({
     defaultValues: {
-      category_id: "",
       name: "",
       description: "",
       logo_url: "",
@@ -78,8 +73,12 @@ export default function CompleteBrandDetails() {
   // Pre-fill form with existing brand data when it loads
   useEffect(() => {
     if (existingBrand) {
+      // Extract phone number digits (remove +216 prefix if present)
+      const phoneNumber = existingBrand.phone 
+        ? existingBrand.phone.replace(/^\+216/, "").replace(/\D/g, "").slice(0, 8)
+        : "";
+      
       form.reset({
-        category_id: existingBrand.category_id || "",
         name: existingBrand.name || "",
         description: existingBrand.description || "",
         logo_url: existingBrand.logo_url || "",
@@ -89,7 +88,7 @@ export default function CompleteBrandDetails() {
           ? existingBrand.instagram.replace(/^https?:\/\/.*instagram\.com\//, "").replace(/^@/, "") 
           : "",
         facebook: existingBrand.facebook || "",
-        phone: existingBrand.phone || "",
+        phone: phoneNumber,
         email: existingBrand.email || "",
       });
       // Sync avatar preview
@@ -143,9 +142,11 @@ export default function CompleteBrandDetails() {
           throw new Error("Error: Invalid brand ID. Please sign in again.");
         }
         // Format Instagram username - remove @ prefix if present
+        // Format phone number - add +216 prefix if phone is provided
         const formattedData = {
           ...data,
           instagram: data.instagram?.trim() ? data.instagram.trim().replace(/^@+/, "") : "",
+          phone: data.phone?.trim() ? `+216${data.phone.trim()}` : "",
         };
         // Update existing brand - preserve existing status, don't send status field
         const brandData = {
@@ -158,9 +159,11 @@ export default function CompleteBrandDetails() {
         return response.data;
       } else {
         // Format Instagram username - remove @ prefix if present
+        // Format phone number - add +216 prefix if phone is provided
         const formattedData = {
           ...data,
           instagram: data.instagram?.trim() ? data.instagram.trim().replace(/^@+/, "") : "",
+          phone: data.phone?.trim() ? `+216${data.phone.trim()}` : "",
         };
         // Create new brand - set status to pending for new brands
         const brandData = {
@@ -182,7 +185,7 @@ export default function CompleteBrandDetails() {
       queryClient.invalidateQueries({ queryKey: ["featured-brands"] });
       
       // Refresh user data to get updated brand_id if brand was just created
-      // This will update the AuthContext and cause BrandOwnerWarningBanner in PageLayout to hide
+      // This will update the AuthContext and cause BrandOwnerWarningBanner to hide
       try {
         await refreshUser();
       } catch (error) {
@@ -205,13 +208,6 @@ export default function CompleteBrandDetails() {
     if (currentStep < TOTAL_STEPS) {
       // Validate current step before proceeding
       if (currentStep === 2) {
-        form.trigger("category_id");
-        if (!form.getValues("category_id")) {
-          toast.error("Please select a category");
-          return;
-        }
-      }
-      if (currentStep === 3) {
         form.trigger(["name", "logo_url"]);
         if (!form.getValues("name")) {
           toast.error("Brand name is required");
@@ -222,15 +218,15 @@ export default function CompleteBrandDetails() {
           return;
         }
       }
-      if (currentStep === 4) {
-        // Submit form on step 4 before going to step 5
+      if (currentStep === 3) {
+        // Submit form on step 3 before going to step 4
         const isValid = await form.trigger();
         if (!isValid) {
           toast.error("Please correct the errors in the form");
           return;
         }
         onSubmit(form.getValues());
-        return; // onSubmit will move to step 5 on success
+        return; // onSubmit will move to step 4 on success
       }
       setCurrentStep(currentStep + 1);
     }
@@ -255,7 +251,7 @@ export default function CompleteBrandDetails() {
   // Step 1: Welcome
   if (currentStep === 1) {
     return (
-      <PageLayout>
+      <div className="min-h-screen bg-background pt-24 pb-20">
         <div className="container mx-auto px-4 py-12 max-w-2xl">
           <div className="glass rounded-3xl p-8 md:p-12 text-center">
             <div className="mb-6">
@@ -278,77 +274,20 @@ export default function CompleteBrandDetails() {
             </div>
           </div>
         </div>
-      </PageLayout>
+      </div>
     );
   }
 
-  // Step 2: Choose Category
+  // Step 2: Brand Details
   if (currentStep === 2) {
     return (
-      <PageLayout>
+      <div className="min-h-screen bg-background pt-24 pb-20">
         <div className="container mx-auto px-4 py-12 max-w-2xl">
           <div className="glass rounded-3xl p-8 md:p-12">
             <div className="mb-6">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-2xl md:text-3xl font-display font-bold text-foreground">
-                  Step 2: Category
-                </h2>
-                <span className="text-sm text-muted-foreground">
-                  {currentStep} / {TOTAL_STEPS}
-                </span>
-              </div>
-              <p className="text-muted-foreground">
-                Select the category that best matches your brand.
-              </p>
-            </div>
-
-            <form className="space-y-6">
-              <div className="space-y-2">
-                <Label htmlFor="category_id" className="text-base">
-                  Category <span className="text-destructive">*</span>
-                </Label>
-                <Select
-                  value={form.watch("category_id")}
-                  onValueChange={(value) => form.setValue("category_id", value)}
-                >
-                  <SelectTrigger id="category_id">
-                    <SelectValue placeholder="Select a category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {categories?.map((category) => (
-                      <SelectItem key={category._id} value={category._id}>
-                        {category.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="flex gap-4 pt-4">
-                <Button type="button" variant="outline" onClick={prevStep} className="flex-1">
-                  <ArrowLeft className="mr-2 h-4 w-4" /> Previous
-                </Button>
-                <Button type="button" onClick={nextStep} className="flex-1">
-                  Next <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </div>
-            </form>
-          </div>
-        </div>
-      </PageLayout>
-    );
-  }
-
-  // Step 3: Shop Details
-  if (currentStep === 3) {
-    return (
-      <PageLayout>
-        <div className="container mx-auto px-4 py-12 max-w-2xl">
-          <div className="glass rounded-3xl p-8 md:p-12">
-            <div className="mb-6">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-2xl md:text-3xl font-display font-bold text-foreground">
-                  Step 3: Brand Details
+                  Step 2: Brand Details
                 </h2>
                 <span className="text-sm text-muted-foreground">
                   {currentStep} / {TOTAL_STEPS}
@@ -440,11 +379,26 @@ export default function CompleteBrandDetails() {
 
               <div className="space-y-2">
                 <Label htmlFor="phone">Phone</Label>
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center px-3 h-10 rounded-md border border-input bg-muted text-sm text-muted-foreground whitespace-nowrap">
+                    +216
+                  </div>
                 <Input
                   id="phone"
                   {...form.register("phone")}
-                  placeholder="+33 6 12 34 56 78"
+                    type="tel"
+                    placeholder="XX XXX XXX"
+                    onChange={(e) => {
+                      // Only allow digits and limit to 8 digits
+                      const value = e.target.value.replace(/\D/g, '').slice(0, 8);
+                      form.setValue("phone", value, { shouldValidate: true });
+                    }}
+                    className="bg-background flex-1"
+                    maxLength={8}
+                    pattern="[2-9]\d{7}"
+                    title="Enter 8 digits starting with 2, 4, 5, or 9"
                 />
+                </div>
               </div>
 
               <div className="space-y-2">
@@ -468,20 +422,20 @@ export default function CompleteBrandDetails() {
             </form>
           </div>
         </div>
-      </PageLayout>
+      </div>
     );
   }
 
-  // Step 4: Shop Location
-  if (currentStep === 4) {
+  // Step 3: Location and Social Media
+  if (currentStep === 3) {
     return (
-      <PageLayout>
+      <div className="min-h-screen bg-background pt-24 pb-20">
         <div className="container mx-auto px-4 py-12 max-w-2xl">
           <div className="glass rounded-3xl p-8 md:p-12">
             <div className="mb-6">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-2xl md:text-3xl font-display font-bold text-foreground">
-                  Step 4: Location and Social Media
+                  Step 3: Location and Social Media
                 </h2>
                 <span className="text-sm text-muted-foreground">
                   {currentStep} / {TOTAL_STEPS}
@@ -500,7 +454,7 @@ export default function CompleteBrandDetails() {
                   <Input
                     id="location"
                     {...form.register("location")}
-                    placeholder="Ex: Paris, France"
+                    placeholder="Ex: Zarzouna , Bizerte"
                   />
                 </div>
               </div>
@@ -528,7 +482,7 @@ export default function CompleteBrandDetails() {
                     placeholder="username"
                     onChange={(e) => {
                       // Remove @ if user types it, we add it automatically
-                      let value = e.target.value.replace(/^@+/, "").replace(/[^a-zA-Z0-9._]/g, "");
+                      const value = e.target.value.replace(/^@+/, "").replace(/[^a-zA-Z0-9._]/g, "");
                       form.setValue("instagram", value, { shouldValidate: true });
                     }}
                     className="bg-background flex-1"
@@ -568,14 +522,14 @@ export default function CompleteBrandDetails() {
             </form>
           </div>
         </div>
-      </PageLayout>
+      </div>
     );
   }
 
-  // Step 5: Congratulations / Pending Approval
-  if (currentStep === 5) {
+  // Step 4: Congratulations / Pending Approval
+  if (currentStep === 4) {
     return (
-      <PageLayout>
+      <div className="min-h-screen bg-background pt-24 pb-20">
         <div className="container mx-auto px-4 py-12 max-w-2xl">
           <div className="glass rounded-3xl p-8 md:p-12 text-center">
             <div className="mb-6">
@@ -599,7 +553,7 @@ export default function CompleteBrandDetails() {
             </Button>
           </div>
         </div>
-      </PageLayout>
+      </div>
     );
   }
 

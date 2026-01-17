@@ -5,21 +5,14 @@ import { ArrowRight, Sparkles, ShoppingBag } from "lucide-react";
 const HeroSection = () => {
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20 pb-16 -mt-4">
-      {/* Background Effects */}
-      <div className="absolute inset-0 bg-hero-glow" />
-      <div className="absolute inset-0 grid-pattern opacity-30" />
-      
-      {/* Animated Orbs */}
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/20 rounded-full blur-[120px] animate-pulse-slow" />
-      <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-secondary/15 rounded-full blur-[100px] animate-pulse-slow" style={{ animationDelay: '2s' }} />
-
       <div className="container mx-auto px-4 relative z-10">
         <div className="max-w-5xl mx-auto text-center">
           
 
           {/* Main Heading */}
           <h1 className="font-display text-5xl md:text-7xl lg:text-8xl font-bold mb-6 animate-slide-up-delay-1">
-            <span className="text-foreground">all tunisian🌶️</span>
+            <span className="text-foreground">all tunisian</span>
+            <span className="pepper-3d text-5xl md:text-7xl lg:text-8xl inline-block" style={{ animation: 'pepperFloat 2s ease-in-out infinite' }}>🌶️</span>
             <br />
             <span className="text-gradient-primary">brands</span>
             <span className="text-foreground">, in  One Place</span>
@@ -41,7 +34,7 @@ const HeroSection = () => {
               </Button>
             </Link>
             <Link to="/gallery">
-              <Button variant="outline" size="xl" className="group">
+              <Button variant="outline" size="xl" className="group bg-transparent hover:bg-transparent hover:border-primary/30 hover:text-primary">
                 <ShoppingBag className="w-5 h-5 mr-2" />
                 View Gallery
               </Button>
@@ -66,8 +59,6 @@ const HeroSection = () => {
         </div>
       </div>
 
-      {/* Bottom gradient fade */}
-      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent" />
     </section>
   );
 };

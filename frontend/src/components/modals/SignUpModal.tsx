@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAuthModal } from "@/contexts/AuthModalContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,8 +13,9 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Loader2, User, Store } from "lucide-react";
+import { Loader2, User, Store, Eye, EyeOff } from "lucide-react";
 import { z } from "zod";
+import logo from "@/assets/logo2.png";
 
 const signUpSchema = z.object({
   email: z.string().email("Please enter a valid email"),
@@ -47,8 +48,10 @@ export default function SignUpModal({ open, onOpenChange, onSwitchToLogin }: Sig
     acceptTerms: false,
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const { signUp } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   // Update role when modal opens and defaultSignUpRole changes
   useEffect(() => {
@@ -93,16 +96,14 @@ export default function SignUpModal({ open, onOpenChange, onSwitchToLogin }: Sig
     // Close signup modal
     onOpenChange(false);
     
-    // Handle post-signup flow based on role
-    if (formData.role === "brand_owner") {
-      toast.success("Account created successfully! You can now create your brand from your profile.");
-      // Brand owners can create their brand later from their profile
-      navigate("/");
-    } else {
-      // For clients, redirect to dashboard
-      toast.success("Account created successfully!");
-      navigate("/client/dashboard");
-    }
+    // Redirect to email verification page
+    toast.success("Account created successfully! Please verify your email.");
+    navigate("/verify-email", { 
+      state: { 
+        email: formData.email,
+        from: location 
+      } 
+    });
     
     // Reset form
     setFormData({
@@ -117,8 +118,15 @@ export default function SignUpModal({ open, onOpenChange, onSwitchToLogin }: Sig
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto no-scrollbar">
         <DialogHeader>
+          <div className="flex justify-center mb-4">
+            <img
+              src={logo}
+              alt="el mall logo"
+              className="h-12 w-auto object-contain"
+            />
+          </div>
           <DialogTitle className="text-3xl font-display font-bold text-foreground text-center">
             Create New Account
           </DialogTitle>
@@ -220,7 +228,7 @@ export default function SignUpModal({ open, onOpenChange, onSwitchToLogin }: Sig
                 <Input
                   id="phone"
                   type="tel"
-                  placeholder="12 345 678"
+                  placeholder="XX XXX XXX"
                   value={formData.phone}
                   onChange={(e) => {
                     // Only allow digits and limit to 8 digits
@@ -240,15 +248,29 @@ export default function SignUpModal({ open, onOpenChange, onSwitchToLogin }: Sig
             {/* Password */}
             <div className="space-y-2">
               <Label htmlFor="password">Password (minimum 8 characters) <span className="text-destructive">*</span></Label>
+              <div className="relative">
               <Input
                 id="password"
-                type="password"
+                  type={showPassword ? "text" : "password"}
                 placeholder="Password"
                 value={formData.password}
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 required
-                className="bg-background"
+                  className="bg-background pr-10"
               />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
+                </button>
+              </div>
             </div>
 
             {/* Terms and Conditions */}

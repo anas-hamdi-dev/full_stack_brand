@@ -4,7 +4,6 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 interface BrandCardProps {
   id: string;
   name: string;
-  category: string;
   location: string;
   description: string;
   logoUrl?: string | null;

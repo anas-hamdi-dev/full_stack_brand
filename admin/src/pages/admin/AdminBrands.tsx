@@ -177,7 +177,7 @@ export default function AdminBrands() {
     }
   };
 
-  const handleEdit = (brand: StaticBrand & { owner?: { id: string; full_name: string; email: string } | null; status?: "pending" | "approved" | "rejected" }) => {
+  const handleEdit = (brand: StaticBrand & { categories?: { id: string; name: string } | null; owner?: { id: string; full_name: string; email: string } | null; status?: "pending" | "approved" | "rejected" }) => {
     setEditingBrand(brand);
     setFormData({
       name: brand.name || "",
@@ -283,6 +283,7 @@ export default function AdminBrands() {
               <DialogTitle>Edit Brand</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4 mt-4">
+              <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="name">Name *</Label>
                   <Input
@@ -291,6 +292,7 @@ export default function AdminBrands() {
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     required
                   />
+                </div>
               </div>
 
               <div className="space-y-2">
@@ -479,7 +481,7 @@ export default function AdminBrands() {
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center py-8">
+                <TableCell colSpan={8} className="text-center py-8">
                   Loading...
                 </TableCell>
               </TableRow>

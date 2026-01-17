@@ -28,19 +28,17 @@ export default function BrandOwnerWarningBanner() {
     return null;
   }
 
-  const message = ". Please complete your brand information to access all features.";
+  const message = "Your brand details are incomplete. Please complete your brand information to access all features.";
   const buttonText = "Complete Details";
 
   return (
-    <div className="w-full bg-yellow-500/10 border-b border-yellow-500/20">
+    <div className="fixed bottom-0 left-0 right-0 z-50 w-full bg-yellow-500/10 border-t border-yellow-500/20 shadow-lg">
       <div className="container mx-auto px-4 py-3">
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-3 flex-1">
             <AlertTriangle className="h-5 w-5 text-yellow-600 dark:text-yellow-400 flex-shrink-0" />
             <p className="text-sm text-foreground">
               <span className="font-medium">Incomplete Details</span>
-              {" "}
-              {message}
             </p>
           </div>
           <div className="flex items-center gap-2 flex-shrink-0">

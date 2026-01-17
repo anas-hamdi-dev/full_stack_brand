@@ -1,6 +1,5 @@
 import { useParams, Link } from "react-router-dom";
 import { Helmet } from "react-helmet";
-import PageLayout from "@/components/PageLayout";
 import Footer from "@/components/Footer";
 import { useBrand, useBrandProducts } from "@/hooks/useBrands";
 import { MapPin, Globe, Mail, Phone, Instagram, Facebook, CheckCircle2, Crown } from "lucide-react";
@@ -17,8 +16,7 @@ const BrandDetail = () => {
 
   if (brandLoading) {
     return (
-      <div className="min-h-screen bg-background">
-        <PageLayout>
+      <div className="min-h-screen bg-background pt-24 pb-20">
         <div className="pb-20 container mx-auto px-4">
           <div className="animate-pulse space-y-8">
             <div className="h-64 bg-muted rounded-3xl" />
@@ -27,33 +25,32 @@ const BrandDetail = () => {
           </div>
         </div>
         <Footer />
-        </PageLayout>
       </div>
     );
   }
 
   if (!brand) {
     return (
-      <div className="min-h-screen bg-background">
-        <PageLayout>
+      <div className="min-h-screen bg-background pt-24 pb-20">
         <div className="pb-20 container mx-auto px-4 text-center">
           <h1 className="text-3xl font-display font-bold text-foreground mb-4">Brand Not Found</h1>
           <BackButton to="/brands" label="Back to Brands" />
         </div>
         <Footer />
-        </PageLayout>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pt-24 pb-20">
       <Helmet>
         <title>{brand.name} - el mall</title>
         <meta name="description" content={brand.description || `Discover ${brand.name} on el mall`} />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon.png" />
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon.png" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/favicon.png" />
       </Helmet>
       
-      <PageLayout>
       <main className="pb-20">
         <div className="container mx-auto px-4">
           {/* Back Button */}
@@ -107,12 +104,6 @@ const BrandDetail = () => {
 
               
 
-              {/* Category Badge */}
-              {brand?.category?.name && (
-                <span className="inline-block px-3 py-1 rounded-full bg-primary/20 text-primary text-sm font-medium mb-3">
-                  {brand.category.name}
-                </span>
-              )}
 
               {/* Description */}
               {brand.description && (
@@ -218,9 +209,8 @@ const BrandDetail = () => {
             )}
           </section>
         </div>
-      </main>
-      <Footer />
-      </PageLayout>
+        </main>
+        <Footer />
     </div>
   );
 };
