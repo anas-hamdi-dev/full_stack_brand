@@ -1,15 +1,98 @@
+// Vercel Serverless Function Entry Point
+// This file exports the Express app for Vercel's serverless environment
+
 const express = require('express');
 const cors = require('cors');
+const connectDB = require('../config/database');
 const errorHandler = require('../middleware/errorHandler');
 
 // Initialize Express app
 const app = express();
 
+// CORS configuration for production
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps, Postman, etc.)
+    if (!origin) return callback(null, true);
+    
+    const allowedOrigins = [
+      process.env.FRONTEND_URL,
+      'http://localhost:8080',
+      'http://localhost:5173',
+      'http://localhost:3000',
+    ].filter(Boolean); // Remove undefined values
+    
+    // In development, allow all origins if FRONTEND_URL is not set
+    if (process.env.NODE_ENV !== 'production' && allowedOrigins.length === 0) {
+      return callback(null, true);
+    }
+    
+    // Check if origin matches any allowed origin (including subdomains)
+    const originMatches = allowedOrigins.some(allowed => {
+      if (!allowed) return false;
+      // Exact match
+      if (origin === allowed) return true;
+      // Match with protocol variations
+      if (origin.replace(/^https?:\/\//, '') === allowed.replace(/^https?:\/\//, '')) {
+        return true;
+      }
+      return false;
+    });
+    
+    if (originMatches || process.env.NODE_ENV !== 'production') {
+      callback(null, true);
+    } else {
+      console.warn(`CORS blocked origin: ${origin}. Allowed: ${allowedOrigins.join(', ')}`);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+};
+
+// Security headers middleware
+app.use((req, res, next) => {
+  // Security headers
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  
+  // Remove X-Powered-By header (Express default)
+  res.removeHeader('X-Powered-By');
+  
+  next();
+});
+
 // Middleware
-app.use(cors());
+app.use(cors(corsOptions));
 // Increase body size limit to handle large base64-encoded images (50MB limit)
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+
+// Connect to database (optimized for serverless)
+let dbConnected = false;
+
+const ensureDBConnection = async (req, res, next) => {
+  if (!dbConnected) {
+    try {
+      await connectDB();
+      dbConnected = true;
+    } catch (error) {
+      return res.status(500).json({
+        error: {
+          message: 'Database connection failed',
+          ...(process.env.NODE_ENV === 'development' && { details: error.message })
+        }
+      });
+    }
+  }
+  next();
+};
+
+// Apply database connection middleware to all routes
+app.use(ensureDBConnection);
 
 // Routes
 app.use('/api/auth', require('../routes/auth'));
@@ -22,92 +105,30 @@ app.use('/api/admin', require('../routes/admin'));
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'OK', message: 'Server is running' });
+  res.json({ 
+    status: 'OK', 
+    message: 'Server is running',
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development'
+  });
 });
 
 // Root endpoint
 app.get('/', (req, res) => {
   res.json({ 
-    status: 'OK', 
     message: 'Brands App API',
-    version: '1.0.0'
+    version: '1.0.0',
+    health: '/api/health'
   });
 });
 
 // 404 handler
 app.use((req, res) => {
-  res.status(404).json({ error: 'Route not found' });
+  res.status(404).json({ error: { message: 'Route not found' } });
 });
 
 // Error handler (must be last)
 app.use(errorHandler);
 
-// For Vercel serverless, we don't start a server
-// Instead, we export the app as a serverless function
-// Export both app and connectDatabase
-const handler = app;
-handler.connectDatabase = connectDatabase;
-module.exports = handler;
-
-// Connect to database on cold start
-// This will run when the serverless function is first invoked
-let dbConnected = false;
-let dbConnectionPromise = null;
-
-const connectDatabase = async () => {
-  if (dbConnected) {
-    return;
-  }
-
-  // If connection is in progress, wait for it
-  if (dbConnectionPromise) {
-    return dbConnectionPromise;
-  }
-
-  // Start new connection
-  dbConnectionPromise = (async () => {
-    try {
-      const mongoose = require('mongoose');
-      const mongoURI = process.env.MONGODB_URI;
-      
-      if (!mongoURI) {
-        console.error('MONGODB_URI is not defined');
-        return;
-      }
-
-      // Check if already connected
-      if (mongoose.connection.readyState === 1) {
-        dbConnected = true;
-        return;
-      }
-
-      // Connect with serverless-friendly options
-      const conn = await mongoose.connect(mongoURI, {
-        maxPoolSize: 1, // Maintain up to 1 socket connection for serverless
-        serverSelectionTimeoutMS: 5000, // Keep trying to send operations for 5 seconds
-        socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
-        bufferCommands: false, // Disable mongoose buffering
-        bufferMaxEntries: 0, // Disable mongoose buffering
-      });
-
-      console.log(`MongoDB Connected: ${conn.connection.host}`);
-      dbConnected = true;
-    } catch (error) {
-      console.error('Database connection error:', error);
-      dbConnectionPromise = null; // Allow retry on next invocation
-      // Don't throw - let individual routes handle DB errors
-    }
-  })();
-
-  return dbConnectionPromise;
-};
-
-// Connect database on module load (cold start)
-// This ensures connection is ready before handling requests
-if (process.env.MONGODB_URI) {
-  connectDatabase().catch(console.error);
-}
-
-// Export a function to ensure DB connection before handling requests
-module.exports.connectDatabase = connectDatabase;
-
+// Export for Vercel serverless
+module.exports = app;
