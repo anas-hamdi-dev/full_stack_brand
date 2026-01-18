@@ -16,7 +16,7 @@ interface ProfileFormData {
   email: string; // Read-only, displayed but not editable
 }
 
-export default function BrandOwnerProfile() {
+export default function Profile() {
   const { user, refreshUser } = useAuth();
   const queryClient = useQueryClient();
   const [initialFormValues, setInitialFormValues] = useState<ProfileFormData | null>(null);
@@ -190,6 +190,9 @@ export default function BrandOwnerProfile() {
   const isFormModified = hasFormChanged();
   const isFormValid = form.formState.isValid;
 
+  // Get role-specific label
+  const roleLabel = user.role === 'brand_owner' ? 'Brand Owner' : user.role === 'client' ? 'Client' : 'User';
+
   return (
     <div className="min-h-screen bg-background pt-24 pb-20">
       <div className="container mx-auto px-4 py-12 max-w-4xl">
@@ -203,6 +206,11 @@ export default function BrandOwnerProfile() {
             </h1>
             <p className="text-muted-foreground">
               Manage your personal information
+              {user.role && (
+                <span className="ml-2 text-sm">
+                  ({roleLabel})
+                </span>
+              )}
             </p>
           </div>
 

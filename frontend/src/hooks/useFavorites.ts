@@ -98,7 +98,7 @@ export function useFavorites() {
 
   // Fetch favorites from backend
   const { data: favorites = [], isLoading, error } = useQuery({
-    queryKey: ["favorites", user?.id],
+    queryKey: ["favorites", user?._id || user?.id],
     queryFn: async () => {
       if (!isClient || !user) {
         return [];
@@ -107,6 +107,7 @@ export function useFavorites() {
       if (response.error) {
         throw new Error(response.error.message);
       }
+      // Backend returns { data: products[] }, API client unwraps it
       const products = (response.data?.data || response.data || []) as any[];
       // Filter out null/undefined products and normalize
       return products
@@ -135,7 +136,7 @@ export function useFavorites() {
       return response.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["favorites", user?.id] });
+      queryClient.invalidateQueries({ queryKey: ["favorites", user?._id || user?.id] });
       queryClient.invalidateQueries({ queryKey: ["favorites", "check"] });
       toast.success("Produit ajouté aux favoris");
     },
@@ -154,7 +155,7 @@ export function useFavorites() {
       return response.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["favorites", user?.id] });
+      queryClient.invalidateQueries({ queryKey: ["favorites", user?._id || user?.id] });
       queryClient.invalidateQueries({ queryKey: ["favorites", "check"] });
       toast.success("Produit retiré des favoris");
     },
@@ -225,7 +226,7 @@ export function useIsFavorite(productId: string | undefined) {
   const { isClient, user } = useAuth();
   
   return useQuery({
-    queryKey: ["favorites", "check", productId],
+    queryKey: ["favorites", "check", productId, user?.id],
     queryFn: async () => {
       if (!productId || !isClient || !user) {
         return false;
@@ -234,7 +235,8 @@ export function useIsFavorite(productId: string | undefined) {
       if (response.error) {
         return false;
       }
-      return response.data?.isFavorite || false;
+      // Backend returns { isFavorite: boolean }, API client unwraps to { data: { isFavorite: boolean } }
+      return (response.data as { isFavorite: boolean })?.isFavorite || false;
     },
     enabled: !!productId && isClient && !!user,
   });

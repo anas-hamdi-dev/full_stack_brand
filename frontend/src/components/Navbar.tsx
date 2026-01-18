@@ -109,12 +109,14 @@ const Navbar = () => {
                   <DropdownMenuLabel>My Account</DropdownMenuLabel>
                   <DropdownMenuSeparator />
 
+                  {/* Shared Profile - Available to all authenticated users */}
+                  <DropdownMenuItem onClick={() => navigate("/profile")}>
+                    <UserCircle className="h-4 w-4 mr-2" />
+                    My Profile
+                  </DropdownMenuItem>
+
                   {isBrandOwner && (
                     <>
-                      <DropdownMenuItem onClick={() => navigate("/brand-owner/profile")}>
-                        <UserCircle className="h-4 w-4 mr-2" />
-                        My Profile
-                      </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => navigate("/brand-owner/brand")}>
                         <Store className="h-4 w-4 mr-2" />
                         My Brand

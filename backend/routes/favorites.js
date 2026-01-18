@@ -12,7 +12,8 @@ router.get('/', authenticate, isClient, async (req, res) => {
         path: 'product_id',
         populate: {
           path: 'brand_id',
-          populate: { path: 'category_id' }
+          // Note: category_id population removed as Category model is not registered
+          // The frontend doesn't use category information in the favorites page
         }
       });
 

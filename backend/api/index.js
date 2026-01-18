@@ -1,4 +1,4 @@
-const app = require('../server');
+  const app = require('../server');
 const connectDB = require('../config/database');
 
 // Connect to database for serverless functions

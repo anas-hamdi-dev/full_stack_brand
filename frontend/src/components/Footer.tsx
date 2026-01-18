@@ -6,7 +6,7 @@ const Footer = () => {
   const currentYear = new Date().getFullYear();
 
   const socialLinks = [
-    { icon: Instagram, href: "https://instagram.com/elmall.tn", label: "Instagram" },
+    { icon: Instagram, href: "https://www.instagram.com/elmall_tn", label: "Instagram" },
     { icon: Facebook, href: "https://facebook.com", label: "Facebook" },
   ];
 
