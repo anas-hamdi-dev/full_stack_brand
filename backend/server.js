@@ -10,20 +10,6 @@ dotenv.config();
 // Initialize Express app
 const app = express();
 
-// Security headers middleware
-app.use((req, res, next) => {
-  // Security headers
-  res.setHeader('X-Content-Type-Options', 'nosniff');
-  res.setHeader('X-Frame-Options', 'DENY');
-  res.setHeader('X-XSS-Protection', '1; mode=block');
-  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
-  
-  // Remove X-Powered-By header (Express default)
-  res.removeHeader('X-Powered-By');
-  
-  next();
-});
-
 // Middleware
 // CORS configuration - allows all origins in development, restricted in production
 const corsOptions = {
@@ -32,11 +18,9 @@ const corsOptions = {
     
     const allowedOrigins = [
       process.env.FRONTEND_URL,
-      'https://www.el-mall.tn',
-      'https://el-mall.tn',
-      'http://localhost:8080',
-      'http://localhost:5173',
-      'http://localhost:3000',
+      'http://localhost:2020',
+      // 'http://localhost:5173',
+      // 'http://localhost:3000',
     ].filter(Boolean);
     
     if (process.env.NODE_ENV !== 'production' || allowedOrigins.length === 0) {

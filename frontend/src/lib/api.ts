@@ -1,6 +1,6 @@
 // API Client for backend communication
-
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+// VITE_API_URL should include the /api prefix (e.g., "http://localhost:5000/api" or "https://api.example.com/api")
+const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
 
 interface ApiResponse<T> {
   data?: T;
@@ -59,11 +59,11 @@ class ApiClient {
 
       // Check if response has content and is JSON
       const contentType = response.headers.get('content-type');
-      let data: any = {};
+      let data: Record<string, unknown> = {};
       
       if (contentType && contentType.includes('application/json')) {
         try {
-          data = await response.json();
+          data = (await response.json()) as Record<string, unknown>;
         } catch (jsonError) {
           // If JSON parsing fails, return a generic error
           return {
@@ -85,17 +85,26 @@ class ApiClient {
       }
 
       if (!response.ok) {
+        const errorData = (data.error as Record<string, unknown>) || {};
+        const message = typeof errorData.message === 'string' 
+          ? errorData.message 
+          : typeof data.error === 'string' 
+            ? data.error 
+            : typeof data.message === 'string' 
+              ? data.message 
+              : `Server error (Status: ${response.status})`;
         return {
           error: {
-            message: data.error?.message || data.error || data.message || `Server error (Status: ${response.status})`,
-            code: data.error?.code || `HTTP_${response.status}`,
-            details: data.error?.details || data.details,
+            message,
+            code: typeof errorData.code === 'string' ? errorData.code : `HTTP_${response.status}`,
+            details: errorData.details || data.details,
           },
         };
       }
 
       // Handle both { data: {...} } and direct response formats
-      return { data: data.data || data };
+      // Backend responses typically wrap data in { data: ... } but some endpoints return direct objects
+      return { data: (data.data || data) as T };
     } catch (error) {
       // Handle network errors, CORS errors, etc.
       if (error instanceof TypeError && error.message.includes('fetch')) {
@@ -115,7 +124,7 @@ class ApiClient {
     }
   }
 
-  async get<T>(endpoint: string, params?: Record<string, string | number | boolean>): Promise<ApiResponse<T>> {
+  async get<T>(endpoint: string, params?: Record<string, string | number | boolean | undefined>): Promise<ApiResponse<T>> {
     let url = endpoint;
     if (params) {
       const searchParams = new URLSearchParams();
@@ -124,7 +133,10 @@ class ApiClient {
           searchParams.append(key, String(value));
         }
       });
-      url += `?${searchParams.toString()}`;
+      const queryString = searchParams.toString();
+      if (queryString) {
+        url += `?${queryString}`;
+      }
     }
     return this.request<T>(url, { method: 'GET' });
   }
@@ -211,8 +223,14 @@ export const authApi = {
 
 // Brands API
 export const brandsApi = {
-  getAll: (params?: { featured?: boolean; search?: string; limit?: number }) =>
-    apiClient.get<{ data: unknown[] }>('/brands', params),
+  getAll: (params?: { featured?: boolean; search?: string; limit?: number }) => {
+    // Convert featured boolean to string 'true'/'false' to match backend query parameter format
+    const queryParams = params ? {
+      ...params,
+      featured: params.featured !== undefined ? String(params.featured) : undefined,
+    } : undefined;
+    return apiClient.get<{ data: unknown[] }>('/brands', queryParams);
+  },
   getFeatured: () => apiClient.get<{ data: unknown[] }>('/brands/featured'),
   getById: (id: string) => apiClient.get<{ data: unknown }>(`/brands/${id}`),
   getMyBrand: () => apiClient.get<{ data: unknown }>('/brands/me'),
@@ -236,8 +254,8 @@ export const productsApi = {
 
 // Favorites API
 export const favoritesApi = {
-  getAll: () => apiClient.get<unknown[]>('/favorites'),
-  add: (productId: string) => apiClient.post<unknown>('/favorites', { product_id: productId }),
+  getAll: () => apiClient.get<{ data: unknown[] }>('/favorites'),
+  add: (productId: string) => apiClient.post<{ data: unknown }>('/favorites', { product_id: productId }),
   remove: (productId: string) => apiClient.delete(`/favorites/${productId}`),
   check: (productId: string) => apiClient.get<{ isFavorite: boolean }>(`/favorites/check/${productId}`),
 };
@@ -245,7 +263,8 @@ export const favoritesApi = {
 
 // Contact Messages API
 export const contactMessagesApi = {
-  create: (data: unknown) => apiClient.post<unknown>('/contact-messages', data),
+  create: (data: { name: string; email: string; subject: string; message: string }) => 
+    apiClient.post<{ data: unknown }>('/contact-messages', data),
 };
 
 // Users API
