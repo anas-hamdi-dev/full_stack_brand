@@ -1,4 +1,8 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+// API Base URL for admin panel
+// VITE_API_BASE_URL should include the /api prefix (e.g., "http://localhost:5000/api" or "https://api.example.com/api")
+// For local development, use: "http://localhost:5000/api"
+// For production, set this in your .env file or Vercel environment variables
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 class ApiError extends Error {
   statusCode: number;
@@ -58,7 +62,10 @@ async function apiFetch<T>(
   options: RequestInit = {}
 ): Promise<T> {
   const token = getAuthToken();
-  const url = `${API_BASE_URL}${endpoint}`;
+  // Ensure endpoint starts with / if API_BASE_URL doesn't end with /
+  const baseUrl = API_BASE_URL.endsWith('/') ? API_BASE_URL.slice(0, -1) : API_BASE_URL;
+  const endpointPath = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+  const url = `${baseUrl}${endpointPath}`;
 
   const headers: HeadersInit = {
     'Content-Type': 'application/json',
