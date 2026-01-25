@@ -220,9 +220,16 @@ export default function ProductsManagement() {
                     </h3>
                   </div>
                   {product.description && (
-                    <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
-                      {product.description}
-                    </p>
+                    <ul className="text-sm text-muted-foreground mb-3 list-disc list-inside space-y-0.5 line-clamp-2">
+                      {product.description
+                        .split('\n')
+                        .filter(line => line.trim())
+                        .map((line, index) => (
+                          <li key={index} className="text-left">
+                            {line.trim()}
+                          </li>
+                        ))}
+                    </ul>
                   )}
                   <div className="flex items-center justify-between mb-4">
                     {product.price !== null && product.price !== undefined ? (

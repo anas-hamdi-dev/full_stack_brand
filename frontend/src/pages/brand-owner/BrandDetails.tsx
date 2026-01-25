@@ -252,7 +252,7 @@
 
       const submitData: BrandFormData = {
         name: data.name.trim(),
-        description: data.description?.trim() || "",
+        description: data.description || "",
         logo_url: logoUrl,
         location: data.location?.trim() || "",
         website: data.website?.trim() || "",
@@ -486,6 +486,14 @@
                   placeholder="Describe your brand in a few words..."
                   rows={4}
                   disabled={isFormDisabled}
+                  onKeyDown={(e) => {
+                    // Allow Enter to create new lines, prevent form submission
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      // Enter alone creates a new line (default textarea behavior)
+                      // Shift+Enter also creates a new line
+                      // Form submission is handled by the submit button only
+                    }
+                  }}
                 />
               </div>
 

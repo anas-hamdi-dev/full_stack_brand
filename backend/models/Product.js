@@ -8,7 +8,7 @@ const productSchema = new mongoose.Schema({
   },
   description: {
     type: String,
-    trim: true
+    // Don't trim to preserve newlines - we'll handle trimming in routes if needed
   },
   brand_id: {
     type: mongoose.Schema.Types.ObjectId,

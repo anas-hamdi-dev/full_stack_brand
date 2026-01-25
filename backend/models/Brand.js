@@ -9,16 +9,12 @@ const brandSchema = new mongoose.Schema({
   ownerId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    required: true
-  },
-  category_id: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Category',
+    required: false, // Optional for admin-created brands
     default: null
   },
   description: {
     type: String,
-    trim: true
+    // Don't trim to preserve newlines - we'll handle trimming in routes if needed
   },
   logo_url: {
     type: String,
@@ -95,39 +91,10 @@ const brandSchema = new mongoose.Schema({
 
 // Indexes
 brandSchema.index({ name: 1 }, { unique: true });
-brandSchema.index({ ownerId: 1 }, { unique: true }); // For finding brands by owner - one brand per owner
-brandSchema.index({ category_id: 1 });
+// Sparse unique index: allows null values, but ensures uniqueness for non-null values
+// This allows admin-created brands (ownerId: null) and enforces one brand per owner
+brandSchema.index({ ownerId: 1 }, { unique: true, sparse: true });
 brandSchema.index({ is_featured: 1 });
 brandSchema.index({ createdAt: -1 }); // For sorting by newest
-
-// Virtual to populate category
-brandSchema.virtual('category', {
-  ref: 'Category',
-  localField: 'category_id',
-  foreignField: '_id',
-  justOne: true
-});
-
-// Middleware to update category brand_count
-brandSchema.post('save', async function() {
-  if (this.category_id) {
-    const Category = mongoose.model('Category');
-    const category = await Category.findById(this.category_id);
-    if (category) {
-      await category.updateBrandCount();
-    }
-  }
-});
-
-brandSchema.post('findOneAndDelete', async function(doc) {
-  // Update brand_count when brand is deleted
-  if (doc && doc.category_id) {
-    const Category = mongoose.model('Category');
-    const category = await Category.findById(doc.category_id);
-    if (category) {
-      await category.updateBrandCount();
-    }
-  }
-});
 
 module.exports = mongoose.model('Brand', brandSchema);

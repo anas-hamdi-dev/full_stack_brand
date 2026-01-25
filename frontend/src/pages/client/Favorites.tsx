@@ -142,9 +142,16 @@ export default function Favorites() {
                               {brand.name}
                             </h2>
                             {brand.description && (
-                              <p className="text-sm text-muted-foreground line-clamp-2">
-                                {brand.description}
-                              </p>
+                              <ul className="text-sm text-muted-foreground list-disc list-inside space-y-0.5 line-clamp-2">
+                                {brand.description
+                                  .split('\n')
+                                  .filter(line => line.trim())
+                                  .map((line, index) => (
+                                    <li key={index} className="text-left">
+                                      {line.trim()}
+                                    </li>
+                                  ))}
+                              </ul>
                             )}
                           </div>
                         </div>

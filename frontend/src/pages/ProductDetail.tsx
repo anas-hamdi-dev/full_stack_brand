@@ -212,9 +212,22 @@ const ProductDetail = () => {
                   </p>
                 )}
 
-                <p className="text-base md:text-lg text-muted-foreground mb-6 md:mb-8 leading-relaxed text-center md:text-left w-full">
-                  {product.description || "No description available."}
-                </p>
+                {product.description ? (
+                  <ul className="text-base md:text-lg text-muted-foreground mb-6 md:mb-8 leading-relaxed w-full list-disc list-inside space-y-1 md:text-left">
+                    {product.description
+                      .split('\n')
+                      .filter(line => line.trim())
+                      .map((line, index) => (
+                        <li key={index}>
+                          {line.trim()}
+                        </li>
+                      ))}
+                  </ul>
+                ) : (
+                  <p className="text-base md:text-lg text-muted-foreground mb-6 md:mb-8 leading-relaxed text-center md:text-left w-full">
+                    No description available.
+                  </p>
+                )}
 
                 {/* Buy Now Button */}
                 {product.purchaseLink && (

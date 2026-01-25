@@ -107,9 +107,16 @@ const BrandDetail = () => {
 
               {/* Description */}
               {brand.description && (
-                <p className="text-muted-foreground text-base md:text-lg max-w-2xl mb-4">
-                  {brand.description}
-                </p>
+                <ul className="text-muted-foreground text-base md:text-lg max-w-2xl mb-4 list-disc list-inside space-y-1">
+                  {brand.description
+                    .split('\n')
+                    .filter(line => line.trim())
+                    .map((line, index) => (
+                      <li key={index}>
+                        {line.trim()}
+                      </li>
+                    ))}
+                </ul>
               )}
 
             </div>

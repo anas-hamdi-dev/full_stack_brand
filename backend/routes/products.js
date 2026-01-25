@@ -22,7 +22,7 @@ router.get('/', async (req, res) => {
         return res.json({ data: [] });
       }
     } else {
-      // If no brand or category filter, get all approved brands
+      // If no brand filter, get all approved brands
       const brands = await Brand.find({ status: 'approved' }).select('_id');
       approvedBrandIds = brands.map(b => b._id);
       if (approvedBrandIds.length === 0) {
@@ -117,9 +117,12 @@ router.post('/', authenticate, isBrandOwnerApproved, async (req, res) => {
       return res.status(403).json({ error: 'You must own a brand to create products' });
     }
 
+    // Preserve newlines in description - only set to null if empty or whitespace-only
+    const descriptionValue = description && description.trim() ? description : null;
+    
     const product = await Product.create({
       name: name.trim(),
-      description: description?.trim() || null,
+      description: descriptionValue,
       brand_id: req.user.brand_id,
       price: priceNum,
       images
@@ -152,7 +155,10 @@ router.patch('/:id', authenticate, isBrandOwnerApproved, checkProductOwnership, 
       }
       updateData.name = name.trim();
     }
-    if (description !== undefined) updateData.description = description?.trim() || null;
+    if (description !== undefined) {
+      // Preserve newlines in description - only set to null if empty or whitespace-only
+      updateData.description = description && description.trim() ? description : null;
+    }
     
     // Price is always required in updates - validate it
     // Since price is a required field in the schema, we must validate it

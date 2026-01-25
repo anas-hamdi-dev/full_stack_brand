@@ -159,11 +159,14 @@ router.post('/', authenticate, isBrandOwner, async (req, res) => {
       return res.status(400).json({ error: 'Brand name is required' });
     }
 
+    // Preserve newlines in description - only set to null if empty or whitespace-only
+    const descriptionValue = description && description.trim() ? description : null;
+    
     // Create brand
     const brand = await Brand.create({
       name: name.trim(),
       ownerId: user._id,
-      description: description?.trim() || null,
+      description: descriptionValue,
       logo_url: logo_url || null,
       location: location?.trim() || null,
       website: website?.trim() || null,
@@ -218,7 +221,10 @@ router.patch('/:id', authenticate, isBrandOwner, checkBrandOwnership, async (req
 
     const updateData = {};
     if (name !== undefined) updateData.name = name;
-    if (description !== undefined) updateData.description = description;
+    if (description !== undefined) {
+      // Preserve newlines in description - only set to null if empty or whitespace-only
+      updateData.description = description && description.trim() ? description : null;
+    }
     if (logo_url !== undefined) updateData.logo_url = logo_url;
     if (location !== undefined) updateData.location = location;
     if (website !== undefined) updateData.website = website;

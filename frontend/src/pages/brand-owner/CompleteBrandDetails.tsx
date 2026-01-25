@@ -373,6 +373,14 @@ export default function CompleteBrandDetails() {
                   {...form.register("description")}
                   placeholder="Describe your brand in a few words..."
                   rows={4}
+                  onKeyDown={(e) => {
+                    // Allow Enter to create new lines, prevent form submission
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      // Enter alone creates a new line (default textarea behavior)
+                      // Shift+Enter also creates a new line
+                      // Form submission is handled by the submit button only
+                    }
+                  }}
                 />
               </div>
 
