@@ -12,7 +12,7 @@ const HeroSection = () => {
           {/* Main Heading */}
           <h1 className="font-display text-5xl md:text-7xl lg:text-8xl font-bold mb-6 animate-slide-up-delay-1">
             <span className="text-foreground">all tunisian</span>
-            <span className="pepper-3d text-5xl md:text-7xl lg:text-8xl inline-block" style={{ animation: 'pepperFloat 2s ease-in-out infinite' }}>🌶️</span>
+            <span className="pepper-3d text-5xl md:text-7xl lg:text-8xl inline-block animate-pepper-float">🌶️</span>
             <br />
             <span className="text-gradient-primary">brands</span>
             <span className="text-foreground">, in  One Place</span>
