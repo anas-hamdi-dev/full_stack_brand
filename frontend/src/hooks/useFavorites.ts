@@ -14,12 +14,6 @@ export interface FavoriteProduct {
     name: string;
     logo_url?: string | null;
     website?: string | null;
-    category_id?: string | null;
-    category?: {
-      _id: string;
-      name: string;
-      icon: string;
-    } | null;
   } | null;
   price?: number | null;
   images: string[];
@@ -47,14 +41,6 @@ const normalizeProduct = (product: any): FavoriteProduct => {
         logo_url: product.brand_id.logo_url || null,
         website: product.brand_id.website || null,
         description: product.brand_id.description || null,
-        category_id: product.brand_id.category_id?._id?.toString() || product.brand_id.category_id?.id?.toString() || product.brand_id.category_id || null,
-        category: product.brand_id.category_id && typeof product.brand_id.category_id === 'object'
-          ? {
-              _id: product.brand_id.category_id._id?.toString() || product.brand_id.category_id.id?.toString(),
-              name: product.brand_id.category_id.name || '',
-              icon: product.brand_id.category_id.icon || '',
-            }
-          : null,
       };
       brandId = brand._id;
     } else {
@@ -72,8 +58,6 @@ const normalizeProduct = (product: any): FavoriteProduct => {
       logo_url: product.brand.logo_url || null,
       website: product.brand.website || null,
       description: product.brand.description || null,
-      category_id: product.brand.category_id?.toString() || null,
-      category: product.brand.category || null,
     };
     brandId = brand._id;
   }

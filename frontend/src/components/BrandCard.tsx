@@ -4,11 +4,8 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 interface BrandCardProps {
   id: string;
   name: string;
-  location: string;
-  description: string;
   logoUrl?: string | null;
   featured?: boolean;
-  website?: string;
 }
 
 // Helper function to remove "'s Brand" suffix from brand name

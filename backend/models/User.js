@@ -90,6 +90,13 @@ const userSchema = new mongoose.Schema({
     type: Date,
     default: null,
     select: false
+  },
+  // Token version for session invalidation
+  // Increment this to invalidate all existing sessions for a user
+  tokenVersion: {
+    type: Number,
+    default: 0,
+    select: false // Don't return in normal queries
   }
 }, {
   timestamps: true, // Automatically adds createdAt and updatedAt

@@ -13,15 +13,15 @@ import dymesLogo from "@/assets/dymes.jpg";
 
 // Static partner brands data
 const staticBrands = [
-  { name: "Alsater.tn", logo: alsaterLogo },
+  { name: "Alsater", logo: alsaterLogo },
   { name: "Qowa", logo: qowaLogo },
   { name: "dymes", logo: dymesLogo },
-  { name: "9achek.tn", logo: aachekLogo },
+  { name: "9achek*", logo: aachekLogo },
   { name: "Spidz Genz", logo: spidzGenzLogo },
   { name: "Tanit", logo: tanitLogo },
   { name: "Tunstreet", logo: tunstreetLogo },
-  { name: "Casette", logo: casetteLogo },
-  { name: "Arabi", logo: arabiLogo },
+  { name: "Cassette", logo: casetteLogo },
+  { name: "Arabii", logo: arabiLogo },
 ];
 
 const PartnerBrandsCarousel = () => {

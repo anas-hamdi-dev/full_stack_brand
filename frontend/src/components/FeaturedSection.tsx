@@ -49,8 +49,6 @@ const FeaturedSection = () => {
                 <BrandCard 
                   id={brand.id || brand._id}
                   name={brand.name}
-                  location={brand.location || "Tunisia"}
-                  description={brand.description || "Tunisian fashion brand"}
                   logoUrl={brand.logo_url}
                   featured={brand.is_featured || false}
                 />

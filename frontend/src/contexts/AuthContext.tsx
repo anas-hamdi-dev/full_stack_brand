@@ -112,7 +112,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     role: "client" | "brand_owner";
     brandData?: {
       name?: string;
-      category_id?: string;
       description?: string;
       location?: string;
       website?: string;

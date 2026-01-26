@@ -1,0 +1,15 @@
+{
+  "name": "Brand with Base64 Logo",
+  "description": "Brand using base64 encoded image",
+  "logo_url": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
+  "location": "Tunis, Tunisia",
+  "website": "https://example.com",
+  "instagram": "examplebrand",
+  "phone": "+21691234567",
+  "email": "contact@example.com"
+}
+
+
+
+
+

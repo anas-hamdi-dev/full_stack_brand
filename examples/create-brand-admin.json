@@ -1,0 +1,18 @@
+{
+  "name": "Admin Created Brand",
+  "description": "A brand created by admin with full details",
+  "logo_url": "https://example.com/logo.png",
+  "location": "Tunis, Tunisia",
+  "website": "https://example.com",
+  "instagram": "@adminbrand",
+  "facebook": "https://facebook.com/adminbrand",
+  "phone": "+21691234567",
+  "email": "admin@example.com",
+  "is_featured": true,
+  "status": "approved"
+}
+
+
+
+
+

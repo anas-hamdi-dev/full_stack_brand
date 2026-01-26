@@ -40,11 +40,33 @@ app.use(cors(corsOptions));
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
-// Connect to database (only in non-serverless environments)
+// Middleware to ensure database connection before handling requests
+const mongoose = require('mongoose');
+app.use(async (req, res, next) => {
+  try {
+    // Check if already connected (readyState: 1 = connected)
+    if (mongoose.connection.readyState === 1) {
+      return next();
+    }
+    
+    // Ensure connection is established
+    // connectDB() handles caching and won't create duplicate connections
+    await connectDB();
+    next();
+  } catch (error) {
+    console.error('Database connection middleware error:', error.message);
+    res.status(503).json({ 
+      error: 'Database connection error',
+      message: 'Unable to connect to database. Please try again later.'
+    });
+  }
+});
+
+// Connect to database on startup (only in non-serverless environments)
 // In Vercel serverless, connection is handled in api/index.js
 if (process.env.VERCEL !== '1') {
   connectDB().catch((error) => {
-    console.error('Database connection error:', error.message);
+    console.error('Database connection error on startup:', error.message);
   });
 }
 
@@ -55,16 +77,32 @@ app.use('/api/brands', require('./routes/brands'));
 app.use('/api/products', require('./routes/products'));
 app.use('/api/favorites', require('./routes/favorites'));
 app.use('/api/contact-messages', require('./routes/contact-messages'));
-app.use('/api/admin', require('./routes/admin'));
 
 // Health check endpoint
-app.get('/api/health', (req, res) => {
-  res.json({ 
-    status: 'OK', 
-    message: 'Server is running',
+app.get('/api/health', async (req, res) => {
+  const dbStatus = mongoose.connection.readyState;
+  const dbStates = {
+    0: 'disconnected',
+    1: 'connected',
+    2: 'connecting',
+    3: 'disconnecting'
+  };
+  
+  const health = {
+    status: dbStatus === 1 ? 'OK' : 'DEGRADED',
+    message: 'Client Backend Server is running',
     timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV || 'development'
-  });
+    environment: process.env.NODE_ENV || 'development',
+    database: {
+      status: dbStates[dbStatus] || 'unknown',
+      connected: dbStatus === 1,
+      host: mongoose.connection.host || 'unknown',
+      name: mongoose.connection.name || 'unknown'
+    }
+  };
+  
+  const statusCode = dbStatus === 1 ? 200 : 503;
+  res.status(statusCode).json(health);
 });
 
 // Root endpoint

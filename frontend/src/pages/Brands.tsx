@@ -111,13 +111,11 @@ const Brands = () => {
                     </Button>
                   </div>
                 ) : (
-                  filteredBrands?.map((brand, index) => (
+                  filteredBrands?.map((brand) => (
                     <BrandCard
                       key={brand.id}
                       id={brand.id}
                       name={brand.name}
-                      location={brand.location || "Tunisia"}
-                      description={brand.description || "Tunisian fashion brand"}
                       logoUrl={brand.logo_url}
                       featured={brand.is_featured || false}
                     />
