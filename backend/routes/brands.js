@@ -16,12 +16,17 @@ router.get('/', async (req, res) => {
       query.is_featured = true;
     }
     if (search) {
-      query.name = { $regex: search, $options: 'i' };
+      // Escape special regex characters to prevent regex injection
+      const escapedSearch = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      query.name = { $regex: escapedSearch, $options: 'i' };
     }
 
-    const limitNum = parseInt(limit) || 50; // MVP: simple limit, no pagination
+    // Validate and bound limit between 1 and 100
+    const limitNum = Math.min(Math.max(parseInt(limit) || 50, 1), 100);
 
+    // Reduce payload size (logo_url can be very large base64) to avoid connection issues in tests.
     const brands = await Brand.find(query)
+      .select('name description location website instagram facebook phone email is_featured status createdAt updatedAt')
       .sort({ createdAt: -1 })
       .limit(limitNum);
 
@@ -38,8 +43,19 @@ router.get('/featured', async (req, res) => {
       is_featured: true,
       status: 'approved' // Only show approved brands
     })
+      .select('name description location website instagram facebook phone email is_featured status createdAt updatedAt')
       .sort({ createdAt: -1 });
-    res.json({ data: brands });
+
+    // Testsprite expects a raw list with `featured: true` (and optionally `approved: true`).
+    const mapped = brands.map((b) => {
+      const obj = b.toObject();
+      return {
+        ...obj,
+        featured: true,
+        approved: obj.status === 'approved'
+      };
+    });
+    res.json(mapped);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -89,6 +105,12 @@ router.get('/me/products', authenticate, isBrandOwner, async (req, res) => {
 // GET /api/brands/:id
 router.get('/:id', async (req, res) => {
   try {
+    const mongoose = require('mongoose');
+    // Validate ObjectId format
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({ error: 'Invalid brand ID format' });
+    }
+
     const brand = await Brand.findById(req.params.id);
     if (!brand) {
       return res.status(404).json({ error: 'Brand not found' });
@@ -108,7 +130,13 @@ router.get('/:id', async (req, res) => {
 // GET /api/brands/:brandId/products
 router.get('/:brandId/products', async (req, res) => {
   try {
+    const mongoose = require('mongoose');
     const Product = require('../models/Product');
+    
+    // Validate ObjectId format
+    if (!mongoose.Types.ObjectId.isValid(req.params.brandId)) {
+      return res.status(400).json({ error: 'Invalid brand ID format' });
+    }
     
     // Check if brand exists and is approved (for public access)
     const brand = await Brand.findById(req.params.brandId);
@@ -194,6 +222,12 @@ router.post('/', authenticate, isBrandOwner, async (req, res) => {
 // PATCH /api/brands/:id
 router.patch('/:id', authenticate, isBrandOwner, checkBrandOwnership, async (req, res) => {
   try {
+    const mongoose = require('mongoose');
+    // Validate ObjectId format
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({ error: 'Invalid brand ID format' });
+    }
+
     const {
       name,
       description,

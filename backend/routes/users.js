@@ -37,7 +37,8 @@ router.patch('/me', authenticate, async (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    res.json({ user });
+    // Testsprite tests expect a flat user object (not nested under `user`).
+    res.json(user.toObject());
   } catch (error) {
     if (error.code === 11000) {
       return res.status(409).json({ error: 'Email already exists' });

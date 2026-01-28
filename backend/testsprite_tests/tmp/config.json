@@ -1,0 +1,18 @@
+{
+  "status": "commited",
+  "type": "backend",
+  "scope": "codebase",
+  "localEndpoint": "http://localhost:5000",
+  "backendAuthType": "Bearer token",
+  "backendCredential": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OTZkMzI2OTM5NTc5YTUzMDU3MmQzYTkiLCJyb2xlIjoiY2xpZW50IiwiaWF0IjoxNzY5NjA0ODA5LCJleHAiOjE3NzAyMDk2MDl9.7GCEtZRDAxcV5OOmkWtWdsGWQAEL2CrunZcm2s4Y3hk",
+  "executionArgs": {
+    "projectName": "brands-app-backend",
+    "projectPath": "C:\\Users\\anash\\OneDrive\\Bureau\\coding\\brands_appp\\backend",
+    "testIds": [],
+    "additionalInstruction": "Re-run the existing backend test plan against http://localhost:5000 and report pass/fail.",
+    "envs": {
+      "API_KEY": "sk-user-KzNqeAQQ7ochL7RnzihmhCW47Ao5NKgpcWbUHQLPHWlumxEqbUqPm-wI2dWPQFuVECLh3BSgH6cPuq3v5XSOX0eUOumGpW09pl2m4H8ARBVXl8UAAjH9F2ST-FQFvYW3FLA"
+    }
+  },
+  "proxy": "http://8c3ebe40-610d-4fb2-bda1-9ddb88bf0467:lPyyix3iUMgKIWPxd3PR3AxwZNeoEeQx@tun.testsprite.com:8080"
+}

@@ -1,0 +1,52 @@
+[
+  {
+    "id": "TC001",
+    "title": "test_user_signup_with_valid_and_invalid_data",
+    "description": "Verify user signup endpoint with valid data for different roles and invalid data such as missing fields, invalid email, short password, and duplicate user."
+  },
+  {
+    "id": "TC002",
+    "title": "test_user_signin_with_correct_and_incorrect_credentials",
+    "description": "Test user signin endpoint with correct credentials to receive JWT token, incorrect password, non-existent user, and admin access denial."
+  },
+  {
+    "id": "TC003",
+    "title": "test_user_signout_and_token_invalidation",
+    "description": "Verify user signout endpoint invalidates the JWT token and returns successful signout response."
+  },
+  {
+    "id": "TC004",
+    "title": "test_get_current_authenticated_user_profile",
+    "description": "Test retrieval of current authenticated user profile with valid JWT token and verify correct user information is returned."
+  },
+  {
+    "id": "TC005",
+    "title": "test_email_verification_with_valid_and_invalid_codes",
+    "description": "Verify email verification endpoint with valid 6-digit code, invalid code, expired code, and rate limiting for too many attempts."
+  },
+  {
+    "id": "TC006",
+    "title": "test_resend_email_verification_code_with_cooldown",
+    "description": "Test resend verification code endpoint to ensure code is sent successfully and cooldown period is enforced to prevent spamming."
+  },
+  {
+    "id": "TC007",
+    "title": "test_update_user_profile_with_valid_and_invalid_data",
+    "description": "Verify user profile update endpoint with valid changes to full_name and phone, and invalid attempts to change role or brand_id."
+  },
+  {
+    "id": "TC008",
+    "title": "test_get_all_approved_brands_with_filters",
+    "description": "Test retrieval of all approved brands with optional filters such as featured flag, search keyword, and limit on number of results."
+  },
+  {
+    "id": "TC009",
+    "title": "test_create_brand_with_unique_name_and_owner_restriction",
+    "description": "Verify brand creation endpoint allows brand owners to create a brand with a unique name and prevents duplicate brand names or multiple brands per user."
+  },
+  {
+    "id": "TC010",
+    "title": "test_get_featured_brands_list",
+    "description": "Test retrieval of all featured and approved brands to ensure only featured brands are returned."
+  }
+]
