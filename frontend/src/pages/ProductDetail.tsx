@@ -13,6 +13,7 @@ import {
   CarouselPrevious,
   type CarouselApi,
 } from "@/components/ui/carousel";
+import ZoomableImage from "@/components/ZoomableImage";
 
 const ProductDetail = () => {
   const { productId } = useParams();
@@ -134,10 +135,12 @@ const ProductDetail = () => {
                         {images.map((image, index) => (
                           <CarouselItem key={index}>
                             <div className="relative w-full aspect-square md:aspect-[4/5]">
-                              <img
+                              <ZoomableImage
                                 src={image}
                                 alt={`${product.name} - Image ${index + 1}`}
-                                className="w-full h-full object-cover"
+                                resetTrigger={current}
+                                minZoom={1}
+                                maxZoom={2.5}
                               />
                             </div>
                           </CarouselItem>

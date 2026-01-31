@@ -3,6 +3,7 @@ import { Heart } from "lucide-react";
 import { useFavorites } from "@/hooks/useFavorites";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 interface ProductCardProps {
   id: string;
@@ -38,9 +39,20 @@ const ProductCard = ({ id, name, description, imageUrl, price, brandName, brandL
             />
           </Link>
           
-          {/* Favorite Button */}
-          {isClient && (
-            <div className="absolute top-3 right-3 z-10">
+          {/* Top Right Corner Elements */}
+          <div className="absolute top-3 left-3 z-10 flex items-center gap-2">
+            {/* Brand Avatar */}
+            {brandLogo && (
+              <Avatar className="h-10 w-10 border-2 border-primary shadow-sm bg-background/90 backdrop-blur-sm">
+                <AvatarImage src={brandLogo} alt={brandName || "Brand"} />
+                <AvatarFallback className="text-xs">
+                  {brandName ? brandName.charAt(0).toUpperCase() : "B"}
+                </AvatarFallback>
+              </Avatar>
+            )}
+            
+            {/* Favorite Button */}
+            {isClient && (
               <Button
                 variant="ghost"
                 size="icon"
@@ -53,8 +65,8 @@ const ProductCard = ({ id, name, description, imageUrl, price, brandName, brandL
                   }`} 
                 />
               </Button>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       
         {/* Product Info */}
