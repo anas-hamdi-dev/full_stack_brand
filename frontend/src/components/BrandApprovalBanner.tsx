@@ -14,10 +14,12 @@ export default function BrandApprovalBanner() {
   const isPending = status === "pending";
   const isRejected = status === "rejected";
 
-  // Don't show banner if approved
+  // Don't show banner if approved (brands are now auto-approved)
   if (isApproved) {
     return null;
   }
+  
+  // Only show banner for rejected brands or edge cases (pending should be rare)
 
   return (
     <Alert
@@ -29,8 +31,7 @@ export default function BrandApprovalBanner() {
           <Clock className="h-4 w-4" />
           <AlertTitle>En attente d'approbation</AlertTitle>
           <AlertDescription>
-            Votre demande de marque est en cours d'examen. L'approbation administrative peut prendre jusqu'à 24 heures. 
-            Vous pourrez modifier les détails de votre marque une fois approuvée.
+            Note: Les marques sont généralement approuvées automatiquement. Si vous voyez ce message, veuillez contacter le support.
           </AlertDescription>
         </>
       )}

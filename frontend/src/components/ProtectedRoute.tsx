@@ -84,6 +84,7 @@ export default function ProtectedRoute({
   }
 
   // Check if brand approval is required
+  // Note: Brands are now auto-approved, but we keep this check for edge cases (rejected brands, etc.)
   if (requireBrandApproved) {
     if (!isBrandOwner) {
       return (
@@ -102,12 +103,18 @@ export default function ProtectedRoute({
       );
     }
 
-    if (!isBrandApproved) {
-      // Redirect to pending approval page
+    // Only block access if brand is explicitly rejected
+    // Pending status should not occur for new brands (they're auto-approved)
+    // But we keep this check for edge cases
+    if (brand.status === 'rejected') {
+      // Redirect to pending approval page (which will show rejection message)
       return (
         <Navigate to="/brand-owner/pending-approval" state={{ from: location }} replace />
       );
     }
+    
+    // Allow access for approved brands and pending brands (pending should be rare now)
+    // This ensures backward compatibility and handles edge cases
   }
 
   // Note: CompleteBrandDetails page blocks access if user already has a brand

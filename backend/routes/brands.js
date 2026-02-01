@@ -175,7 +175,7 @@ router.post('/', authenticate, isBrandOwner, async (req, res) => {
       phone: phone?.trim() || null,
       email: email?.trim() || user.email || null,
       is_featured: false,
-      status: 'pending' // Default status for new brands
+      status: 'approved' // Brands are automatically approved upon creation
     });
 
     // Update user with brand_id

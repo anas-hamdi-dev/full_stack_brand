@@ -1,3 +1,4 @@
+import { memo, useMemo } from "react";
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
 
 // Import brand images
@@ -22,55 +23,57 @@ const staticBrands = [
   { name: "Tunstreet", logo: tunstreetLogo },
   { name: "Casette", logo: casetteLogo },
   { name: "Arabi", logo: arabiLogo },
-];
+] as const;
 
-const PartnerBrandsCarousel = () => {
-  // Duplicate brands for seamless infinite scroll
-  const duplicatedBrands = [...staticBrands, ...staticBrands];
+const PartnerBrandsCarousel = memo(() => {
+  // Duplicate brands for seamless infinite scroll - memoized to prevent recalculation
+  const duplicatedBrands = useMemo(() => [...staticBrands, ...staticBrands], []);
 
   return (
-    <section className="py-16 md:py-20 relative overflow-hidden">
-
-
-
-
+    <section 
+      className="py-16 md:py-20 relative overflow-hidden"
+      aria-labelledby="partner-brands-heading"
+    >
       <div className="container mx-auto px-6 md:px-8 relative z-10">
         {/* Section Title */}
-        <div className="text-center mb-12 md:mb-16">
+        <header className="text-center mb-12 md:mb-16">
           <span className="inline-block text-primary font-medium text-sm uppercase tracking-wider mb-3">
             Partners
           </span>
-          <h2 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-3">
+          <h2 
+            id="partner-brands-heading"
+            className="font-display text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-3"
+          >
             Our Partner Brands
           </h2>
           <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto">
             Discover trusted Tunisian brands
           </p>
-        </div>
+        </header>
 
         {/* Auto-scrolling Carousel */}
-        <div className="relative overflow-hidden py-4">
+        <div className="relative overflow-hidden py-4" aria-label="Partner brands carousel">
           <div className="flex animate-scroll">
             {duplicatedBrands.map((brand, index) => (
               <div
                 key={`${brand.name}-${index}`}
                 className="flex-shrink-0 mx-4 md:mx-6"
               >
-                <div className="flex flex-col items-center justify-center w-48 md:w-56 glass rounded-3xl p-6 md:p-8 border border-border/30">
+                <article className="flex flex-col items-center justify-center w-48 md:w-56 glass rounded-3xl p-6 md:p-8 border border-border/30">
                   <Avatar className="w-28 h-28 md:w-32 md:h-32 border-2 border-border/50 mb-4">
                     <AvatarImage
                       src={brand.logo}
-                      alt={`${brand.name} logo`}
+                      alt={`${brand.name} brand logo`}
                       className="object-cover"
+                      loading={index < 9 ? "eager" : "lazy"}
                     />
                   </Avatar>
                   <h3 className="text-base md:text-lg font-display font-semibold text-center text-foreground leading-tight">
                     {brand.name}
                   </h3>
-                </div>
+                </article>
               </div>
             ))}
-            
           </div>
         </div>
       </div>
@@ -104,7 +107,8 @@ const PartnerBrandsCarousel = () => {
       `}</style>
     </section>
   );
-};
+});
+
+PartnerBrandsCarousel.displayName = "PartnerBrandsCarousel";
 
 export default PartnerBrandsCarousel;
-

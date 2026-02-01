@@ -50,11 +50,15 @@ export default function PendingApproval() {
   const isPending = status === "pending";
   const isRejected = status === "rejected";
 
-  // If approved, redirect to brand details
+  // If approved, redirect to brand details immediately
+  // Note: Brands are now auto-approved, so this should rarely be needed
   if (isApproved) {
     navigate("/brand-owner/brand", { replace: true });
     return null;
   }
+  
+  // If brand exists but status is pending (should be rare now), show pending message
+  // This handles edge cases or legacy data
 
   return (
     <div className="min-h-screen bg-background pt-20 pb-20">
@@ -71,7 +75,7 @@ export default function PendingApproval() {
                   Your brand request is being reviewed by our team.
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  Administrative approval may take up to 24 hours.
+                  Note: Brands are typically auto-approved. If you see this message, please contact support.
                 </p>
               </>
             )}

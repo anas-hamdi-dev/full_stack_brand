@@ -165,10 +165,10 @@ export default function CompleteBrandDetails() {
           instagram: data.instagram?.trim() ? data.instagram.trim().replace(/^@+/, "") : "",
           phone: data.phone?.trim() ? `+216${data.phone.trim()}` : "",
         };
-        // Create new brand - set status to pending for new brands
+        // Create new brand - set status to approved (auto-approved)
         const brandData = {
           ...formattedData,
-          status: "pending" as const,
+          status: "approved" as const,
         };
         const response = await brandsApi.create(brandData);
         if (response.error) {
@@ -546,13 +546,13 @@ export default function CompleteBrandDetails() {
                 Congratulations!
               </h1>
               <p className="text-muted-foreground text-lg mb-4">
-                Your brand details have been submitted successfully.
+                Your brand has been created and is now live on the platform!
               </p>
-              <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-4 mt-6">
+              <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-4 mt-6">
                 <p className="text-sm text-foreground">
-                  <strong>Your brand is under review.</strong>
+                  <strong>Your brand is approved and active.</strong>
                   <br />
-                  Approval may take up to 24 hours. Some features will be available after approval.
+                  You can now manage your products and brand information from your dashboard.
                 </p>
               </div>
             </div>
