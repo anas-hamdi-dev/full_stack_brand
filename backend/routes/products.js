@@ -8,7 +8,12 @@ const { isBrandOwner, isBrandOwnerApproved, checkProductOwnership } = require('.
 // GET /api/products
 router.get('/', async (req, res) => {
   try {
-    const { brand_id, search, limit } = req.query;
+    const { brand_id, search, page, limit } = req.query;
+    
+    // Parse pagination parameters
+    const pageNum = Math.max(1, parseInt(page) || 1);
+    const limitNum = Math.max(1, Math.min(100, parseInt(limit) || 12)); // Default 12, max 100
+    const skip = (pageNum - 1) * limitNum;
     
     // Get approved brands
     let approvedBrandIds = [];
@@ -18,15 +23,31 @@ router.get('/', async (req, res) => {
       if (brand && brand.status === 'approved') {
         approvedBrandIds = [brand_id];
       } else {
-        // Brand not found or not approved, return empty result
-        return res.json({ data: [] });
+        // Brand not found or not approved, return empty result with pagination metadata
+        return res.json({ 
+          data: [],
+          pagination: {
+            page: pageNum,
+            limit: limitNum,
+            total: 0,
+            hasMore: false
+          }
+        });
       }
     } else {
       // If no brand filter, get all approved brands
       const brands = await Brand.find({ status: 'approved' }).select('_id');
       approvedBrandIds = brands.map(b => b._id);
       if (approvedBrandIds.length === 0) {
-        return res.json({ data: [] });
+        return res.json({ 
+          data: [],
+          pagination: {
+            page: pageNum,
+            limit: limitNum,
+            total: 0,
+            hasMore: false
+          }
+        });
       }
     }
     
@@ -36,17 +57,32 @@ router.get('/', async (req, res) => {
       query.name = { $regex: search, $options: 'i' }; // MVP: simple regex search
     }
 
-    const limitNum = parseInt(limit) || 50; // MVP: simple limit, no pagination
+    // Execute query with pagination and stable sort
+    // Sort by createdAt descending (newest first) and _id as secondary sort for stability
+    const [products, total] = await Promise.all([
+      Product.find(query)
+        .populate({
+          path: 'brand_id',
+          select: 'name logo_url website'
+        })
+        .sort({ createdAt: -1, _id: -1 }) // Stable sort: createdAt first, then _id
+        .skip(skip)
+        .limit(limitNum),
+      Product.countDocuments(query)
+    ]);
 
-    const products = await Product.find(query)
-      .populate({
-        path: 'brand_id',
-        select: 'name logo_url website'
-      })
-      .sort({ createdAt: -1 })
-      .limit(limitNum);
+    // Calculate pagination metadata
+    const hasMore = skip + products.length < total;
 
-    res.json({ data: products });
+    res.json({ 
+      data: products,
+      pagination: {
+        page: pageNum,
+        limit: limitNum,
+        total,
+        hasMore
+      }
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
