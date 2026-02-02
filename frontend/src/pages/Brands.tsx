@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import Footer from "@/components/Footer";
 import BrandCard from "@/components/BrandCard";
-import { useBrands } from "@/hooks/useBrands";
+import { usePaginatedBrands, Brand } from "@/hooks/useBrands";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,16 +11,88 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import ComingSoon from "@/components/ComingSoon";
 
 
+const ITEMS_PER_LOAD = 12;
+
 const Brands = () => {
-  const { data: brands, isLoading: brandsLoading } = useBrands();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("men");
 
-  const filteredBrands = brands?.filter((brand) => {
-    const matchesSearch = brand.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      brand.description?.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesSearch;
+  // Use paginated brands hook
+  // Query key includes search, so it automatically resets when search changes
+  const {
+    data,
+    isLoading,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    error,
+  } = usePaginatedBrands({
+    search: searchQuery.trim() || undefined,
+    limit: ITEMS_PER_LOAD,
   });
+
+  // Accumulate all brands from all pages, preventing duplicates
+  const allBrands = useMemo(() => {
+    if (!data?.pages || !Array.isArray(data.pages) || data.pages.length === 0) {
+      return [];
+    }
+    
+    const brandMap = new Map<string, Brand>();
+    
+    // Collect all brands from all pages, using _id as unique key
+    data.pages.forEach((page) => {
+      if (page && page.brands && Array.isArray(page.brands)) {
+        page.brands.forEach((brand) => {
+          if (brand && typeof brand === 'object') {
+            const brandId = brand._id || brand.id;
+            if (brandId && typeof brandId === 'string' && !brandMap.has(brandId)) {
+              brandMap.set(brandId, brand);
+            }
+          }
+        });
+      }
+    });
+
+    return Array.from(brandMap.values());
+  }, [data?.pages]);
+
+  // Filter brands based on category (only "men" shows brands currently)
+  const filteredBrands = useMemo(() => {
+    if (selectedCategory !== "men") return [];
+    return allBrands;
+  }, [allBrands, selectedCategory]);
+
+  // Get pagination metadata from the last page
+  const pagination = useMemo(() => {
+    if (!data?.pages || data.pages.length === 0) {
+      return { total: 0, hasMore: false };
+    }
+    const lastPage = data.pages[data.pages.length - 1];
+    return lastPage.pagination;
+  }, [data?.pages]);
+
+  const hasMore = hasNextPage || false;
+  const isLoadingMore = isFetchingNextPage;
+
+  // Reset pagination when search or category changes
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value);
+  };
+
+  const handleCategoryChange = (value: string) => {
+    setSelectedCategory(value);
+    setSearchQuery(""); // Clear search when switching categories
+  };
+
+  const clearFilters = () => {
+    setSearchQuery("");
+  };
+
+  const handleLoadMore = () => {
+    if (hasMore && !isLoadingMore) {
+      fetchNextPage();
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background pt-24 pb-20">
@@ -82,13 +154,30 @@ const Brands = () => {
               </div>
 
               {/* Results count */}
-              <p className="text-sm text-muted-foreground mb-6">
-                {filteredBrands?.length || 0} brands found
-              </p>
+              {!error && (
+                <p className="text-sm text-muted-foreground mb-6">
+                  {pagination.total > 0 ? pagination.total : filteredBrands.length} brands found
+                </p>
+              )}
+
+              {/* Error state */}
+              {error && !isLoading && (
+                <div className="col-span-full text-center py-12">
+                  <p className="text-destructive mb-4">
+                    Error loading brands: {error instanceof Error ? error.message : 'Unknown error'}
+                  </p>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => window.location.reload()}
+                  >
+                    Retry
+                  </Button>
+                </div>
+              )}
 
               {/* Brands Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
-                {brandsLoading ? (
+                {isLoading ? (
                   Array.from({ length: 6 }).map((_, i) => (
                     <div key={i} className="glass rounded-3xl border border-border/30 w-full max-w-[14rem] md:max-w-[16rem] mx-auto">
                       <div className="p-6 md:p-8 flex flex-col items-center justify-center text-center">
@@ -99,19 +188,8 @@ const Brands = () => {
                       </div>
                     </div>
                   ))
-                ) : filteredBrands?.length === 0 ? (
-                  <div className="col-span-full text-center py-12">
-                    <p className="text-muted-foreground">No brands found matching your criteria.</p>
-                    <Button 
-                      variant="outline" 
-                      className="mt-4"
-                      onClick={() => { setSearchQuery(""); }}
-                    >
-                      Clear Filters
-                    </Button>
-                  </div>
-                ) : (
-                  filteredBrands?.map((brand, index) => (
+                ) : error ? null : filteredBrands.length > 0 ? (
+                  filteredBrands.map((brand) => (
                     <BrandCard
                       key={brand.id}
                       id={brand.id}
@@ -122,8 +200,53 @@ const Brands = () => {
                       featured={brand.is_featured || false}
                     />
                   ))
+                ) : (
+                  <div className="col-span-full text-center py-12">
+                    <p className="text-muted-foreground">No brands found matching your criteria.</p>
+                    {searchQuery && (
+                      <Button 
+                        variant="outline" 
+                        className="mt-4"
+                        onClick={clearFilters}
+                      >
+                        Clear Filters
+                      </Button>
+                    )}
+                  </div>
                 )}
               </div>
+
+              {/* Load More Button with Skeleton */}
+              {!isLoading && filteredBrands.length > 0 && hasMore && (
+                <div className="mt-8">
+                  <div className="flex justify-center mb-4">
+                    <Button
+                      variant="outline"
+                      size="lg"
+                      onClick={handleLoadMore}
+                      className="min-w-[200px]"
+                      disabled={isLoadingMore}
+                    >
+                      {isLoadingMore ? "Loading..." : "Load More"}
+                    </Button>
+                  </div>
+                  {/* Show skeleton loaders while loading more items */}
+                  {isLoadingMore && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
+                      {Array.from({ length: ITEMS_PER_LOAD }).map((_, i) => (
+                        <div key={`loading-more-${i}`} className="glass rounded-3xl border border-border/30 w-full max-w-[14rem] md:max-w-[16rem] mx-auto">
+                          <div className="p-6 md:p-8 flex flex-col items-center justify-center text-center">
+                            {/* Avatar Skeleton */}
+                            <Skeleton className="w-28 h-28 md:w-32 md:h-32 rounded-full mb-4" />
+                            {/* Brand Name Skeleton */}
+                            <Skeleton className="h-5 w-24 md:w-32 rounded-md" />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
             </TabsContent>
 
             {/* Women Category - Coming Soon */}

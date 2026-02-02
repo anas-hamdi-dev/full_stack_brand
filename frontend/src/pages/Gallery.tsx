@@ -51,9 +51,9 @@ const Gallery = () => {
             }
           }
         });
-      }
+    }
     });
-    
+
     return Array.from(productMap.values());
   }, [data?.pages]);
 
@@ -163,7 +163,7 @@ const Gallery = () => {
 
               {/* Results count */}
               {!error && (
-                <p className="text-sm text-muted-foreground mb-6">
+              <p className="text-sm text-muted-foreground mb-6">
                   {pagination.total > 0 ? pagination.total : filteredProducts.length} products found
                 </p>
               )}

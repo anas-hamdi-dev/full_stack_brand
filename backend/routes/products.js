@@ -61,10 +61,10 @@ router.get('/', async (req, res) => {
     // Sort by createdAt descending (newest first) and _id as secondary sort for stability
     const [products, total] = await Promise.all([
       Product.find(query)
-        .populate({
-          path: 'brand_id',
-          select: 'name logo_url website'
-        })
+      .populate({
+        path: 'brand_id',
+        select: 'name logo_url website'
+      })
         .sort({ createdAt: -1, _id: -1 }) // Stable sort: createdAt first, then _id
         .skip(skip)
         .limit(limitNum),

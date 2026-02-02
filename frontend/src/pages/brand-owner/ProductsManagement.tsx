@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
-import { useMyProducts } from "@/hooks/useBrands";
+import { usePaginatedMyProducts } from "@/hooks/useBrands";
 import { productsApi } from "@/lib/api";
 import { toast } from "sonner";
 import { Plus, Edit, Trash2, Package, Loader2 } from "lucide-react";
@@ -20,6 +20,9 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+
+const ITEMS_PER_LOAD = 12;
 
 interface Product {
   _id: string;
@@ -36,7 +39,62 @@ interface Product {
 export default function ProductsManagement() {
   const { user } = useAuth();
   const brandId = user?.brand_id;
-  const { data: products = [], isLoading } = useMyProducts();
+  
+  // Use paginated products hook
+  const {
+    data,
+    isLoading,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    error,
+  } = usePaginatedMyProducts({
+    limit: ITEMS_PER_LOAD,
+  });
+
+  // Accumulate all products from all pages, preventing duplicates
+  const allProducts = useMemo(() => {
+    if (!data?.pages || !Array.isArray(data.pages) || data.pages.length === 0) {
+      return [];
+    }
+    
+    const productMap = new Map<string, Product>();
+    
+    // Collect all products from all pages, using _id as unique key
+    data.pages.forEach((page) => {
+      if (page && page.products && Array.isArray(page.products)) {
+        page.products.forEach((product) => {
+          if (product && typeof product === 'object') {
+            const productId = product._id || product.id;
+            if (productId && typeof productId === 'string' && !productMap.has(productId)) {
+              productMap.set(productId, product as Product);
+            }
+          }
+        });
+      }
+    });
+
+    return Array.from(productMap.values());
+  }, [data?.pages]);
+
+  // Get pagination metadata from the last page
+  const pagination = useMemo(() => {
+    if (!data?.pages || data.pages.length === 0) {
+      return { total: 0, hasMore: false };
+    }
+    const lastPage = data.pages[data.pages.length - 1];
+    return lastPage.pagination;
+  }, [data?.pages]);
+
+  const hasMore = hasNextPage || false;
+  const isLoadingMore = isFetchingNextPage;
+
+  const handleLoadMore = () => {
+    if (hasMore && !isLoadingMore) {
+      fetchNextPage();
+    }
+  };
+
   const queryClient = useQueryClient();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
@@ -53,6 +111,8 @@ export default function ProductsManagement() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["brand-products", brandId] });
       queryClient.invalidateQueries({ queryKey: ["products"] });
+      queryClient.invalidateQueries({ queryKey: ["my-products"] });
+      queryClient.invalidateQueries({ queryKey: ["my-products", "paginated"] });
       toast.success("Product created successfully!");
       setIsModalOpen(false);
       setEditingProduct(null);
@@ -73,6 +133,8 @@ export default function ProductsManagement() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["brand-products", brandId] });
       queryClient.invalidateQueries({ queryKey: ["products"] });
+      queryClient.invalidateQueries({ queryKey: ["my-products"] });
+      queryClient.invalidateQueries({ queryKey: ["my-products", "paginated"] });
       toast.success("Product updated successfully!");
       setIsModalOpen(false);
       setEditingProduct(null);
@@ -93,6 +155,8 @@ export default function ProductsManagement() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["brand-products", brandId] });
       queryClient.invalidateQueries({ queryKey: ["products"] });
+      queryClient.invalidateQueries({ queryKey: ["my-products"] });
+      queryClient.invalidateQueries({ queryKey: ["my-products", "paginated"] });
       toast.success("Product deleted successfully!");
       setDeletingProductId(null);
     },
@@ -169,6 +233,28 @@ export default function ProductsManagement() {
           </Button>
         </div>
 
+        {/* Results count */}
+        {!error && (
+          <p className="text-sm text-muted-foreground mb-6">
+            {pagination.total > 0 ? pagination.total : allProducts.length} products
+          </p>
+        )}
+
+        {/* Error state */}
+        {error && !isLoading && (
+          <div className="text-center py-12">
+            <p className="text-destructive mb-4">
+              Error loading products: {error instanceof Error ? error.message : 'Unknown error'}
+            </p>
+            <Button 
+              variant="outline" 
+              onClick={() => window.location.reload()}
+            >
+              Retry
+            </Button>
+          </div>
+        )}
+
         {isLoading ? (
           <div className="flex items-center justify-center min-h-[400px]">
             <div className="text-center">
@@ -176,7 +262,7 @@ export default function ProductsManagement() {
               <p className="text-muted-foreground">Loading products...</p>
             </div>
           </div>
-        ) : products.length === 0 ? (
+        ) : error ? null : allProducts.length === 0 ? (
           <div className="glass rounded-3xl p-12 text-center">
             <Package className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
             <h2 className="text-2xl font-display font-bold text-foreground mb-2">
@@ -197,80 +283,119 @@ export default function ProductsManagement() {
             </Button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {products.map((product) => (
-              <Card key={product._id || product.id} className="overflow-hidden">
-                <div className="aspect-video bg-muted relative">
-                  {product.images && product.images.length > 0 ? (
-                    <img
-                      src={product.images[0]}
-                      alt={product.name}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center">
-                      <Package className="h-12 w-12 text-muted-foreground" />
-                    </div>
-                  )}
-                </div>
-                <CardContent className="p-4">
-                  <div className="flex items-start justify-between mb-2">
-                    <h3 className="font-semibold text-lg text-foreground line-clamp-2">
-                      {product.name}
-                    </h3>
-                  </div>
-                  {product.description && (
-                    <ul className="text-sm text-muted-foreground mb-3 list-disc list-inside space-y-0.5 line-clamp-2">
-                      {product.description
-                        .split('\n')
-                        .filter(line => line.trim())
-                        .map((line, index) => (
-                          <li key={index} className="text-left">
-                            {line.trim()}
-                          </li>
-                        ))}
-                    </ul>
-                  )}
-                  <div className="flex items-center justify-between mb-4">
-                    {product.price !== null && product.price !== undefined ? (
-                      <Badge variant="secondary" className="text-sm">
-                        {product.price.toFixed(2)} TND
-                      </Badge>
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {allProducts.map((product) => (
+                <Card key={product._id || product.id} className="overflow-hidden">
+                  <div className="aspect-video bg-muted relative">
+                    {product.images && product.images.length > 0 ? (
+                      <img
+                        src={product.images[0]}
+                        alt={product.name}
+                        className="w-full h-full object-cover"
+                      />
                     ) : (
-                      <Badge variant="outline" className="text-sm">
-                        Price on request
-                      </Badge>
-                    )}
-                    {product.images && product.images.length > 1 && (
-                      <span className="text-xs text-muted-foreground">
-                        {product.images.length} images
-                      </span>
+                      <div className="w-full h-full flex items-center justify-center">
+                        <Package className="h-12 w-12 text-muted-foreground" />
+                      </div>
                     )}
                   </div>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="flex-1"
-                      onClick={() => handleEdit(product)}
-                    >
-                      <Edit className="h-4 w-4 mr-2" />
-                      Edit
-                    </Button>
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      className="flex-1"
-                      onClick={() => handleDelete(product._id || product.id)}
-                    >
-                      <Trash2 className="h-4 w-4 mr-2" />
-                      Delete
-                    </Button>
+                  <CardContent className="p-4">
+                    <div className="flex items-start justify-between mb-2">
+                      <h3 className="font-semibold text-lg text-foreground line-clamp-2">
+                        {product.name}
+                      </h3>
+                    </div>
+                    {product.description && (
+                      <ul className="text-sm text-muted-foreground mb-3 list-disc list-inside space-y-0.5 line-clamp-2">
+                        {product.description
+                          .split('\n')
+                          .filter(line => line.trim())
+                          .map((line, index) => (
+                            <li key={index} className="text-left">
+                              {line.trim()}
+                            </li>
+                          ))}
+                      </ul>
+                    )}
+                    <div className="flex items-center justify-between mb-4">
+                      {product.price !== null && product.price !== undefined ? (
+                        <Badge variant="secondary" className="text-sm">
+                          {product.price.toFixed(2)} TND
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline" className="text-sm">
+                          Price on request
+                        </Badge>
+                      )}
+                      {product.images && product.images.length > 1 && (
+                        <span className="text-xs text-muted-foreground">
+                          {product.images.length} images
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex-1"
+                        onClick={() => handleEdit(product)}
+                      >
+                        <Edit className="h-4 w-4 mr-2" />
+                        Edit
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        className="flex-1"
+                        onClick={() => handleDelete(product._id || product.id)}
+                      >
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Delete
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+
+            {/* Load More Button with Skeleton */}
+            {!isLoading && allProducts.length > 0 && hasMore && (
+              <div className="mt-8">
+                <div className="flex justify-center mb-4">
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    onClick={handleLoadMore}
+                    className="min-w-[200px]"
+                    disabled={isLoadingMore}
+                  >
+                    {isLoadingMore ? "Loading..." : "Load More"}
+                  </Button>
+                </div>
+                {/* Show skeleton loaders while loading more items */}
+                {isLoadingMore && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {Array.from({ length: ITEMS_PER_LOAD }).map((_, i) => (
+                      <Card key={`loading-more-${i}`} className="overflow-hidden">
+                        <div className="aspect-video bg-muted relative">
+                          <Skeleton className="w-full h-full" />
+                        </div>
+                        <CardContent className="p-4">
+                          <Skeleton className="h-6 w-3/4 mb-2" />
+                          <Skeleton className="h-4 w-1/2 mb-4" />
+                          <div className="flex gap-2">
+                            <Skeleton className="h-9 flex-1" />
+                            <Skeleton className="h-9 flex-1" />
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
                   </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+                )}
+              </div>
+            )}
+          </>
         )}
 
         {/* Product Management Modal */}

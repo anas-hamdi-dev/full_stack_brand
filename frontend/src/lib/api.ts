@@ -228,19 +228,23 @@ export const authApi = {
 
 // Brands API
 export const brandsApi = {
-  getAll: (params?: { featured?: boolean; search?: string; limit?: number }) => {
+  getAll: (params?: { featured?: boolean; search?: string; limit?: number; page?: number }) => {
     // Convert featured boolean to string 'true'/'false' to match backend query parameter format
     const queryParams = params ? {
       ...params,
       featured: params.featured !== undefined ? String(params.featured) : undefined,
     } : undefined;
-    return apiClient.get<{ data: unknown[] }>('/brands', queryParams);
+    // Return the full response to preserve pagination metadata
+    return apiClient.get<{ data: unknown[]; pagination?: { page: number; limit: number; total: number; hasMore: boolean } }>('/brands', queryParams);
   },
   getFeatured: () => apiClient.get<{ data: unknown[] }>('/brands/featured'),
   getById: (id: string) => apiClient.get<{ data: unknown }>(`/brands/${id}`),
   getMyBrand: () => apiClient.get<{ data: unknown }>('/brands/me'),
   getProducts: (brandId: string) => apiClient.get<{ data: unknown[] }>(`/brands/${brandId}/products`),
-  getMyProducts: () => apiClient.get<{ data: unknown[] }>('/brands/me/products'),
+  getMyProducts: (params?: { limit?: number; page?: number }) => {
+    // Return the full response to preserve pagination metadata
+    return apiClient.get<{ data: unknown[]; pagination?: { page: number; limit: number; total: number; hasMore: boolean } }>('/brands/me/products', params);
+  },
   create: (data: unknown) => apiClient.post<{ data: unknown }>('/brands', data),
   update: (id: string, data: unknown) => apiClient.patch<{ data: unknown }>(`/brands/${id}`, data),
 };

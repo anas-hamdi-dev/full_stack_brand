@@ -7,7 +7,12 @@ const { isBrandOwner, isBrandOwnerApproved, checkBrandOwnership } = require('../
 // GET /api/brands
 router.get('/', async (req, res) => {
   try {
-    const { featured, search, limit } = req.query;
+    const { featured, search, page, limit } = req.query;
+    
+    // Parse pagination parameters
+    const pageNum = Math.max(1, parseInt(page) || 1);
+    const limitNum = Math.max(1, Math.min(100, parseInt(limit) || 12)); // Default 12, max 100
+    const skip = (pageNum - 1) * limitNum;
     
     // Build query - only show approved brands
     const query = { status: 'approved' };
@@ -19,13 +24,27 @@ router.get('/', async (req, res) => {
       query.name = { $regex: search, $options: 'i' };
     }
 
-    const limitNum = parseInt(limit) || 50; // MVP: simple limit, no pagination
+    // Execute query with pagination and stable sort
+    const [brands, total] = await Promise.all([
+      Brand.find(query)
+        .sort({ createdAt: -1, _id: -1 }) // Stable sort: createdAt first, then _id
+        .skip(skip)
+        .limit(limitNum),
+      Brand.countDocuments(query)
+    ]);
 
-    const brands = await Brand.find(query)
-      .sort({ createdAt: -1 })
-      .limit(limitNum);
+    // Calculate pagination metadata
+    const hasMore = skip + brands.length < total;
 
-    res.json({ data: brands });
+    res.json({ 
+      data: brands,
+      pagination: {
+        page: pageNum,
+        limit: limitNum,
+        total,
+        hasMore
+      }
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -75,12 +94,43 @@ router.get('/me/products', authenticate, isBrandOwner, async (req, res) => {
     const user = await User.findById(req.userId);
     
     if (!user || !user.brand_id) {
-      return res.json({ data: [] });
+      return res.json({ 
+        data: [],
+        pagination: {
+          page: 1,
+          limit: 12,
+          total: 0,
+          hasMore: false
+        }
+      });
     }
     
-    const products = await Product.find({ brand_id: user.brand_id })
-      .sort({ createdAt: -1 });
-    res.json({ data: products });
+    // Parse pagination parameters
+    const pageNum = Math.max(1, parseInt(req.query.page) || 1);
+    const limitNum = Math.max(1, Math.min(100, parseInt(req.query.limit) || 12)); // Default 12, max 100
+    const skip = (pageNum - 1) * limitNum;
+    
+    // Execute query with pagination and stable sort
+    const [products, total] = await Promise.all([
+      Product.find({ brand_id: user.brand_id })
+        .sort({ createdAt: -1, _id: -1 }) // Stable sort: createdAt first, then _id
+        .skip(skip)
+        .limit(limitNum),
+      Product.countDocuments({ brand_id: user.brand_id })
+    ]);
+
+    // Calculate pagination metadata
+    const hasMore = skip + products.length < total;
+
+    res.json({ 
+      data: products,
+      pagination: {
+        page: pageNum,
+        limit: limitNum,
+        total,
+        hasMore
+      }
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
