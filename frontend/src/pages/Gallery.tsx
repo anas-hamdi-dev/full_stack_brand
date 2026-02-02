@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { Helmet } from "react-helmet";
 import Footer from "@/components/Footer";
-import { useProducts } from "@/hooks/useProducts";
+import { usePaginatedProducts, Product } from "@/hooks/useProducts";
 import ProductCard from "@/components/ProductCard";
 import { Input } from "@/components/ui/input";
 import { Search, Filter } from "lucide-react";
@@ -10,77 +10,89 @@ import { Skeleton } from "@/components/ui/skeleton";
 import BackButton from "@/components/BackButton";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import ComingSoon from "@/components/ComingSoon";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+
 
 const ITEMS_PER_LOAD = 12;
 
 const Gallery = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("men");
-  const [itemsToShow, setItemsToShow] = useState(ITEMS_PER_LOAD);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
 
-  const { data, isLoading } = useProducts({
+  // Use paginated products hook
+  // Query key includes search, so it automatically resets when search changes
+  const {
+    data,
+    isLoading,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    error,
+  } = usePaginatedProducts({
     search: searchQuery.trim() || undefined,
+    limit: ITEMS_PER_LOAD,
   });
 
-  const products = useMemo(() => data?.products || [], [data?.products]);
-
-  // Filter products based on search query (client-side filtering for better UX)
-  // All products are shown under "men" category
-  const filteredProducts = useMemo(() => {
-    if (!products || selectedCategory !== "men") return [];
-    
-    let filtered = products;
-    
-    // Apply search filter
-    if (searchQuery.trim()) {
-    const query = searchQuery.toLowerCase().trim();
-      filtered = filtered.filter((product) => {
-      const nameMatch = product.name.toLowerCase().includes(query);
-      const descriptionMatch = product.description?.toLowerCase().includes(query);
-      const brandMatch = product.brand?.name.toLowerCase().includes(query);
-      return nameMatch || descriptionMatch || brandMatch;
-    });
+  // Accumulate all products from all pages, preventing duplicates
+  const allProducts = useMemo(() => {
+    if (!data?.pages || !Array.isArray(data.pages) || data.pages.length === 0) {
+      return [];
     }
     
-    return filtered;
-  }, [products, searchQuery, selectedCategory]);
+    const productMap = new Map<string, Product>();
+    
+    // Collect all products from all pages, using _id as unique key
+    data.pages.forEach((page) => {
+      if (page && page.products && Array.isArray(page.products)) {
+        page.products.forEach((product) => {
+          if (product && typeof product === 'object') {
+            const productId = product._id || product.id;
+            if (productId && typeof productId === 'string' && !productMap.has(productId)) {
+              productMap.set(productId, product);
+            }
+          }
+        });
+      }
+    });
+    
+    return Array.from(productMap.values());
+  }, [data?.pages]);
 
-  // Get products to display
-  const displayedProducts = filteredProducts.slice(0, itemsToShow);
-  const hasMore = filteredProducts.length > itemsToShow;
+  // Filter products based on category (only "men" shows products currently)
+  const filteredProducts = useMemo(() => {
+    if (selectedCategory !== "men") return [];
+    return allProducts;
+  }, [allProducts, selectedCategory]);
 
-  // Reset items to show when search or category changes
+  // Get pagination metadata from the last page
+  const pagination = useMemo(() => {
+    if (!data?.pages || data.pages.length === 0) {
+      return { total: 0, hasMore: false };
+    }
+    const lastPage = data.pages[data.pages.length - 1];
+    return lastPage.pagination;
+  }, [data?.pages]);
+
+  const hasMore = hasNextPage || false;
+  const isLoadingMore = isFetchingNextPage;
+
+  // Reset pagination when search or category changes
   const handleSearchChange = (value: string) => {
     setSearchQuery(value);
-    setItemsToShow(ITEMS_PER_LOAD);
   };
 
   const handleCategoryChange = (value: string) => {
     setSelectedCategory(value);
-    setItemsToShow(ITEMS_PER_LOAD);
     setSearchQuery(""); // Clear search when switching categories
   };
 
   const clearFilters = () => {
     setSearchQuery("");
-    setItemsToShow(ITEMS_PER_LOAD);
   };
 
   const handleLoadMore = () => {
-    setIsLoadingMore(true);
-    // Simulate loading delay for better UX
-    setTimeout(() => {
-    setItemsToShow(prev => prev + ITEMS_PER_LOAD);
-      setIsLoadingMore(false);
-    }, 300);
+    if (hasMore && !isLoadingMore) {
+      fetchNextPage();
+    }
   };
 
   return (
@@ -92,13 +104,13 @@ const Gallery = () => {
         <link rel="icon" type="image/png" sizes="16x16" href="/favicon.png" />
         <link rel="apple-touch-icon" sizes="180x180" href="/favicon.png" />
       </Helmet>
-      
-      <main className="pb-16">
-        <div className="container mx-auto px-4">
-            {/* Header */}
-          <div className="mb-12">
-            <div className="mb-6">
-              <BackButton to="/" label="Back to Home" />
+        
+        <main className="pb-16">
+          <div className="container mx-auto px-4">
+              {/* Header */}
+            <div className="mb-12">
+              <div className="mb-6">
+                <BackButton to="/" label="Back to Home" />
             </div>
             <h1 className="font-display text-4xl md:text-5xl font-bold text-foreground mb-4">
                <span className="text-gradient-primary">Gallery</span>
@@ -150,9 +162,26 @@ const Gallery = () => {
               </div>
 
               {/* Results count */}
-              <p className="text-sm text-muted-foreground mb-6">
-                {filteredProducts?.length || 0} products found
-              </p>
+              {!error && (
+                <p className="text-sm text-muted-foreground mb-6">
+                  {pagination.total > 0 ? pagination.total : filteredProducts.length} products found
+                </p>
+              )}
+
+              {/* Error state */}
+              {error && !isLoading && (
+                <div className="col-span-full text-center py-12">
+                  <p className="text-destructive mb-4">
+                    Error loading products: {error instanceof Error ? error.message : 'Unknown error'}
+                  </p>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => window.location.reload()}
+                  >
+                    Retry
+                  </Button>
+                </div>
+              )}
 
               {/* Gallery Grid */}
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
@@ -174,10 +203,10 @@ const Gallery = () => {
                       </div>
                     </div>
                   ))
-            ) : displayedProducts.length > 0 ? (
-                  displayedProducts.map((product) => (
+            ) : error ? null : filteredProducts.length > 0 ? (
+                  filteredProducts.map((product) => (
                     <ProductCard
-                      key={product.id}
+                      key={product.id || product._id}
                       id={product.id || product._id}
                       name={product.name}
                       description={product.description || ""}
@@ -204,7 +233,7 @@ const Gallery = () => {
               </div>
 
               {/* Load More Button with Skeleton */}
-              {!isLoading && displayedProducts.length > 0 && hasMore && (
+              {!isLoading && filteredProducts.length > 0 && hasMore && (
                 <div className="mt-8">
                   <div className="flex justify-center mb-4">
                     <Button
@@ -220,7 +249,7 @@ const Gallery = () => {
                   {/* Show skeleton loaders while loading more items */}
                   {isLoadingMore && (
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-                      {Array.from({ length: Math.min(ITEMS_PER_LOAD, filteredProducts.length - displayedProducts.length) }).map((_, i) => (
+                      {Array.from({ length: ITEMS_PER_LOAD }).map((_, i) => (
                         <div key={`loading-more-${i}`} className="group glass rounded-3xl overflow-hidden">
                           {/* Image Skeleton */}
                           <div className="aspect-square overflow-hidden relative">

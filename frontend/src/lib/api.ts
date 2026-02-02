@@ -104,6 +104,11 @@ class ApiClient {
 
       // Handle both { data: {...} } and direct response formats
       // Backend responses typically wrap data in { data: ... } but some endpoints return direct objects
+      // For paginated responses, preserve the full structure including pagination
+      if (data.pagination && data.data) {
+        // This is a paginated response, return the full object
+        return { data: data as T };
+      }
       return { data: (data.data || data) as T };
     } catch (error) {
       // Handle network errors, CORS errors, etc.
@@ -242,8 +247,10 @@ export const brandsApi = {
 
 // Products API
 export const productsApi = {
-  getAll: (params?: { brand_id?: string; search?: string; limit?: number }) =>
-    apiClient.get<{ data: unknown[] }>('/products', params),
+  getAll: (params?: { brand_id?: string; search?: string; limit?: number; page?: number }) => {
+    // Return the full response to preserve pagination metadata
+    return apiClient.get<{ data: unknown[]; pagination?: { page: number; limit: number; total: number; hasMore: boolean } }>('/products', params);
+  },
   getById: (id: string) => apiClient.get<{ data: unknown }>(`/products/${id}`),
   create: (data: { name: string; description?: string; price?: number; images: string[] }) => 
     apiClient.post<{ data: unknown }>('/products', data),
