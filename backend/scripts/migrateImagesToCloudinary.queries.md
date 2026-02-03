@@ -279,3 +279,4 @@ print('  With string logo: ' + db.brands.countDocuments({ "logo_url": { $type: "
 print('  With object logo: ' + db.brands.countDocuments({ "logo_url": { $type: "object", publicId: { $exists: true } } }));
 ```
 
+
