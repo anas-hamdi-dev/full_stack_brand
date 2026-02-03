@@ -3,6 +3,8 @@ const router = express.Router();
 const Brand = require('../models/Brand');
 const authenticate = require('../middleware/auth');
 const { isBrandOwner, isBrandOwnerApproved, checkBrandOwnership } = require('../middleware/authorization');
+const { uploadSingleImage } = require('../middleware/upload');
+const { deleteImage } = require('../utils/cloudinary');
 
 // GET /api/brands
 router.get('/', async (req, res) => {
@@ -179,7 +181,7 @@ router.get('/:brandId/products', async (req, res) => {
 });
 
 // POST /api/brands
-router.post('/', authenticate, isBrandOwner, async (req, res) => {
+router.post('/', authenticate, isBrandOwner, uploadSingleImage('brands', 'logo'), async (req, res) => {
   try {
     const User = require('../models/User');
     const user = await User.findById(req.userId);
@@ -196,7 +198,6 @@ router.post('/', authenticate, isBrandOwner, async (req, res) => {
     const {
       name,
       description,
-      logo_url,
       location,
       website,
       instagram,
@@ -209,6 +210,11 @@ router.post('/', authenticate, isBrandOwner, async (req, res) => {
       return res.status(400).json({ error: 'Brand name is required' });
     }
 
+    // Validate logo upload
+    if (!req.uploadedImage) {
+      return res.status(400).json({ error: 'Logo image is required' });
+    }
+
     // Preserve newlines in description - only set to null if empty or whitespace-only
     const descriptionValue = description && description.trim() ? description : null;
     
@@ -217,7 +223,7 @@ router.post('/', authenticate, isBrandOwner, async (req, res) => {
       name: name.trim(),
       ownerId: user._id,
       description: descriptionValue,
-      logo_url: logo_url || null,
+      logo_url: req.uploadedImage,
       location: location?.trim() || null,
       website: website?.trim() || null,
       instagram: instagram?.trim() || null,
@@ -242,12 +248,11 @@ router.post('/', authenticate, isBrandOwner, async (req, res) => {
 });
 
 // PATCH /api/brands/:id
-router.patch('/:id', authenticate, isBrandOwner, checkBrandOwnership, async (req, res) => {
+router.patch('/:id', authenticate, isBrandOwner, checkBrandOwnership, uploadSingleImage('brands', 'logo'), async (req, res) => {
   try {
     const {
       name,
       description,
-      logo_url,
       location,
       website,
       instagram,
@@ -263,7 +268,7 @@ router.patch('/:id', authenticate, isBrandOwner, checkBrandOwnership, async (req
       return res.status(403).json({ error: 'You do not have permission to change brand status' });
     }
 
-    // Get existing brand to preserve status
+    // Get existing brand to preserve status and delete old logo if needed
     const existingBrand = await Brand.findById(req.params.id);
     if (!existingBrand) {
       return res.status(404).json({ error: 'Brand not found' });
@@ -275,7 +280,16 @@ router.patch('/:id', authenticate, isBrandOwner, checkBrandOwnership, async (req
       // Preserve newlines in description - only set to null if empty or whitespace-only
       updateData.description = description && description.trim() ? description : null;
     }
-    if (logo_url !== undefined) updateData.logo_url = logo_url;
+    
+    // Handle logo upload if new one was uploaded
+    if (req.uploadedImage) {
+      // Delete old logo from Cloudinary
+      if (existingBrand.logo_url && existingBrand.logo_url.publicId) {
+        await deleteImage(existingBrand.logo_url.publicId);
+      }
+      updateData.logo_url = req.uploadedImage;
+    }
+    
     if (location !== undefined) updateData.location = location;
     if (website !== undefined) updateData.website = website;
     if (instagram !== undefined) updateData.instagram = instagram;

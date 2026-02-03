@@ -17,16 +17,24 @@ const brandSchema = new mongoose.Schema({
     // Don't trim to preserve newlines - we'll handle trimming in routes if needed
   },
   logo_url: {
-    type: String,
-    required: [true, 'Logo URL is required'],
-    trim: true,
-    validate: {
-      validator: function(v) {
-        // Allow data URLs (base64) or HTTP/HTTPS URLs
-        return /^https?:\/\/.+/.test(v) || /^data:image\/.+;base64,.+/.test(v);
+    type: {
+      publicId: {
+        type: String,
+        required: true
       },
-      message: 'Logo URL must be a valid HTTP/HTTPS URL or data URL'
-    }
+      imageUrl: {
+        type: String,
+        required: true,
+        validate: {
+          validator: function(v) {
+            return /^https?:\/\/.+/.test(v);
+          },
+          message: 'Logo URL must be a valid HTTP/HTTPS URL'
+        }
+      }
+    },
+    required: [true, 'Logo URL is required'],
+    _id: false // Disable _id for subdocuments
   },
   location: {
     type: String,

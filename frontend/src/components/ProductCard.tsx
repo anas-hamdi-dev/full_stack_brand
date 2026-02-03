@@ -35,24 +35,27 @@ const ProductCard = ({ id, name, description, imageUrl, price, brandName, brandL
             <img 
               src={imageUrl} 
               alt={name}
+              loading="lazy"
               className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+              style={{ aspectRatio: '1 / 1' }}
             />
           </Link>
           
-          {/* Top Right Corner Elements */}
-          <div className="absolute top-3 left-3 z-10 flex items-center gap-2">
-            {/* Brand Avatar */}
-            {brandLogo && (
+          {/* Top Left Corner - Brand Avatar */}
+          {brandLogo && (
+            <div className="absolute top-3 left-3 z-10">
               <Avatar className="h-10 w-10 border-2 border-primary shadow-sm bg-background/90 backdrop-blur-sm">
                 <AvatarImage src={brandLogo} alt={brandName || "Brand"} />
                 <AvatarFallback className="text-xs">
                   {brandName ? brandName.charAt(0).toUpperCase() : "B"}
                 </AvatarFallback>
               </Avatar>
-            )}
-            
-            {/* Favorite Button */}
-            {isClient && (
+            </div>
+          )}
+          
+          {/* Top Right Corner - Favorite Button */}
+          {isClient && (
+            <div className="absolute top-3 right-3 z-10">
               <Button
                 variant="ghost"
                 size="icon"
@@ -65,8 +68,8 @@ const ProductCard = ({ id, name, description, imageUrl, price, brandName, brandL
                   }`} 
                 />
               </Button>
-            )}
-          </div>
+            </div>
+          )}
         </div>
       
         {/* Product Info */}

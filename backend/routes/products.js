@@ -4,6 +4,8 @@ const Product = require('../models/Product');
 const Brand = require('../models/Brand');
 const authenticate = require('../middleware/auth');
 const { isBrandOwner, isBrandOwnerApproved, checkProductOwnership } = require('../middleware/authorization');
+const { uploadMultipleImages } = require('../middleware/upload');
+const { deleteMultipleImages } = require('../utils/cloudinary');
 
 // GET /api/products
 router.get('/', async (req, res) => {
@@ -115,9 +117,9 @@ router.get('/:id', async (req, res) => {
 
 
 // POST /api/products
-router.post('/', authenticate, isBrandOwnerApproved, async (req, res) => {
+router.post('/', authenticate, isBrandOwnerApproved, uploadMultipleImages('products', 'images', 10), async (req, res) => {
   try {
-    const { name, description, price, images } = req.body;
+    const { name, description, price } = req.body;
 
     // Validate required fields
     if (!name || !name.trim()) {
@@ -135,17 +137,8 @@ router.post('/', authenticate, isBrandOwnerApproved, async (req, res) => {
     }
 
     // Validate images - at least one image is required
-    if (!images || !Array.isArray(images) || images.length === 0) {
+    if (!req.uploadedImages || req.uploadedImages.length === 0) {
       return res.status(400).json({ error: 'At least one image is required' });
-    }
-
-    // Validate image formats - only allow HTTP/HTTPS URLs or data URLs
-    const validImageRegex = /^(https?:\/\/.+|data:image\/(jpeg|jpg|png|webp);base64,.+)$/;
-    const invalidImages = images.filter(img => !validImageRegex.test(img));
-    if (invalidImages.length > 0) {
-      return res.status(400).json({ 
-        error: 'Invalid image format. Only JPG, PNG, and WebP formats are supported. Images must be valid URLs or base64 data URLs.' 
-      });
     }
 
     // Ensure user owns the brand
@@ -161,7 +154,7 @@ router.post('/', authenticate, isBrandOwnerApproved, async (req, res) => {
       description: descriptionValue,
       brand_id: req.user.brand_id,
       price: priceNum,
-      images
+      images: req.uploadedImages
     });
 
     await product.populate({
@@ -180,9 +173,15 @@ router.post('/', authenticate, isBrandOwnerApproved, async (req, res) => {
 });
 
 // PATCH /api/products/:id
-router.patch('/:id', authenticate, isBrandOwnerApproved, checkProductOwnership, async (req, res) => {
+router.patch('/:id', authenticate, isBrandOwnerApproved, checkProductOwnership, uploadMultipleImages('products', 'images', 10), async (req, res) => {
   try {
-    const { name, description, price, images } = req.body;
+    const { name, description, price } = req.body;
+
+    // Get existing product to delete old images if needed
+    const existingProduct = await Product.findById(req.params.id);
+    if (!existingProduct) {
+      return res.status(404).json({ error: 'Product not found' });
+    }
 
     const updateData = {};
     if (name !== undefined) {
@@ -212,22 +211,18 @@ router.patch('/:id', authenticate, isBrandOwnerApproved, checkProductOwnership, 
     }
     updateData.price = priceNum;
     
-    // Validate images if provided
-    if (images !== undefined) {
-      if (!Array.isArray(images) || images.length === 0) {
-        return res.status(400).json({ error: 'At least one image is required' });
+    // Handle images if new ones were uploaded
+    if (req.uploadedImages && req.uploadedImages.length > 0) {
+      // Delete old images from Cloudinary
+      if (existingProduct.images && existingProduct.images.length > 0) {
+        const oldPublicIds = existingProduct.images
+          .map(img => img.publicId)
+          .filter(id => id); // Filter out any null/undefined values
+        if (oldPublicIds.length > 0) {
+          await deleteMultipleImages(oldPublicIds);
+        }
       }
-      
-      // Validate image formats
-      const validImageRegex = /^(https?:\/\/.+|data:image\/(jpeg|jpg|png|webp);base64,.+)$/;
-      const invalidImages = images.filter(img => !validImageRegex.test(img));
-      if (invalidImages.length > 0) {
-        return res.status(400).json({ 
-          error: 'Invalid image format. Only JPG, PNG, and WebP formats are supported. Images must be valid URLs or base64 data URLs.' 
-        });
-      }
-      
-      updateData.images = images;
+      updateData.images = req.uploadedImages;
     }
 
     const product = await Product.findByIdAndUpdate(
@@ -263,6 +258,16 @@ router.delete('/:id', authenticate, isBrandOwnerApproved, checkProductOwnership,
 
     if (product.brand_id.toString() !== req.user.brand_id.toString()) {
       return res.status(403).json({ error: 'Access denied' });
+    }
+
+    // Delete images from Cloudinary
+    if (product.images && product.images.length > 0) {
+      const publicIds = product.images
+        .map(img => img.publicId)
+        .filter(id => id); // Filter out any null/undefined values
+      if (publicIds.length > 0) {
+        await deleteMultipleImages(publicIds);
+      }
     }
 
     // Delete associated favorites

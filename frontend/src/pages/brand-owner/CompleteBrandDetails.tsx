@@ -93,7 +93,8 @@ export default function CompleteBrandDetails() {
       });
       // Sync avatar preview
       if (existingBrand.logo_url) {
-        setAvatarPreview(existingBrand.logo_url);
+        const logoUrl = typeof existingBrand.logo_url === 'string' ? existingBrand.logo_url : existingBrand.logo_url.imageUrl;
+        setAvatarPreview(logoUrl);
       }
     }
   }, [existingBrand, form]);
@@ -134,43 +135,20 @@ export default function CompleteBrandDetails() {
   };
 
   const createOrUpdateBrand = useMutation({
-    mutationFn: async (data: BrandFormData) => {
+    mutationFn: async (formData: FormData) => {
       // If brand exists, update it; otherwise create new one
       if (brandId && existingBrand) {
         // Ensure brandId is a valid string before making the API call
         if (typeof brandId !== 'string') {
           throw new Error("Error: Invalid brand ID. Please sign in again.");
         }
-        // Format Instagram username - remove @ prefix if present
-        // Format phone number - add +216 prefix if phone is provided
-        const formattedData = {
-          ...data,
-          instagram: data.instagram?.trim() ? data.instagram.trim().replace(/^@+/, "") : "",
-          phone: data.phone?.trim() ? `+216${data.phone.trim()}` : "",
-        };
-        // Update existing brand - preserve existing status, don't send status field
-        const brandData = {
-          ...formattedData,
-        };
-        const response = await brandsApi.update(brandId, brandData);
+        const response = await brandsApi.update(brandId, formData);
         if (response.error) {
           throw new Error(response.error.message || "Failed to update brand");
         }
         return response.data;
       } else {
-        // Format Instagram username - remove @ prefix if present
-        // Format phone number - add +216 prefix if phone is provided
-        const formattedData = {
-          ...data,
-          instagram: data.instagram?.trim() ? data.instagram.trim().replace(/^@+/, "") : "",
-          phone: data.phone?.trim() ? `+216${data.phone.trim()}` : "",
-        };
-        // Create new brand - set status to approved (auto-approved)
-        const brandData = {
-          ...formattedData,
-          status: "approved" as const,
-        };
-        const response = await brandsApi.create(brandData);
+        const response = await brandsApi.create(formData);
         if (response.error) {
           throw new Error(response.error.message || "Failed to create brand");
         }
@@ -201,7 +179,48 @@ export default function CompleteBrandDetails() {
   });
 
   const onSubmit = (data: BrandFormData) => {
-    createOrUpdateBrand.mutate(data);
+    // Validate that logo is provided
+    if (!avatarFile && !existingBrand?.logo_url) {
+      toast.error("Brand avatar is required");
+      return;
+    }
+
+    // Create FormData
+    const formData = new FormData();
+    formData.append('name', data.name.trim());
+    if (data.description) {
+      formData.append('description', data.description);
+    }
+    if (data.location) {
+      formData.append('location', data.location.trim());
+    }
+    if (data.website) {
+      formData.append('website', data.website.trim());
+    }
+    if (data.instagram) {
+      const instagramUsername = data.instagram.trim().replace(/^@+/, "");
+      formData.append('instagram', instagramUsername);
+    }
+    if (data.facebook) {
+      formData.append('facebook', data.facebook.trim());
+    }
+    if (data.phone) {
+      const phoneValue = data.phone.trim();
+      const fullPhoneNumber = phoneValue ? `+216${phoneValue.replace(/\D/g, '')}` : "";
+      if (fullPhoneNumber) {
+        formData.append('phone', fullPhoneNumber);
+      }
+    }
+    if (data.email) {
+      formData.append('email', data.email.trim());
+    }
+    
+    // Only append logo file if a new one was selected
+    if (avatarFile) {
+      formData.append('logo', avatarFile);
+    }
+
+    createOrUpdateBrand.mutate(formData);
   };
 
   const nextStep = async () => {

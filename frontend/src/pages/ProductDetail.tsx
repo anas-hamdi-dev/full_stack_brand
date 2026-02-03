@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
   import { useParams, Link } from "react-router-dom";
 import { Helmet } from "react-helmet";
 import Footer from "@/components/Footer";
-import { useProduct } from "@/hooks/useProducts";
+import { useProduct, getAllImageUrls } from "@/hooks/useProducts";
 import BackButton from "@/components/BackButton";
 import { Button } from "@/components/ui/button";
 import {
@@ -93,10 +93,9 @@ const ProductDetail = () => {
       );
     }
 
-    const images =
-      product.images && product.images.length > 0
-        ? product.images
-        : ["https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800"];
+    const images = getAllImageUrls(product).length > 0
+      ? getAllImageUrls(product)
+      : ["https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800"];
     const hasMultipleImages = images.length > 1;
 
     return (
@@ -141,6 +140,7 @@ const ProductDetail = () => {
                                 resetTrigger={current}
                                 minZoom={1}
                                 maxZoom={2.5}
+                                loading="lazy"
                               />
                             </div>
                           </CarouselItem>
@@ -194,9 +194,10 @@ const ProductDetail = () => {
                   >
                     {product.brand.logo_url && (
                       <img
-                        src={product.brand.logo_url}
+                        src={typeof product.brand.logo_url === 'string' ? product.brand.logo_url : product.brand.logo_url.imageUrl}
                         alt={cleanBrandName(product.brand.name)}
                         className="w-9 h-9 md:w-10 md:h-10 rounded-lg object-cover"
+                        loading="lazy"
                       />
                     )}
                     <span className="text-sm md:text-base text-muted-foreground group-hover:text-primary transition-colors font-medium">

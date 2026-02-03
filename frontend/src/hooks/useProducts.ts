@@ -1,6 +1,11 @@
 import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
 import { productsApi } from "@/lib/api";
 
+export interface ProductImage {
+  publicId: string;
+  imageUrl: string;
+}
+
 export interface Product {
   _id: string;
   id?: string; // For backward compatibility
@@ -11,14 +16,35 @@ export interface Product {
     _id: string;
     id?: string;
     name: string;
-    logo_url?: string | null;
+    logo_url?: ProductImage | string | null; // Support both old (string) and new (ProductImage) formats
     website?: string | null;
   } | null;
   price?: number | null;
-  images: string[];
+  images: ProductImage[] | string[]; // Support both old (string[]) and new (ProductImage[]) formats
   purchaseLink?: string | null;
   createdAt?: string;
   created_at?: string; // For backward compatibility
+}
+
+// Utility function to extract image URL from ProductImage or string
+export function getImageUrl(image: ProductImage | string): string {
+  return typeof image === 'string' ? image : image.imageUrl;
+}
+
+// Utility function to get first image URL from product
+export function getFirstImageUrl(product: Product): string {
+  if (!product.images || product.images.length === 0) {
+    return "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400";
+  }
+  return getImageUrl(product.images[0]);
+}
+
+// Utility function to get all image URLs from product
+export function getAllImageUrls(product: Product): string[] {
+  if (!product.images || product.images.length === 0) {
+    return [];
+  }
+  return product.images.map(getImageUrl);
 }
 
 export interface PaginationMetadata {
@@ -41,7 +67,7 @@ const normalizeProduct = (product: Record<string, unknown>): Product => {
         _id: (brandObj._id as string) || (brandObj.id as string) || '',
         id: (brandObj._id as string) || (brandObj.id as string) || '',
         name: (brandObj.name as string) || '',
-        logo_url: (brandObj.logo_url as string) || null,
+        logo_url: (brandObj.logo_url as ProductImage | string) || null,
         website: (brandObj.website as string) || null,
       };
     }
@@ -56,7 +82,7 @@ const normalizeProduct = (product: Record<string, unknown>): Product => {
     brand_id: (product.brand_id as string) || null,
     brand,
     price: (product.price as number) || null,
-    images: (product.images as string[]) || [],
+    images: (product.images as ProductImage[] | string[]) || [],
     purchaseLink: (product.purchaseLink as string) || null,
     createdAt: (product.createdAt as string) || undefined,
     created_at: (product.createdAt as string) || (product.created_at as string) || undefined,

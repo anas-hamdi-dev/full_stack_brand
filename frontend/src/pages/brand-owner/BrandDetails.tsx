@@ -124,7 +124,8 @@
         setInitialFormValues({ ...formValues });
         
         if (brand.logo_url) {
-          setAvatarPreview(brand.logo_url);
+          const logoUrl = typeof brand.logo_url === 'string' ? brand.logo_url : brand.logo_url.imageUrl;
+          setAvatarPreview(logoUrl);
         }
       }
     }, [brand, form]);
@@ -163,24 +164,20 @@
     };
 
     const updateBrand = useMutation({
-      mutationFn: async (data: BrandFormData) => {
+      mutationFn: async (formData: FormData) => {
         // Ensure brandId is a valid string
         if (!brandId || typeof brandId !== 'string') {
           throw new Error("No brand found. Please sign in again.");
         }
         
         // Validate required fields
-        if (!data.name || !data.name.trim()) {
+        const name = formData.get('name') as string;
+        if (!name || !name.trim()) {
           throw new Error("Brand name is required");
         }
-        
-        // Prepare update payload - don't change status, preserve existing status
-        const updateData = {
-          ...data,
-        };
 
         try {
-          const response = await brandsApi.update(brandId, updateData);
+          const response = await brandsApi.update(brandId, formData);
           if (response.error) {
             // Provide more specific error messages
             const errorMessage = response.error.message || response.error.code || "Update failed";
@@ -220,10 +217,8 @@
         return;
       }
 
-      // Ensure logo_url is preserved if user didn't change it
-      const logoUrl = data.logo_url?.trim() || brand?.logo_url || "";
-      
-      if (!logoUrl) {
+      // Validate that logo is provided (either existing or new file)
+      if (!avatarFile && !brand?.logo_url) {
         toast.error("Avatar is required");
         form.setError("logo_url", { 
           type: "manual", 
@@ -250,17 +245,35 @@
       const instagramUsername = data.instagram?.trim() || "";
       const formattedInstagram = instagramUsername ? instagramUsername.replace(/^@+/, "") : "";
 
-      const submitData: BrandFormData = {
-        name: data.name.trim(),
-        description: data.description || "",
-        logo_url: logoUrl,
-        location: data.location?.trim() || "",
-        website: data.website?.trim() || "",
-        instagram: formattedInstagram || "",
-        facebook: data.facebook?.trim() || "",
-        phone: fullPhoneNumber || "",
-        email: data.email?.trim() || "",
-      };
+      // Create FormData
+      const submitData = new FormData();
+      submitData.append('name', data.name.trim());
+      if (data.description) {
+        submitData.append('description', data.description);
+      }
+      if (data.location) {
+        submitData.append('location', data.location.trim());
+      }
+      if (data.website) {
+        submitData.append('website', data.website.trim());
+      }
+      if (formattedInstagram) {
+        submitData.append('instagram', formattedInstagram);
+      }
+      if (data.facebook) {
+        submitData.append('facebook', data.facebook.trim());
+      }
+      if (fullPhoneNumber) {
+        submitData.append('phone', fullPhoneNumber);
+      }
+      if (data.email) {
+        submitData.append('email', data.email.trim());
+      }
+      
+      // Only append logo file if a new one was selected
+      if (avatarFile) {
+        submitData.append('logo', avatarFile);
+      }
 
       updateBrand.mutate(submitData);
     };

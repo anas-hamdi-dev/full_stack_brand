@@ -2,6 +2,7 @@ import { useParams, Link } from "react-router-dom";
 import { Helmet } from "react-helmet";
 import Footer from "@/components/Footer";
 import { useBrand, useBrandProducts } from "@/hooks/useBrands";
+import { getFirstImageUrl } from "@/hooks/useProducts";
 import { MapPin, Globe, Mail, Phone, Instagram, Facebook, CheckCircle2, Crown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -70,7 +71,7 @@ const BrandDetail = () => {
                 <Avatar className="w-32 h-32 md:w-40 md:h-40 border-2 border-primary/30 shadow-lg bg-gradient-to-br from-primary/20 to-secondary/20 backdrop-blur-sm">
                   {brand.logo_url ? (
                     <AvatarImage
-                      src={brand.logo_url}
+                      src={typeof brand.logo_url === 'string' ? brand.logo_url : brand.logo_url.imageUrl}
                       alt={`${brand.name} logo`}
                       className="object-cover"
                     />
@@ -195,10 +196,10 @@ const BrandDetail = () => {
                     id={product.id || product._id}
                     name={product.name}
                     description={product.description || ""}
-                    imageUrl={product.images?.[0] || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400"}
+                    imageUrl={getFirstImageUrl(product)}
                     price={product.price}
                     brandName={brand?.name}
-                    brandLogo={brand?.logo_url}
+                    brandLogo={typeof brand?.logo_url === 'string' ? brand.logo_url : brand?.logo_url?.imageUrl}
                   />
                 ))}
               </div>

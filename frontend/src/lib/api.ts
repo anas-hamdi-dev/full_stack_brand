@@ -42,8 +42,10 @@ class ApiClient {
     const url = `${this.baseURL}${endpoint}`;
     const token = this.getToken();
 
+    // Don't set Content-Type for FormData - browser will set it with boundary
+    const isFormData = options.body instanceof FormData;
     const headers: HeadersInit = {
-      'Content-Type': 'application/json',
+      ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
       ...options.headers,
     };
 
@@ -146,17 +148,17 @@ class ApiClient {
     return this.request<T>(url, { method: 'GET' });
   }
 
-  async post<T>(endpoint: string, body?: unknown): Promise<ApiResponse<T>> {
+  async post<T>(endpoint: string, body?: unknown | FormData): Promise<ApiResponse<T>> {
     return this.request<T>(endpoint, {
       method: 'POST',
-      body: body ? JSON.stringify(body) : undefined,
+      body: body instanceof FormData ? body : (body ? JSON.stringify(body) : undefined),
     });
   }
 
-  async patch<T>(endpoint: string, body?: unknown): Promise<ApiResponse<T>> {
+  async patch<T>(endpoint: string, body?: unknown | FormData): Promise<ApiResponse<T>> {
     return this.request<T>(endpoint, {
       method: 'PATCH',
-      body: body ? JSON.stringify(body) : undefined,
+      body: body instanceof FormData ? body : (body ? JSON.stringify(body) : undefined),
     });
   }
 
@@ -245,8 +247,8 @@ export const brandsApi = {
     // Return the full response to preserve pagination metadata
     return apiClient.get<{ data: unknown[]; pagination?: { page: number; limit: number; total: number; hasMore: boolean } }>('/brands/me/products', params);
   },
-  create: (data: unknown) => apiClient.post<{ data: unknown }>('/brands', data),
-  update: (id: string, data: unknown) => apiClient.patch<{ data: unknown }>(`/brands/${id}`, data),
+  create: (data: FormData) => apiClient.post<{ data: unknown }>('/brands', data),
+  update: (id: string, data: FormData) => apiClient.patch<{ data: unknown }>(`/brands/${id}`, data),
 };
 
 // Products API
@@ -256,9 +258,9 @@ export const productsApi = {
     return apiClient.get<{ data: unknown[]; pagination?: { page: number; limit: number; total: number; hasMore: boolean } }>('/products', params);
   },
   getById: (id: string) => apiClient.get<{ data: unknown }>(`/products/${id}`),
-  create: (data: { name: string; description?: string; price?: number; images: string[] }) => 
+  create: (data: FormData) => 
     apiClient.post<{ data: unknown }>('/products', data),
-  update: (id: string, data: { name?: string; description?: string; price?: number; images?: string[] }) => 
+  update: (id: string, data: FormData) => 
     apiClient.patch<{ data: unknown }>(`/products/${id}`, data),
   delete: (id: string) => apiClient.delete(`/products/${id}`),
 };

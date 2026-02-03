@@ -3,6 +3,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePaginatedMyProducts } from "@/hooks/useBrands";
+import { getFirstImageUrl, getAllImageUrls } from "@/hooks/useProducts";
 import { productsApi } from "@/lib/api";
 import { toast } from "sonner";
 import { Plus, Edit, Trash2, Package, Loader2 } from "lucide-react";
@@ -101,7 +102,7 @@ export default function ProductsManagement() {
   const [deletingProductId, setDeletingProductId] = useState<string | null>(null);
 
   const createProduct = useMutation({
-    mutationFn: async (data: { name: string; description?: string | null; price?: number | null; images: string[]; purchaseLink?: string | null }) => {
+    mutationFn: async (data: FormData) => {
       const response = await productsApi.create(data);
       if (response.error) {
         throw new Error(response.error.message || "Failed to create product");
@@ -123,7 +124,7 @@ export default function ProductsManagement() {
   });
 
   const updateProduct = useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: { name?: string; description?: string | null; price: number; images?: string[]; purchaseLink?: string | null } }) => {
+    mutationFn: async ({ id, data }: { id: string; data: FormData }) => {
       const response = await productsApi.update(id, data);
       if (response.error) {
         throw new Error(response.error.message || "Failed to update product");
@@ -165,11 +166,11 @@ export default function ProductsManagement() {
     },
   });
 
-  const handleSubmit = (productData: { name: string; description?: string | null; price: number; images: string[]; purchaseLink?: string | null }) => {
+  const handleSubmit = (formData: FormData) => {
     if (editingProduct) {
-      updateProduct.mutate({ id: editingProduct._id, data: productData });
+      updateProduct.mutate({ id: editingProduct._id, data: formData });
     } else {
-      createProduct.mutate(productData);
+      createProduct.mutate(formData);
     }
   };
 
@@ -288,11 +289,13 @@ export default function ProductsManagement() {
               {allProducts.map((product) => (
                 <Card key={product._id || product.id} className="overflow-hidden">
                   <div className="aspect-video bg-muted relative">
-                    {product.images && product.images.length > 0 ? (
+                    {getAllImageUrls(product).length > 0 ? (
                       <img
-                        src={product.images[0]}
+                        src={getFirstImageUrl(product)}
                         alt={product.name}
+                        loading="lazy"
                         className="w-full h-full object-cover"
+                        style={{ aspectRatio: '16 / 9' }}
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
@@ -328,9 +331,9 @@ export default function ProductsManagement() {
                           Price on request
                         </Badge>
                       )}
-                      {product.images && product.images.length > 1 && (
+                      {getAllImageUrls(product).length > 1 && (
                         <span className="text-xs text-muted-foreground">
-                          {product.images.length} images
+                          {getAllImageUrls(product).length} images
                         </span>
                       )}
                     </div>

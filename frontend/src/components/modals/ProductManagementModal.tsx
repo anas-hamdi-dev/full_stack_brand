@@ -13,11 +13,16 @@
   import { Loader2, Upload, X } from "lucide-react";
   import { toast } from "sonner";
 
-  interface ProductData {
+  interface ProductImage {
+  publicId: string;
+  imageUrl: string;
+}
+
+interface ProductData {
     name: string;
     description?: string | null;
     price: number; // Required field
-    images: string[]; 
+    images: ProductImage[] | string[]; // Support both old (string[]) and new (ProductImage[]) formats
     purchaseLink?: string | null;
     brand_id?: string | null;
     id?: string;
@@ -27,7 +32,7 @@
   interface ProductManagementModalProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
-    onSubmit: (productData: Omit<ProductData, "id" | "created_at" | "brand_id">) => void;
+    onSubmit: (formData: FormData) => void;
     editingProduct?: ProductData | null;
     isLoading?: boolean;
   }
@@ -44,7 +49,6 @@
       name: "",
       description: "",
       price: "",
-      images: [] as string[],
       purchaseLink: "",
     });
     const [imageFiles, setImageFiles] = useState<File[]>([]);
@@ -61,17 +65,19 @@
             name: editingProduct.name || "",
             description: editingProduct.description || "",
             price: editingProduct.price?.toString() || "",
-            images: editingProduct.images || [],
             purchaseLink: editingProduct.purchaseLink || "",
           });
-          setImagePreviews(editingProduct.images || []);
+          // Extract image URLs from the new structure (ProductImage[]) or fallback to old structure (string[])
+          const imageUrls = (editingProduct.images || []).map((img: ProductImage | string) => 
+            typeof img === 'string' ? img : img.imageUrl
+          );
+          setImagePreviews(imageUrls);
           setImageFiles([]);
         } else {
           setFormData({
             name: "",
             description: "",
             price: "",
-            images: [],
             purchaseLink: "",
           });
         setImagePreviews([]);
@@ -150,18 +156,20 @@
 
 
     const removeImage = (index: number) => {
-      if (index < imagePreviews.length - imageFiles.length) {
-        // Removing existing image
+      // Calculate how many existing images (from editingProduct) we have
+      const existingImageCount = editingProduct 
+        ? (editingProduct.images || []).length 
+        : 0;
+      
+      if (index < existingImageCount) {
+        // Removing existing image - we'll need to re-upload all remaining files
+        // For now, just remove from previews (backend will handle if no new files uploaded)
         const newPreviews = [...imagePreviews];
         newPreviews.splice(index, 1);
         setImagePreviews(newPreviews);
-        setFormData(prev => ({
-          ...prev,
-          images: prev.images.filter((_, i) => i !== index),
-        }));
       } else {
         // Removing new file
-        const fileIndex = index - (imagePreviews.length - imageFiles.length);
+        const fileIndex = index - existingImageCount;
         const newFiles = [...imageFiles];
         const newPreviews = [...imagePreviews];
         newFiles.splice(fileIndex, 1);
@@ -174,19 +182,6 @@
         if (imagePreviews.length > 1) {
           setImageError("");
         }
-    };
-
-    const convertFilesToDataUrls = async (files: File[]): Promise<string[]> => {
-      return Promise.all(
-        files.map(file => {
-          return new Promise<string>((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onloadend = () => resolve(reader.result as string);
-            reader.onerror = reject;
-            reader.readAsDataURL(file);
-          });
-        })
-      );
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -226,11 +221,8 @@
           return;
         }
 
-        // Validate images - at least one image is required
-      const newImageUrls = await convertFilesToDataUrls(imageFiles);
-      const allImages = [...formData.images, ...newImageUrls];
-
-        if (allImages.length === 0) {
+        // Validate images - at least one image is required (either new files or existing)
+        if (imageFiles.length === 0 && imagePreviews.length === 0) {
           setImageError("At least one image is required");
           toast.error("Please upload at least one product image");
           return;
@@ -255,13 +247,21 @@
         setNameError("");
         setPurchaseLinkError("");
 
-      onSubmit({
-        name: formData.name.trim(),
-        description: formData.description || null,
-          price: priceNum,
-        images: allImages,
-        purchaseLink: formData.purchaseLink.trim(),
+      // Create FormData
+      const submitData = new FormData();
+      submitData.append('name', formData.name.trim());
+      if (formData.description) {
+        submitData.append('description', formData.description);
+      }
+      submitData.append('price', priceNum.toString());
+      submitData.append('purchaseLink', formData.purchaseLink.trim());
+      
+      // Append image files
+      imageFiles.forEach((file) => {
+        submitData.append('images', file);
       });
+
+      onSubmit(submitData);
     };
 
     return (

@@ -1,12 +1,17 @@
 import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
 import { brandsApi } from "@/lib/api";
 
+export interface BrandLogo {
+  publicId: string;
+  imageUrl: string;
+}
+
 export interface Brand {
   _id: string;
   id?: string; // For backward compatibility
   name: string;
   description?: string | null;
-  logo_url?: string | null;
+  logo_url?: BrandLogo | string | null; // Support both old (string) and new (BrandLogo) formats
   location?: string | null;
   website?: string | null;
   instagram?: string | null;

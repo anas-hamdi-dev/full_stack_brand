@@ -21,16 +21,28 @@ const productSchema = new mongoose.Schema({
     min: [0, 'Price must be greater than or equal to 0']
   },
   images: {
-    type: [String], 
+    type: [{
+      publicId: {
+        type: String,
+        required: true
+      },
+      imageUrl: {
+        type: String,
+        required: true,
+        validate: {
+          validator: function(v) {
+            return /^https?:\/\/.+/.test(v);
+          },
+          message: 'Image URL must be a valid HTTP/HTTPS URL'
+        }
+      }
+    }],
     required: true,
     validate: {
       validator: function(v) {
-        // Allow data URLs (base64) or HTTP/HTTPS URLs
-        return v.length > 0 && v.every(url => {
-          return /^https?:\/\/.+/.test(url) || /^data:image\/.+;base64,.+/.test(url);
-        });
+        return Array.isArray(v) && v.length > 0;
       },
-      message: 'At least one valid image URL (HTTP/HTTPS or data URL) is required'
+      message: 'At least one image is required'
     }
   },
   purchaseLink: {

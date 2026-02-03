@@ -1,5 +1,6 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { useFavorites } from "@/hooks/useFavorites";
+import { getFirstImageUrl } from "@/hooks/useProducts";
 import Footer from "@/components/Footer";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -59,7 +60,7 @@ export default function Favorites() {
     }
     acc[brandId].products.push(product);
     return acc;
-  }, {} as Record<string, { brand: { _id: string; id: string; name: string; logo_url?: string | null; website?: string | null; description?: string | null; [key: string]: unknown }; products: typeof favorites }>);
+  }, {} as Record<string, { brand: { _id: string; id: string; name: string; logo_url?: { publicId: string; imageUrl: string } | string | null; website?: string | null; description?: string | null; [key: string]: unknown }; products: typeof favorites }>);
 
   const handleRemoveFavorite = (productId: string) => {
     removeFavorite(productId);
@@ -125,9 +126,10 @@ export default function Favorites() {
                           <div className="w-16 h-16 rounded-full bg-foreground border border-foreground/30 flex items-center justify-center p-2 flex-shrink-0">
                             {brand.logo_url ? (
                               <img 
-                                src={brand.logo_url} 
+                                src={typeof brand.logo_url === 'string' ? brand.logo_url : brand.logo_url.imageUrl}
                                 alt={`${brand.name} logo`}
                                 className="w-full h-full object-contain rounded-full"
+                                loading="lazy"
                               />
                             ) : (
                               <div className="text-background font-display font-bold text-sm">
@@ -188,9 +190,11 @@ export default function Favorites() {
                                 className="w-24 h-24 rounded-xl overflow-hidden flex-shrink-0"
                               >
                                 <img
-                                  src={product.images?.[0] || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400"}
+                                  src={getFirstImageUrl(product)}
                                   alt={product.name}
+                                  loading="lazy"
                                   className="w-full h-full object-cover"
+                                  style={{ aspectRatio: '1 / 1' }}
                                 />
                               </Link>
 

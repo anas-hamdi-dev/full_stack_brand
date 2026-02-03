@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { Helmet } from "react-helmet";
 import Footer from "@/components/Footer";
-import { usePaginatedProducts, Product } from "@/hooks/useProducts";
+import { usePaginatedProducts, Product, getFirstImageUrl } from "@/hooks/useProducts";
 import ProductCard from "@/components/ProductCard";
 import { Input } from "@/components/ui/input";
 import { Search, Filter } from "lucide-react";
@@ -210,10 +210,10 @@ const Gallery = () => {
                       id={product.id || product._id}
                       name={product.name}
                       description={product.description || ""}
-                      imageUrl={product.images?.[0] || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400"}
+                      imageUrl={getFirstImageUrl(product)}
                       price={product.price}
                       brandName={product.brand?.name}
-                      brandLogo={product.brand?.logo_url}
+                      brandLogo={typeof product.brand?.logo_url === 'string' ? product.brand.logo_url : product.brand?.logo_url?.imageUrl}
                     />
                   ))
                 ) : (
