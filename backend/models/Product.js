@@ -47,14 +47,15 @@ const productSchema = new mongoose.Schema({
   },
   purchaseLink: {
     type: String,
+    required: [true, 'Purchase link is required'],
     trim: true,
     validate: {
       validator: function(v) {
-        // Allow empty string or valid URL
-        if (!v || v === '') return true;
-        return /^https?:\/\/.+/.test(v);
+        // Required field - must be a valid URL
+        if (!v || v.trim() === '') return false;
+        return /^https?:\/\/.+/.test(v.trim());
       },
-      message: 'Purchase link must be a valid URL'
+      message: 'Purchase link must be a valid URL starting with http:// or https://'
     }
   }
 }, {

@@ -3,7 +3,7 @@ const router = express.Router();
 const Product = require('../models/Product');
 const Brand = require('../models/Brand');
 const authenticate = require('../middleware/auth');
-const { isBrandOwner, isBrandOwnerApproved, checkProductOwnership } = require('../middleware/authorization');
+const {  isBrandOwnerApproved, checkProductOwnership } = require('../middleware/authorization');
 const { uploadMultipleImages } = require('../middleware/upload');
 const { deleteMultipleImages } = require('../utils/cloudinary');
 
@@ -119,7 +119,7 @@ router.get('/:id', async (req, res) => {
 // POST /api/products
 router.post('/', authenticate, isBrandOwnerApproved, uploadMultipleImages('products', 'images', 10), async (req, res) => {
   try {
-    const { name, description, price } = req.body;
+    const { name, description, price, purchaseLink } = req.body;
 
     // Validate required fields
     if (!name || !name.trim()) {
@@ -141,6 +141,16 @@ router.post('/', authenticate, isBrandOwnerApproved, uploadMultipleImages('produ
       return res.status(400).json({ error: 'At least one image is required' });
     }
 
+    // Validate purchaseLink - required field
+    if (!purchaseLink || !purchaseLink.trim()) {
+      return res.status(400).json({ error: 'Purchase link is required' });
+    }
+
+    const purchaseLinkTrimmed = purchaseLink.trim();
+    if (!/^https?:\/\/.+/.test(purchaseLinkTrimmed)) {
+      return res.status(400).json({ error: 'Purchase link must be a valid URL starting with http:// or https://' });
+    }
+
     // Ensure user owns the brand
     if (!req.user.brand_id) {
       return res.status(403).json({ error: 'You must own a brand to create products' });
@@ -154,7 +164,8 @@ router.post('/', authenticate, isBrandOwnerApproved, uploadMultipleImages('produ
       description: descriptionValue,
       brand_id: req.user.brand_id,
       price: priceNum,
-      images: req.uploadedImages
+      images: req.uploadedImages,
+      purchaseLink: purchaseLinkTrimmed
     });
 
     await product.populate({
@@ -175,7 +186,7 @@ router.post('/', authenticate, isBrandOwnerApproved, uploadMultipleImages('produ
 // PATCH /api/products/:id
 router.patch('/:id', authenticate, isBrandOwnerApproved, checkProductOwnership, uploadMultipleImages('products', 'images', 10), async (req, res) => {
   try {
-    const { name, description, price } = req.body;
+    const { name, description, price, purchaseLink } = req.body;
 
     // Get existing product to delete old images if needed
     const existingProduct = await Product.findById(req.params.id);
@@ -210,6 +221,21 @@ router.patch('/:id', authenticate, isBrandOwnerApproved, checkProductOwnership, 
       return res.status(400).json({ error: 'Price must be a valid number greater than or equal to 0' });
     }
     updateData.price = priceNum;
+    
+    // Purchase link is required - validate it
+    if (purchaseLink === undefined) {
+      return res.status(400).json({ error: 'Purchase link is required and must be provided' });
+    }
+    
+    if (!purchaseLink || !purchaseLink.trim()) {
+      return res.status(400).json({ error: 'Purchase link is required and cannot be empty' });
+    }
+    
+    const purchaseLinkTrimmed = purchaseLink.trim();
+    if (!/^https?:\/\/.+/.test(purchaseLinkTrimmed)) {
+      return res.status(400).json({ error: 'Purchase link must be a valid URL starting with http:// or https://' });
+    }
+    updateData.purchaseLink = purchaseLinkTrimmed;
     
     // Handle images if new ones were uploaded
     if (req.uploadedImages && req.uploadedImages.length > 0) {

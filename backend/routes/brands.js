@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Brand = require('../models/Brand');
 const authenticate = require('../middleware/auth');
-const { isBrandOwner, isBrandOwnerApproved, checkBrandOwnership } = require('../middleware/authorization');
+const { isBrandOwner, checkBrandOwnership } = require('../middleware/authorization');
 const { uploadSingleImage } = require('../middleware/upload');
 const { deleteImage } = require('../utils/cloudinary');
 
@@ -240,6 +240,11 @@ router.post('/', authenticate, isBrandOwner, uploadSingleImage('brands', 'logo')
 
     res.status(201).json({ data: brand });
   } catch (error) {
+    // Handle Mongoose validation errors
+    if (error.name === 'ValidationError') {
+      const errors = Object.values(error.errors).map((err) => err.message);
+      return res.status(400).json({ error: errors.join(', ') });
+    }
     if (error.code === 11000) {
       return res.status(409).json({ error: 'Brand name already exists' });
     }
@@ -275,27 +280,56 @@ router.patch('/:id', authenticate, isBrandOwner, checkBrandOwnership, uploadSing
     }
 
     const updateData = {};
-    if (name !== undefined) updateData.name = name;
+    
+    // Validate and update name
+    if (name !== undefined) {
+      if (!name || !name.trim()) {
+        return res.status(400).json({ error: 'Brand name cannot be empty' });
+      }
+      updateData.name = name.trim();
+    }
+    
+    // Handle description
     if (description !== undefined) {
       // Preserve newlines in description - only set to null if empty or whitespace-only
       updateData.description = description && description.trim() ? description : null;
     }
     
-    // Handle logo upload if new one was uploaded
+    // Handle logo upload
     if (req.uploadedImage) {
-      // Delete old logo from Cloudinary
+      // New logo file uploaded - delete old logo from Cloudinary
       if (existingBrand.logo_url && existingBrand.logo_url.publicId) {
         await deleteImage(existingBrand.logo_url.publicId);
       }
       updateData.logo_url = req.uploadedImage;
+    } else if (req.body.logo_publicId && req.body.logo_imageUrl) {
+      // Frontend sent existing logo info to preserve it
+      updateData.logo_url = {
+        publicId: req.body.logo_publicId.trim(),
+        imageUrl: req.body.logo_imageUrl.trim()
+      };
     }
+    // If neither new file nor existing logo info is provided, logo_url is preserved (not in updateData)
     
-    if (location !== undefined) updateData.location = location;
-    if (website !== undefined) updateData.website = website;
-    if (instagram !== undefined) updateData.instagram = instagram;
-    if (facebook !== undefined) updateData.facebook = facebook;
-    if (phone !== undefined) updateData.phone = phone;
-    if (email !== undefined) updateData.email = email;
+    // Handle optional fields with trimming
+    if (location !== undefined) {
+      updateData.location = location && location.trim() ? location.trim() : null;
+    }
+    if (website !== undefined) {
+      updateData.website = website && website.trim() ? website.trim() : null;
+    }
+    if (instagram !== undefined) {
+      updateData.instagram = instagram && instagram.trim() ? instagram.trim() : null;
+    }
+    if (facebook !== undefined) {
+      updateData.facebook = facebook && facebook.trim() ? facebook.trim() : null;
+    }
+    if (phone !== undefined) {
+      updateData.phone = phone && phone.trim() ? phone.trim() : null;
+    }
+    if (email !== undefined) {
+      updateData.email = email && email.trim() ? email.trim().toLowerCase() : null;
+    }
     // Status is preserved - brand owners cannot change it
 
     const brand = await Brand.findByIdAndUpdate(
@@ -310,6 +344,11 @@ router.patch('/:id', authenticate, isBrandOwner, checkBrandOwnership, uploadSing
 
     res.json({ data: brand });
   } catch (error) {
+    // Handle Mongoose validation errors
+    if (error.name === 'ValidationError') {
+      const errors = Object.values(error.errors).map((err) => err.message);
+      return res.status(400).json({ error: errors.join(', ') });
+    }
     if (error.code === 11000) {
       return res.status(409).json({ error: 'Brand name already exists' });
     }

@@ -102,10 +102,15 @@
           }
         }
 
+        // Extract logo URL - handle both string and BrandLogo object formats
+        const logoUrlString = brand.logo_url 
+          ? (typeof brand.logo_url === 'string' ? brand.logo_url : brand.logo_url.imageUrl)
+          : "";
+
         const formValues = {
           name: brand.name || "",
           description: brand.description || "",
-          logo_url: brand.logo_url || "",
+          logo_url: logoUrlString,
           location: brand.location || "",
           website: brand.website || "",
           instagram: instagramUsername,
@@ -270,9 +275,19 @@
         submitData.append('email', data.email.trim());
       }
       
-      // Only append logo file if a new one was selected
+      // Handle logo: append new file if uploaded, or send existing logo info to preserve it
       if (avatarFile) {
+        // New logo file uploaded
         submitData.append('logo', avatarFile);
+      } else if (brand?.logo_url) {
+        // No new file, but existing logo exists - send its data to preserve it
+        const existingLogo = typeof brand.logo_url === 'string' 
+          ? { imageUrl: brand.logo_url, publicId: '' } 
+          : brand.logo_url;
+        if (existingLogo.publicId) {
+          submitData.append('logo_publicId', existingLogo.publicId);
+          submitData.append('logo_imageUrl', existingLogo.imageUrl);
+        }
       }
 
       updateBrand.mutate(submitData);
@@ -557,7 +572,7 @@
                   <Input
                     id="location"
                     {...form.register("location")}
-                    placeholder="Ex: Paris, France"
+                    placeholder="Ex: Bizerte , Zarzouna"
                     disabled={isFormDisabled}
                   />
                 </div>

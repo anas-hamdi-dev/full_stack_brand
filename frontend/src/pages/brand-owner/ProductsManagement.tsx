@@ -3,7 +3,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePaginatedMyProducts } from "@/hooks/useBrands";
-import { getFirstImageUrl, getAllImageUrls } from "@/hooks/useProducts";
+import { getFirstImageUrl, getAllImageUrls, ProductImage } from "@/hooks/useProducts";
 import { productsApi } from "@/lib/api";
 import { toast } from "sonner";
 import { Plus, Edit, Trash2, Package, Loader2 } from "lucide-react";
@@ -31,7 +31,7 @@ interface Product {
   name: string;
   description?: string | null;
   price?: number | null;
-  images: string[];
+  images: ProductImage[] | string[]; // Support both old (string[]) and new (ProductImage[]) formats
   purchaseLink?: string | null;
   brand_id?: string | null;
   createdAt?: string;
