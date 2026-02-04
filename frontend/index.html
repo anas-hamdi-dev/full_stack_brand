@@ -44,21 +44,50 @@
   
   <!-- Prevent white background on overscroll - iOS Safari fix -->
   <style>
-    html, body {
+    /* Ensure html and body cover overscroll areas with theme background */
+    html {
       background-color: hsl(270 50% 3%);
-      background: radial-gradient(ellipse at 50% 0%, hsl(270 70% 55% / 0.2), transparent 60%), hsl(270 50% 3%);
+      background: linear-gradient(180deg, hsl(270 50% 5%), hsl(270 50% 3%));
+      min-height: 100vh;
+      min-height: 100dvh;
       overscroll-behavior: none;
       -webkit-overflow-scrolling: touch;
       /* Prevent white flash on overscroll */
       overscroll-behavior-y: none;
       overscroll-behavior-x: none;
+      /* Ensure background extends beyond viewport */
+      height: 100%;
+      width: 100%;
+    }
+    body {
+      background-color: hsl(270 50% 3%);
+      background: linear-gradient(180deg, hsl(270 50% 5%), hsl(270 50% 3%));
+      min-height: 100vh;
+      min-height: 100dvh;
+      overscroll-behavior: none;
+      -webkit-overflow-scrolling: touch;
+      /* Prevent white flash on overscroll */
+      overscroll-behavior-y: none;
+      overscroll-behavior-x: none;
+      /* Ensure background extends beyond viewport */
+      height: 100%;
+      width: 100%;
+      margin: 0;
+      padding: 0;
     }
     #root {
       min-height: 100vh;
       min-height: 100dvh;
       background-color: hsl(270 50% 3%);
-      background: radial-gradient(ellipse at 50% 0%, hsl(270 70% 55% / 0.2), transparent 60%), hsl(270 50% 3%);
+      background: linear-gradient(180deg, hsl(270 50% 5%), hsl(270 50% 3%));
       overscroll-behavior: none;
+    }
+    /* Fix for mobile browsers - ensure viewport background matches */
+    @supports (-webkit-touch-callout: none) {
+      html, body {
+        background-color: hsl(270 50% 3%) !important;
+        background: linear-gradient(180deg, hsl(270 50% 5%), hsl(270 50% 3%)) !important;
+      }
     }
   </style>
 </head>

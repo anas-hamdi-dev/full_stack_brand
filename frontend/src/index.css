@@ -6,6 +6,17 @@
   * {
     @apply text-foreground;
   }
+  
+  /* Ensure overscroll areas match theme background */
+  html {
+    background-color: hsl(var(--background));
+    background: var(--gradient-dark);
+  }
+  
+  body {
+    background-color: hsl(var(--background));
+    background: var(--gradient-dark);
+  }
 }
 
 @layer utilities {
