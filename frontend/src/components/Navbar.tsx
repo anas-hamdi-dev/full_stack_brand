@@ -144,7 +144,7 @@ const Navbar = () => {
               </DropdownMenu>
             ) : (
               <>
-                <Button variant="outline" size="sm" onClick={openLogin}>
+                <Button variant="hero-outline" size="sm" onClick={openLogin}>
                   Login
                 </Button>
                 <Button variant="hero" size="sm" onClick={openSignUp}>
@@ -187,7 +187,7 @@ const Navbar = () => {
                 })}
                 {!user && (
                   <div className="flex flex-col gap-3 pt-4">
-                    <Button variant="outline" className="w-full" onClick={() => { openLogin(); setIsOpen(false); }}>
+                    <Button variant="hero-outline" className="w-full "  onClick={() => { openLogin(); setIsOpen(false); }}>
                       Login
                     </Button>
                     <Button variant="hero" className="w-full" onClick={() => { openSignUp(); setIsOpen(false); }}>

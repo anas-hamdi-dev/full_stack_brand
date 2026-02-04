@@ -21,9 +21,8 @@ const HeroSection = memo(() => {
           <h1 className="font-display text-5xl md:text-7xl lg:text-8xl font-bold mb-6 animate-slide-up-delay-1">
             <span className="text-foreground">all tunisian</span>
             <span 
-              className="pepper-3d text-5xl md:text-7xl lg:text-8xl inline-block" 
-              style={{ animation: 'pepperFloat 2s ease-in-out infinite' }}
-              aria-label="Tunisian flag emoji"
+              className="inline-block text-5xl md:text-7xl lg:text-8xl animate-pepper-float transition-transform duration-800 hover:scale-110 cursor-default select-none"
+              aria-label="Tunisian pepper emoji"
               role="img"
             >
               🌶️
@@ -47,7 +46,7 @@ const HeroSection = memo(() => {
               </Button>
             </Link>
             <Link to="/gallery" aria-label="View brand gallery">
-              <Button variant="outline" size="xl" className="group bg-transparent hover:bg-transparent hover:border-primary/30 hover:text-primary">
+              <Button variant="hero-outline" size="xl" className="group">
                 <ShoppingBag className="w-5 h-5 mr-2" aria-hidden="true" />
                 View Gallery
               </Button>
