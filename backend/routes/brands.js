@@ -115,6 +115,10 @@ router.get('/me/products', authenticate, isBrandOwner, async (req, res) => {
     // Execute query with pagination and stable sort
     const [products, total] = await Promise.all([
       Product.find({ brand_id: user.brand_id })
+        .populate({
+          path: 'category',
+          select: 'name image'
+        })
         .sort({ createdAt: -1, _id: -1 }) // Stable sort: createdAt first, then _id
         .skip(skip)
         .limit(limitNum),
@@ -173,6 +177,10 @@ router.get('/:brandId/products', async (req, res) => {
     }
     
     const products = await Product.find({ brand_id: req.params.brandId })
+      .populate({
+        path: 'category',
+        select: 'name image'
+      })
       .sort({ createdAt: -1 });
     res.json({ data: products });
   } catch (error) {

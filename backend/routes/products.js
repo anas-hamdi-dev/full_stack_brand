@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Product = require('../models/Product');
 const Brand = require('../models/Brand');
+const Category = require('../models/Category');
 const authenticate = require('../middleware/auth');
 const {  isBrandOwnerApproved, checkProductOwnership } = require('../middleware/authorization');
 const { uploadMultipleImages } = require('../middleware/upload');
@@ -67,6 +68,10 @@ router.get('/', async (req, res) => {
         path: 'brand_id',
         select: 'name logo_url website'
       })
+      .populate({
+        path: 'category',
+        select: 'name image'
+      })
         .sort({ createdAt: -1, _id: -1 }) // Stable sort: createdAt first, then _id
         .skip(skip)
         .limit(limitNum),
@@ -96,6 +101,10 @@ router.get('/:id', async (req, res) => {
     const product = await Product.findById(req.params.id)
       .populate({
         path: 'brand_id'
+      })
+      .populate({
+        path: 'category',
+        select: 'name image'
       });
     if (!product) {
       return res.status(404).json({ error: 'Product not found' });
@@ -151,6 +160,18 @@ router.post('/', authenticate, isBrandOwnerApproved, uploadMultipleImages('produ
       return res.status(400).json({ error: 'Purchase link must be a valid URL starting with http:// or https://' });
     }
 
+    // Validate category - required field
+    const { category } = req.body;
+    if (!category) {
+      return res.status(400).json({ error: 'Category is required' });
+    }
+
+    // Validate category exists
+    const categoryExists = await Category.findById(category);
+    if (!categoryExists) {
+      return res.status(400).json({ error: 'Invalid category. Category not found.' });
+    }
+
     // Ensure user owns the brand
     if (!req.user.brand_id) {
       return res.status(403).json({ error: 'You must own a brand to create products' });
@@ -163,6 +184,7 @@ router.post('/', authenticate, isBrandOwnerApproved, uploadMultipleImages('produ
       name: name.trim(),
       description: descriptionValue,
       brand_id: req.user.brand_id,
+      category: category,
       price: priceNum,
       images: req.uploadedImages,
       purchaseLink: purchaseLinkTrimmed
@@ -170,6 +192,9 @@ router.post('/', authenticate, isBrandOwnerApproved, uploadMultipleImages('produ
 
     await product.populate({
       path: 'brand_id'
+    }).populate({
+      path: 'category',
+      select: 'name image'
     });
 
     res.status(201).json({ data: product });
@@ -204,6 +229,16 @@ router.patch('/:id', authenticate, isBrandOwnerApproved, checkProductOwnership, 
     if (description !== undefined) {
       // Preserve newlines in description - only set to null if empty or whitespace-only
       updateData.description = description && description.trim() ? description : null;
+    }
+    
+    // Validate category if provided
+    const { category } = req.body;
+    if (category !== undefined) {
+      const categoryExists = await Category.findById(category);
+      if (!categoryExists) {
+        return res.status(400).json({ error: 'Invalid category. Category not found.' });
+      }
+      updateData.category = category;
     }
     
     // Price is always required in updates - validate it
@@ -257,6 +292,9 @@ router.patch('/:id', authenticate, isBrandOwnerApproved, checkProductOwnership, 
       { new: true, runValidators: true }
     ).populate({
       path: 'brand_id'
+    }).populate({
+      path: 'category',
+      select: 'name image'
     });
 
     if (!product) {

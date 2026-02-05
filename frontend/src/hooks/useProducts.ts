@@ -19,6 +19,12 @@ export interface Product {
     logo_url?: ProductImage | string | null; // Support both old (string) and new (ProductImage) formats
     website?: string | null;
   } | null;
+  category?: {
+    _id: string;
+    id?: string;
+    name: string;
+    image?: string | null;
+  } | null;
   price?: number | null;
   images: ProductImage[] | string[]; // Support both old (string[]) and new (ProductImage[]) formats
   purchaseLink?: string | null;
@@ -73,6 +79,21 @@ const normalizeProduct = (product: Record<string, unknown>): Product => {
     }
   }
   
+  // Handle category - if it's populated (object), map it
+  let category = null;
+  const categoryData = product.category;
+  if (categoryData) {
+    if (typeof categoryData === 'object' && categoryData !== null && !Array.isArray(categoryData)) {
+      const categoryObj = categoryData as Record<string, unknown>;
+      category = {
+        _id: (categoryObj._id as string) || (categoryObj.id as string) || '',
+        id: (categoryObj._id as string) || (categoryObj.id as string) || '',
+        name: (categoryObj.name as string) || '',
+        image: (categoryObj.image as string) || null,
+      };
+    }
+  }
+  
   return {
     ...product,
     _id: (product._id as string) || (product.id as string) || '',
@@ -81,6 +102,7 @@ const normalizeProduct = (product: Record<string, unknown>): Product => {
     description: (product.description as string) || null,
     brand_id: (product.brand_id as string) || null,
     brand,
+    category,
     price: (product.price as number) || null,
     images: (product.images as ProductImage[] | string[]) || [],
     purchaseLink: (product.purchaseLink as string) || null,

@@ -2,21 +2,20 @@ import { useState, useMemo } from "react";
 import { Helmet } from "react-helmet";
 import Footer from "@/components/Footer";
 import { usePaginatedProducts, Product, getFirstImageUrl } from "@/hooks/useProducts";
+import { useCategories } from "@/hooks/useCategories";
 import ProductCard from "@/components/ProductCard";
 import { Input } from "@/components/ui/input";
 import { Search, Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import BackButton from "@/components/BackButton";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import ComingSoon from "@/components/ComingSoon";
-
-
+import CategoryTabs from "@/components/CategoryTabs";
 const ITEMS_PER_LOAD = 12;
 
 const Gallery = () => {
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<string>("men");
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const { data: categories } = useCategories();
 
   // Use paginated products hook
   // Query key includes search, so it automatically resets when search changes
@@ -57,10 +56,15 @@ const Gallery = () => {
     return Array.from(productMap.values());
   }, [data?.pages]);
 
-  // Filter products based on category (only "men" shows products currently)
+  // Filter products based on category
   const filteredProducts = useMemo(() => {
-    if (selectedCategory !== "men") return [];
-    return allProducts;
+    if (selectedCategory === "all") {
+      return allProducts;
+    }
+    return allProducts.filter((product) => {
+      const categoryId = product.category?._id || product.category?.id;
+      return categoryId === selectedCategory;
+    });
   }, [allProducts, selectedCategory]);
 
   // Get pagination metadata from the last page
@@ -80,13 +84,14 @@ const Gallery = () => {
     setSearchQuery(value);
   };
 
-  const handleCategoryChange = (value: string) => {
-    setSelectedCategory(value);
+  const handleCategoryChange = (categoryId: string) => {
+    setSelectedCategory(categoryId);
     setSearchQuery(""); // Clear search when switching categories
   };
 
   const clearFilters = () => {
     setSearchQuery("");
+    setSelectedCategory("all");
   };
 
   const handleLoadMore = () => {
@@ -118,200 +123,131 @@ const Gallery = () => {
           </div>
 
           {/* Category Tabs */}
-          <div className="mb-8">
-            <Tabs value={selectedCategory} onValueChange={handleCategoryChange}>
-              <TabsList className="grid w-full grid-cols-3 max-w-md">
-                <TabsTrigger value="men">Men</TabsTrigger>
-                <TabsTrigger value="women">Women</TabsTrigger>
-                <TabsTrigger value="kids">Kids</TabsTrigger>
-              </TabsList>
-            </Tabs>
+          {categories && categories.length > 0 && (
+            <div className="mb-12">
+              <CategoryTabs
+                categories={categories}
+                selectedCategory={selectedCategory}
+                onCategorySelect={handleCategoryChange}
+              />
+            </div>
+          )}
+
+          {/* Filters */}
+          <div className="flex flex-col md:flex-row gap-4 mb-8">
+            <div className="relative flex-1 max-w-md">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+              <Input
+                placeholder="Search products..."
+                value={searchQuery}
+                onChange={(e) => handleSearchChange(e.target.value)}
+                className="pl-10"
+              />
+            </div>
           </div>
 
-          {/* Category Content */}
-          <Tabs value={selectedCategory} onValueChange={handleCategoryChange}>
-            {/* Men Category - Show all products */}
-            <TabsContent value="men" className="mt-0">
-              <div className="relative rounded-3xl overflow-hidden mb-8">
-                <div 
-                  className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-                  style={{
-                    backgroundImage: "url(https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1920&q=80)",
-                  }}
-                />
-                <div className="absolute inset-0 bg-gradient-to-b from-background/80 via-background/60 to-background" />
-                <div className="relative px-8 py-12 text-center">
-                  <h2 className="text-3xl md:text-4xl font-display font-bold text-foreground mb-2">
-                    Men's Collection
-                  </h2>
-                  
+          {/* Results count */}
+          {!error && (
+            <p className="text-sm text-muted-foreground mb-6">
+              {filteredProducts.length} products found
+            </p>
+          )}
+
+          {/* Error state */}
+          {error && !isLoading && (
+            <div className="col-span-full text-center py-12">
+              <p className="text-destructive mb-4">
+                Error loading products: {error instanceof Error ? error.message : 'Unknown error'}
+              </p>
+              <Button 
+                variant="outline" 
+                onClick={() => window.location.reload()}
+              >
+                Retry
+              </Button>
+            </div>
+          )}
+
+          {/* Gallery Grid */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+            {isLoading ? (
+              Array.from({ length: 12 }).map((_, i) => (
+                <div key={i} className="group glass rounded-3xl overflow-hidden">
+                  <div className="aspect-square overflow-hidden relative">
+                    <Skeleton className="w-full h-full" />
+                    <div className="absolute top-3 right-3 z-10">
+                      <Skeleton className="h-8 w-8 rounded-full" />
+                    </div>
+                  </div>
+                  <div className="p-4 space-y-2">
+                    <Skeleton className="h-4 w-3/4 rounded-md" />
+                    <Skeleton className="h-4 w-1/2 rounded-md" />
+                  </div>
                 </div>
-              </div>
-
-              {/* Filters */}
-              <div className="flex flex-col md:flex-row gap-4 mb-8">
-                <div className="relative flex-1 max-w-md">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                <Input
-                    placeholder="Search products..."
-                  value={searchQuery}
-                  onChange={(e) => handleSearchChange(e.target.value)}
-                    className="pl-10"
+              ))
+            ) : error ? null : filteredProducts.length > 0 ? (
+              filteredProducts.map((product) => (
+                <ProductCard
+                  key={product.id || product._id}
+                  id={product.id || product._id}
+                  name={product.name}
+                  description={product.description || ""}
+                  imageUrl={getFirstImageUrl(product)}
+                  price={product.price}
+                  brandName={product.brand?.name}
+                  brandLogo={typeof product.brand?.logo_url === 'string' ? product.brand.logo_url : product.brand?.logo_url?.imageUrl}
                 />
-                </div>
-              </div>
-
-              {/* Results count */}
-              {!error && (
-              <p className="text-sm text-muted-foreground mb-6">
-                  {pagination.total > 0 ? pagination.total : filteredProducts.length} products found
-                </p>
-              )}
-
-              {/* Error state */}
-              {error && !isLoading && (
-                <div className="col-span-full text-center py-12">
-                  <p className="text-destructive mb-4">
-                    Error loading products: {error instanceof Error ? error.message : 'Unknown error'}
-                  </p>
+              ))
+            ) : (
+              <div className="col-span-full text-center py-12">
+                <p className="text-muted-foreground">No products found matching your criteria.</p>
+                {(searchQuery || selectedCategory !== "all") && (
                   <Button 
                     variant="outline" 
-                    onClick={() => window.location.reload()}
+                    className="mt-4"
+                    onClick={clearFilters}
                   >
-                    Retry
+                    Clear Filters
                   </Button>
-                </div>
-              )}
+                )}
+              </div>
+            )}
+          </div>
 
-              {/* Gallery Grid */}
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-                {isLoading ? (
-                  Array.from({ length: 12 }).map((_, i) => (
-                    <div key={i} className="group glass rounded-3xl overflow-hidden">
-                      {/* Image Skeleton */}
+          {/* Load More Button with Skeleton */}
+          {!isLoading && filteredProducts.length > 0 && hasMore && selectedCategory === "all" && (
+            <div className="mt-8">
+              <div className="flex justify-center mb-4">
+                <Button
+                  variant="outline"
+                  size="lg"
+                  onClick={handleLoadMore}
+                  className="min-w-[200px]"
+                  disabled={isLoadingMore}
+                >
+                  {isLoadingMore ? "Loading..." : "Load More"}
+                </Button>
+              </div>
+              {isLoadingMore && (
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+                  {Array.from({ length: ITEMS_PER_LOAD }).map((_, i) => (
+                    <div key={`loading-more-${i}`} className="group glass rounded-3xl overflow-hidden">
                       <div className="aspect-square overflow-hidden relative">
                         <Skeleton className="w-full h-full" />
-                        {/* Favorite Button Skeleton */}
                         <div className="absolute top-3 right-3 z-10">
                           <Skeleton className="h-8 w-8 rounded-full" />
                         </div>
                       </div>
-                      {/* Product Info Skeleton */}
                       <div className="p-4 space-y-2">
                         <Skeleton className="h-4 w-3/4 rounded-md" />
                         <Skeleton className="h-4 w-1/2 rounded-md" />
                       </div>
                     </div>
-                  ))
-            ) : error ? null : filteredProducts.length > 0 ? (
-                  filteredProducts.map((product) => (
-                    <ProductCard
-                      key={product.id || product._id}
-                      id={product.id || product._id}
-                      name={product.name}
-                      description={product.description || ""}
-                      imageUrl={getFirstImageUrl(product)}
-                      price={product.price}
-                      brandName={product.brand?.name}
-                      brandLogo={typeof product.brand?.logo_url === 'string' ? product.brand.logo_url : product.brand?.logo_url?.imageUrl}
-                    />
-                  ))
-                ) : (
-                  <div className="col-span-full text-center py-12">
-                    <p className="text-muted-foreground">No products found matching your criteria.</p>
-                    {searchQuery && (
-                      <Button 
-                        variant="outline" 
-                        className="mt-4"
-                        onClick={clearFilters}
-                      >
-                        Clear Filters
-                      </Button>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              {/* Load More Button with Skeleton */}
-              {!isLoading && filteredProducts.length > 0 && hasMore && (
-                <div className="mt-8">
-                  <div className="flex justify-center mb-4">
-                    <Button
-                      variant="outline"
-                      size="lg"
-                      onClick={handleLoadMore}
-                      className="min-w-[200px]"
-                      disabled={isLoadingMore}
-                    >
-                      {isLoadingMore ? "Loading..." : "Load More"}
-                    </Button>
-                  </div>
-                  {/* Show skeleton loaders while loading more items */}
-                  {isLoadingMore && (
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-                      {Array.from({ length: ITEMS_PER_LOAD }).map((_, i) => (
-                        <div key={`loading-more-${i}`} className="group glass rounded-3xl overflow-hidden">
-                          {/* Image Skeleton */}
-                          <div className="aspect-square overflow-hidden relative">
-                            <Skeleton className="w-full h-full" />
-                            {/* Favorite Button Skeleton */}
-                            <div className="absolute top-3 right-3 z-10">
-                              <Skeleton className="h-8 w-8 rounded-full" />
-                            </div>
-                          </div>
-                          {/* Product Info Skeleton */}
-                          <div className="p-4 space-y-2">
-                            <Skeleton className="h-4 w-3/4 rounded-md" />
-                            <Skeleton className="h-4 w-1/2 rounded-md" />
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
+                  ))}
                 </div>
               )}
-            </TabsContent>
-
-            {/* Women Category - Coming Soon */}
-            <TabsContent value="women" className="mt-0">
-              <div className="relative rounded-3xl overflow-hidden mb-8">
-                <div 
-                  className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-                  style={{
-                    backgroundImage: "url(https://images.unsplash.com/photo-1483985988355-763728e1935b?w=1920&q=80)",
-                  }}
-                />
-                <div className="absolute inset-0 bg-gradient-to-b from-background/80 via-background/60 to-background" />
-                <div className="relative px-8 py-12 text-center">
-                  <h2 className="text-3xl md:text-4xl font-display font-bold text-foreground mb-2">
-                    Women's Collection
-                  </h2>
-
-                </div>
-              </div>
-              <ComingSoon category="Women" />
-            </TabsContent>
-
-            {/* Kids Category - Coming Soon */}
-            <TabsContent value="kids" className="mt-0">
-              <div className="relative rounded-3xl overflow-hidden mb-8">
-                <div 
-                  className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-                  style={{
-                    backgroundImage: "url(https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?w=1920&q=80)",
-                  }}
-                />
-                <div className="absolute inset-0 bg-gradient-to-b from-background/80 via-background/60 to-background" />
-                <div className="relative px-8 py-12 text-center">
-                  <h2 className="text-3xl md:text-4xl font-display font-bold text-foreground mb-2">
-                    Kids' Collection
-                  </h2>
-                  
-                </div>
-              </div>
-              <ComingSoon category="Kids" />
-            </TabsContent>
-          </Tabs>
+            </div>
+          )}
         </div>
       </main>
       <Footer />

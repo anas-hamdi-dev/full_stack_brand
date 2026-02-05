@@ -251,6 +251,11 @@ export const brandsApi = {
   update: (id: string, data: FormData) => apiClient.patch<{ data: unknown }>(`/brands/${id}`, data),
 };
 
+// Categories API
+export const categoriesApi = {
+  getAll: () => apiClient.get<{ data: unknown[] }>('/categories'),
+};
+
 // Products API
 export const productsApi = {
   getAll: (params?: { brand_id?: string; search?: string; limit?: number; page?: number }) => {

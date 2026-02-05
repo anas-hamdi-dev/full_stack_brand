@@ -53,6 +53,7 @@ app.use('/api/auth', require('./routes/auth'));
 app.use('/api/users', require('./routes/users'));
 app.use('/api/brands', require('./routes/brands'));
 app.use('/api/products', require('./routes/products'));
+app.use('/api/categories', require('./routes/categories'));
 app.use('/api/favorites', require('./routes/favorites'));
 app.use('/api/contact-messages', require('./routes/contact-messages'));
 app.use('/api/admin', require('./routes/admin'));

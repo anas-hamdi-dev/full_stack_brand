@@ -1,19 +1,56 @@
 import { useParams, Link } from "react-router-dom";
+import { useState, useMemo } from "react";
 import { Helmet } from "react-helmet";
 import Footer from "@/components/Footer";
 import { useBrand, useBrandProducts } from "@/hooks/useBrands";
+import { useCategories } from "@/hooks/useCategories";
 import { getFirstImageUrl } from "@/hooks/useProducts";
 import { MapPin, Globe, Mail, Phone, Instagram, Facebook, CheckCircle2, Crown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import BackButton from "@/components/BackButton";
 import ProductCard from "@/components/ProductCard";
+import CategoryTabs from "@/components/CategoryTabs";
 
 const BrandDetail = () => {
   const { brandId } = useParams();
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
 
   const { data: brand, isLoading: brandLoading } = useBrand(brandId);
   const { data: products = [], isLoading: productsLoading } = useBrandProducts(brandId);
+  const { data: categories } = useCategories();
+
+  // Get unique category IDs from products
+  const availableCategoryIds = useMemo(() => {
+    const categoryIds = new Set<string>();
+    products.forEach((product: any) => {
+      const categoryId = product.category?._id || product.category?.id;
+      if (categoryId) {
+        categoryIds.add(categoryId);
+      }
+    });
+    return categoryIds;
+  }, [products]);
+
+  // Filter categories to only show those that have products
+  const availableCategories = useMemo(() => {
+    if (!categories) return [];
+    return categories.filter((category) => {
+      const categoryId = category._id || category.id;
+      return categoryId && availableCategoryIds.has(categoryId);
+    });
+  }, [categories, availableCategoryIds]);
+
+  // Filter products based on category
+  const filteredProducts = useMemo(() => {
+    if (selectedCategory === "all") {
+      return products;
+    }
+    return products.filter((product: any) => {
+      const categoryId = product.category?._id || product.category?.id;
+      return categoryId === selectedCategory;
+    });
+  }, [products, selectedCategory]);
 
   if (brandLoading) {
     return (
@@ -178,6 +215,17 @@ const BrandDetail = () => {
           <section>
             <h2 className="font-display font-bold text-2xl text-foreground mb-8">Shop Collection</h2>
             
+            {/* Category Tabs */}
+            {availableCategories && availableCategories.length > 0 && (
+              <div className="mb-12">
+                <CategoryTabs
+                  categories={availableCategories}
+                  selectedCategory={selectedCategory}
+                  onCategorySelect={setSelectedCategory}
+                />
+              </div>
+            )}
+            
             {productsLoading ? (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
                 {[1, 2, 3, 4].map((i) => (
@@ -188,9 +236,9 @@ const BrandDetail = () => {
                   </div>
                 ))}
               </div>
-            ) : products && products.length > 0 ? (
+            ) : filteredProducts && filteredProducts.length > 0 ? (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-                {products.map((product) => (
+                {filteredProducts.map((product: any) => (
                   <ProductCard
                     key={product.id || product._id}
                     id={product.id || product._id}
@@ -205,7 +253,11 @@ const BrandDetail = () => {
               </div>
             ) : (
               <div className="text-center py-12 glass rounded-2xl">
-                <p className="text-muted-foreground">No products available yet.</p>
+                <p className="text-muted-foreground">
+                  {selectedCategory === "all" 
+                    ? "No products available yet." 
+                    : "No products found in this category."}
+                </p>
                 {brand.website && (
                   <a href={brand.website} target="_blank" rel="noopener noreferrer">
                     <Button variant="hero" className="mt-4">
