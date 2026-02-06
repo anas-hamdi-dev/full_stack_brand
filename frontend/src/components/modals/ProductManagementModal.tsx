@@ -10,8 +10,16 @@
     DialogTitle,
     DialogFooter,
   } from "@/components/ui/dialog";
+  import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+  } from "@/components/ui/select";
   import { Loader2, Upload, X } from "lucide-react";
   import { toast } from "sonner";
+  import { useCategories } from "@/hooks/useCategories";
 
   interface ProductImage {
   publicId: string;
@@ -25,6 +33,11 @@ interface ProductData {
     images: ProductImage[] | string[]; // Support both old (string[]) and new (ProductImage[]) formats
     purchaseLink?: string | null;
     brand_id?: string | null;
+    category?: {
+      _id: string;
+      id?: string;
+      name: string;
+    } | string | null; // Support both object and string (ID) formats
     id?: string;
     created_at?: string;
   }
@@ -45,11 +58,13 @@ interface ProductData {
     isLoading = false,
   }: ProductManagementModalProps) {
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const { data: categories } = useCategories();
     const [formData, setFormData] = useState({
       name: "",
       description: "",
       price: "",
       purchaseLink: "",
+      category: "",
     });
     const [imageFiles, setImageFiles] = useState<File[]>([]);
     const [imagePreviews, setImagePreviews] = useState<string[]>([]);
@@ -57,15 +72,24 @@ interface ProductData {
       const [priceError, setPriceError] = useState<string>("");
       const [nameError, setNameError] = useState<string>("");
       const [purchaseLinkError, setPurchaseLinkError] = useState<string>("");
+      const [categoryError, setCategoryError] = useState<string>("");
 
     useEffect(() => {
       if (open) {
         if (editingProduct) {
+          // Extract category ID from product (support both object and string formats)
+          const categoryId = editingProduct.category 
+            ? (typeof editingProduct.category === 'string' 
+                ? editingProduct.category 
+                : editingProduct.category._id || editingProduct.category.id)
+            : "";
+          
           setFormData({
             name: editingProduct.name || "",
             description: editingProduct.description || "",
             price: editingProduct.price?.toString() || "",
             purchaseLink: editingProduct.purchaseLink || "",
+            category: categoryId,
           });
           // Extract image URLs from the new structure (ProductImage[]) or fallback to old structure (string[])
           const imageUrls = (editingProduct.images || []).map((img: ProductImage | string) => 
@@ -79,6 +103,7 @@ interface ProductData {
             description: "",
             price: "",
             purchaseLink: "",
+            category: "",
           });
         setImagePreviews([]);
         setImageFiles([]);
@@ -87,6 +112,7 @@ interface ProductData {
         setPriceError("");
         setNameError("");
         setPurchaseLinkError("");
+        setCategoryError("");
       }
     }, [open, editingProduct]);
 
@@ -241,11 +267,19 @@ interface ProductData {
           return;
         }
 
+        // Validate category - required
+        if (!formData.category || !formData.category.trim()) {
+          toast.error("Category is required");
+          setCategoryError("Category is required");
+          return;
+        }
+
         // Clear any previous errors
         setImageError("");
         setPriceError("");
         setNameError("");
         setPurchaseLinkError("");
+        setCategoryError("");
 
       // Create FormData
       const submitData = new FormData();
@@ -255,8 +289,11 @@ interface ProductData {
       }
       submitData.append('price', priceNum.toString());
       submitData.append('purchaseLink', formData.purchaseLink.trim());
+      submitData.append('category', formData.category.trim());
       
       // Append image files
+      // Note: Backend replaces all images when new files are uploaded
+      // If editing and no new files, existing images are preserved
       imageFiles.forEach((file) => {
         submitData.append('images', file);
       });
@@ -337,6 +374,43 @@ interface ProductData {
                     </p>
                   )}
                 </div>
+            </div>
+
+            {/* Category */}
+            <div className="space-y-2">
+              <Label htmlFor="productCategory">
+                Category <span className="text-destructive">*</span>
+              </Label>
+              <Select
+                value={formData.category}
+                onValueChange={(value) => {
+                  setFormData({ ...formData, category: value });
+                  if (value) {
+                    setCategoryError("");
+                  }
+                }}
+                disabled={isLoading}
+              >
+                <SelectTrigger className={categoryError ? "border-destructive" : ""}>
+                  <SelectValue placeholder="Select a category" />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories && categories.length > 0 ? (
+                    categories.map((category) => (
+                      <SelectItem key={category._id || category.id} value={category._id || category.id || ""}>
+                        {category.name}
+                      </SelectItem>
+                    ))
+                  ) : (
+                    <SelectItem value="" disabled>No categories available</SelectItem>
+                  )}
+                </SelectContent>
+              </Select>
+              {categoryError && (
+                <p className="text-sm text-destructive mt-1">
+                  {categoryError}
+                </p>
+              )}
             </div>
 
             {/* Product Name */}
@@ -516,10 +590,13 @@ interface ProductData {
                     parseFloat(formData.price) < 0 ||
                     !formData.purchaseLink.trim() ||
                     !/^https?:\/\/.+/.test(formData.purchaseLink.trim()) ||
+                    !formData.category ||
+                    !formData.category.trim() ||
                     imagePreviews.length === 0 ||
                     !!priceError ||
                     !!nameError ||
-                    !!purchaseLinkError
+                    !!purchaseLinkError ||
+                    !!categoryError
                   }
               >
                 {isLoading ? (

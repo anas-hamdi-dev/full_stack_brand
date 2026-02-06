@@ -23,8 +23,7 @@ const categorySchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Indexes
-categorySchema.index({ name: 1 });
+// Note: Index on 'name' is automatically created by unique: true in the schema definition above
 
 module.exports = mongoose.model('Category', categorySchema);
 

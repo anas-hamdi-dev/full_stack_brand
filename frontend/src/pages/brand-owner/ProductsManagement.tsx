@@ -34,6 +34,11 @@ interface Product {
   images: ProductImage[] | string[]; // Support both old (string[]) and new (ProductImage[]) formats
   purchaseLink?: string | null;
   brand_id?: string | null;
+  category?: {
+    _id: string;
+    id?: string;
+    name: string;
+  } | string | null; // Support both object and string (ID) formats
   createdAt?: string;
 }
 
@@ -414,6 +419,7 @@ export default function ProductsManagement() {
             images: editingProduct.images || [],
             purchaseLink: editingProduct.purchaseLink || "",
             brand_id: editingProduct.brand_id || null,
+            category: editingProduct.category || null,
             created_at: editingProduct.createdAt || "",
           } : null}
           isLoading={createProduct.isPending || updateProduct.isPending}

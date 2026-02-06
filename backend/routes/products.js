@@ -190,12 +190,15 @@ router.post('/', authenticate, isBrandOwnerApproved, uploadMultipleImages('produ
       purchaseLink: purchaseLinkTrimmed
     });
 
-    await product.populate({
-      path: 'brand_id'
-    }).populate({
-      path: 'category',
-      select: 'name image'
-    });
+    await product.populate([
+      {
+        path: 'brand_id'
+      },
+      {
+        path: 'category',
+        select: 'name image'
+      }
+    ]);
 
     res.status(201).json({ data: product });
   } catch (error) {
@@ -290,12 +293,15 @@ router.patch('/:id', authenticate, isBrandOwnerApproved, checkProductOwnership, 
       req.params.id,
       { $set: updateData },
       { new: true, runValidators: true }
-    ).populate({
-      path: 'brand_id'
-    }).populate({
-      path: 'category',
-      select: 'name image'
-    });
+    ).populate([
+      {
+        path: 'brand_id'
+      },
+      {
+        path: 'category',
+        select: 'name image'
+      }
+    ]);
 
     if (!product) {
       return res.status(404).json({ error: 'Product not found' });
