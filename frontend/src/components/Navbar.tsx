@@ -196,10 +196,78 @@ const Navbar = () => {
                   </div>
                 )}
                 {user && (
-                  <div className="pt-4">
-                    <Button variant="outline" className="w-full" onClick={() => { handleSignOut(); setIsOpen(false); }}>
-                      Sign Out
-                    </Button>
+                  <div className="pt-4 border-t border-border/30">
+                    <div className="text-sm font-semibold text-muted-foreground mb-3 px-2">
+                      My Account
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      {/* Shared Profile - Available to all authenticated users */}
+                      <Button
+                        variant="ghost"
+                        className="w-full justify-start gap-2"
+                        onClick={() => {
+                          navigate("/profile");
+                          setIsOpen(false);
+                        }}
+                      >
+                        <UserCircle className="h-4 w-4" />
+                        My Profile
+                      </Button>
+
+                      {isBrandOwner && (
+                        <>
+                          <Button
+                            variant="ghost"
+                            className="w-full justify-start gap-2"
+                            onClick={() => {
+                              navigate("/brand-owner/brand");
+                              setIsOpen(false);
+                            }}
+                          >
+                            <Store className="h-4 w-4" />
+                            My Brand
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            className="w-full justify-start gap-2"
+                            onClick={() => {
+                              navigate("/brand-owner/products");
+                              setIsOpen(false);
+                            }}
+                          >
+                            <Package className="h-4 w-4" />
+                            My Products
+                          </Button>
+                        </>
+                      )}
+
+                      {isClient && (
+                        <Button
+                          variant="ghost"
+                          className="w-full justify-start gap-2"
+                          onClick={() => {
+                            navigate("/client/favorites");
+                            setIsOpen(false);
+                          }}
+                        >
+                          <Heart className="h-4 w-4" />
+                          My Favorites
+                        </Button>
+                      )}
+
+                      <div className="border-t border-border/30 my-2" />
+                      <Button
+                        variant="outline"
+                        className="w-full justify-start gap-2"
+                        onClick={() => {
+                          handleSignOut();
+                          setIsOpen(false);
+                        }}
+                      >
+                        <LogOut className="h-4 w-4" />
+                        Sign Out
+                      </Button>
+                    </div>
                   </div>
                 )}
               </div>
