@@ -196,7 +196,7 @@ const Navbar = () => {
                   </div>
                 )}
                 {user && (
-                  <div className="pt-4 border-t border-border/30">
+                  <div className="pt-4 ">
                     <div className="text-sm font-semibold text-muted-foreground mb-3 px-2">
                       My Account
                     </div>

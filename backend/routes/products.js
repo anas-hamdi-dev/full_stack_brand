@@ -192,11 +192,11 @@ router.post('/', authenticate, isBrandOwnerApproved, uploadMultipleImages('produ
 
     await product.populate([
       {
-        path: 'brand_id'
+      path: 'brand_id'
       },
       {
-        path: 'category',
-        select: 'name image'
+      path: 'category',
+      select: 'name image'
       }
     ]);
 
@@ -295,11 +295,11 @@ router.patch('/:id', authenticate, isBrandOwnerApproved, checkProductOwnership, 
       { new: true, runValidators: true }
     ).populate([
       {
-        path: 'brand_id'
+      path: 'brand_id'
       },
       {
-        path: 'category',
-        select: 'name image'
+      path: 'category',
+      select: 'name image'
       }
     ]);
 
